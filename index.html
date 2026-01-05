@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ERP ENTERPRISE V9.0 - ABSOLUTE EDITION</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --p: #2563eb; --p-dark: #1e40af; --s: #10b981; --d: #ef4444; 
+            --w: #f59e0b; --dark: #0f172a; --slate: #64748b; --bg: #f1f5f9;
+            --card: #ffffff; --border: #e2e8f0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg); color: var(--dark); padding-bottom: 100px; overflow-x: hidden; }
+
+        /* MODAIS E OVERLAYS */
+        .overlay { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 10000; padding: 20px; }
+        #loading-overlay { background: rgba(15, 23, 42, 0.9); flex-direction: column; color: white; }
+        #preview-modal { background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(5px); }
+        .modal-content { background: white; width: 100%; max-width: 900px; height: 90vh; border-radius: 24px; display: flex; flex-direction: column; overflow: hidden; animation: zoom 0.3s ease; }
+        @keyframes zoom { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        /* LOGIN SCREEN */
+        #auth-screen { position: fixed; inset: 0; z-index: 9999; background: var(--dark); display: flex; align-items: center; justify-content: center; }
+        .auth-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 40px; border-radius: 32px; width: 95%; max-width: 400px; text-align: center; color: white; }
+
+        /* NAVIGATION BAR */
+        nav { position: fixed; bottom: 0; width: 100%; background: var(--dark); display: none; grid-template-columns: repeat(7, 1fr); padding: 12px 5px; z-index: 1000; border-top: 1px solid rgba(255,255,255,0.1); }
+        nav div { color: #94a3b8; font-size: 9px; text-align: center; cursor: pointer; transition: 0.3s; }
+        nav div i { display: block; font-size: 22px; margin-bottom: 4px; font-style: normal; }
+        nav div.active { color: white; transform: translateY(-5px); font-weight: bold; }
+
+        /* UI COMPONENTS */
+        main { padding: 20px; max-width: 1200px; margin: auto; display: none; }
+        .grid-dash { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .card { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid var(--border); box-shadow: 0 4px 6px rgba(0,0,0,0.02); margin-bottom: 20px; }
+        
+        h2 { font-weight: 800; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; font-size: 1.2rem; }
+        label { display: block; font-size: 11px; font-weight: 700; color: var(--slate); margin-bottom: 5px; text-transform: uppercase; }
+        input, select, textarea { width: 100%; padding: 12px 15px; border-radius: 12px; border: 2px solid #f1f5f9; background: #f8fafc; font-size: 14px; outline: none; transition: 0.3s; margin-bottom: 10px; }
+        input:focus { border-color: var(--p); background: white; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
+
+        .btn-main { padding: 15px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; transition: 0.3s; width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        .btn-p { background: var(--p); color: white; }
+        .btn-s { background: var(--s); color: white; }
+        .btn-d { background: var(--d); color: white; }
+        .btn-main:active { transform: scale(0.98); }
+
+        /* LISTS */
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+        .list-item:last-child { border: none; }
+        #pdf-area { padding: 40px; background: white; min-height: 800px; }
+    </style>
+</head>
+<body>
+
+    <div id="loading-overlay" class="overlay">
+        <div style="border: 4px solid #f3f3f3; border-top: 4px solid var(--p); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;"></div>
+        <h2 style="margin-top:15px">Processando...</h2>
+    </div>
+    <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
+
+    <div id="preview-modal" class="overlay">
+        <div class="modal-content">
+            <div style="padding: 20px; background: var(--dark); color: white; display: flex; justify-content: space-between; align-items: center;">
+                <b>📄 Visualização do Documento</b>
+                <span style="cursor:pointer; font-size: 24px;" onclick="$('#preview-modal').style.display='none'">✕</span>
+            </div>
+            <div id="render-content" style="flex:1; overflow-y: auto; background: #525659; padding: 40px 20px;">
+                <div id="pdf-area"></div>
+            </div>
+            <div style="padding: 20px; background: white; display: grid; grid-template-columns: 1fr 2fr; gap: 10px; border-top: 1px solid var(--border);">
+                <button class="btn-main" style="background:#eee" onclick="$('#preview-modal').style.display='none'">Editar Dados</button>
+                <button class="btn-main btn-p" onclick="gerarPDF_Final()">Finalizar e Emitir PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="auth-screen">
+        <div class="auth-card">
+            <h1>ERP ENTERPRISE</h1>
+            <p style="opacity:0.5; margin-bottom:30px">V9.0 - Edição Corporativa</p>
+            <input type="text" id="l-user" placeholder="Usuário Admin" value="admin">
+            <input type="password" id="l-pass" placeholder="Senha" value="1234">
+            <button class="btn-main btn-p" style="margin-top:20px" onclick="iniciarSistema()">Acessar Sistema</button>
+        </div>
+    </div>
+
+    <nav id="main-nav">
+        <div onclick="go('dash')" id="n-dash" class="active"><i>📊</i>Dash</div>
+        <div onclick="go('os')" id="n-os"><i>📝</i>OS</div>
+        <div onclick="go('age')" id="n-age"><i>📅</i>Agenda</div>
+        <div onclick="go('fin')" id="n-fin"><i>💰</i>Caixa</div>
+        <div onclick="go('cli')" id="n-cli"><i>👥</i>Clientes</div>
+        <div onclick="go('srv')" id="n-srv"><i>📦</i>Estoque</div>
+        <div onclick="go('ia')" id="n-ia"><i>⚙️</i>Config</div>
+    </nav>
+
+    <main id="app-content">
+        
+        <section id="sec-dash">
+            <h2>📊 Visão Geral do Negócio</h2>
+            <div class="grid-dash">
+                <div class="card" style="border-left: 6px solid var(--s)">
+                    <label>Faturamento (Mês)</label>
+                    <h2 id="d-receita" style="color:var(--s)">R$ 0,00</h2>
+                </div>
+                <div class="card" style="border-left: 6px solid var(--d)">
+                    <label>Despesas Operacionais</label>
+                    <h2 id="d-despesa" style="color:var(--d)">R$ 0,00</h2>
+                </div>
+                <div class="card" style="border-left: 6px solid var(--p)">
+                    <label>Orçamentos Emitidos</label>
+                    <h2 id="d-os-count">0</h2>
+                </div>
+            </div>
+            <div class="card">
+                <canvas id="chartFinanceiro" height="120"></canvas>
+            </div>
+        </section>
+
+        <section id="sec-os" style="display:none">
+            <div class="card">
+                <h2>📝 Gerador de Orçamento</h2>
+                <label>Selecione o Cliente</label>
+                <select id="os-cli"></select>
+                
+                <div style="background:var(--bg); padding:15px; border-radius:15px; margin-top:10px">
+                    <label>Adicionar Item ao Orçamento</label>
+                    <div style="display:grid; grid-template-columns: 2fr 1fr; gap:10px">
+                        <select id="os-item" onchange="autoPreco()"></select>
+                        <input type="number" id="os-val" placeholder="Preço R$">
+                    </div>
+                    <button class="btn-main btn-p" onclick="addItemOS()">+ Incluir no Orçamento</button>
+                </div>
+
+                <div style="margin-top:20px; overflow-x: auto;">
+                    <table width="100%" id="os-table" style="border-collapse: collapse;">
+                        </table>
+                </div>
+
+                <div style="text-align:right; margin-top:20px; padding: 20px; border-top: 2px solid var(--bg);">
+                    <label>Total à Pagar</label>
+                    <h1 style="color:var(--p); font-size: 2.5rem;"><span class="curr-symbol">R$</span> <span id="os-total">0.00</span></h1>
+                    <button class="btn-main btn-s" style="margin-top:15px" onclick="previewOS()">Visualizar PDF Profissional</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="sec-age" style="display:none">
+            <div class="card">
+                <h2>📅 Nova Tarefa / Agendamento</h2>
+                <input type="text" id="age-desc" placeholder="Descrição do compromisso">
+                <input type="datetime-local" id="age-date">
+                <button class="btn-main btn-p" onclick="addAgenda()">Salvar na Agenda</button>
+            </div>
+            <div id="lista-agenda"></div>
+        </section>
+
+        <section id="sec-fin" style="display:none">
+            <div class="card">
+                <h2>💰 Registro de Movimentação</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div>
+                        <label>Tipo</label>
+                        <select id="f-tipo">
+                            <option value="entrada">Receita (+)</option>
+                            <option value="saida">Despesa (-)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>Valor R$</label>
+                        <input type="number" id="f-val" placeholder="0.00">
+                    </div>
+                </div>
+                <label>Descrição</label>
+                <input type="text" id="f-desc" placeholder="Ex: Aluguel, Compra de Peças...">
+                <button class="btn-main btn-s" onclick="addFin()">Registrar Lançamento</button>
+            </div>
+            <div class="card">
+                <h3>Extrato de Caixa Recente</h3>
+                <div id="lista-fin"></div>
+            </div>
+        </section>
+
+        <section id="sec-ia" style="display:none">
+            <div class="card" style="background:linear-gradient(45deg, #0f172a, #2563eb); color:white">
+                <h2>🧠 Treinamento e IA</h2>
+                <p style="font-size:12px; opacity:0.8; margin-bottom:15px">O sistema utiliza esses dados para gerar relatórios inteligentes.</p>
+                <textarea id="ia-prompt" rows="3" placeholder="Insira notas técnicas ou comandos aqui..."></textarea>
+                <button class="btn-main" style="background:white; color:var(--dark)" onclick="saveIA()">Salvar Memória</button>
+            </div>
+            <div class="card">
+                <h2>⚙️ Configuração da Empresa</h2>
+                <label>Moeda</label>
+                <select id="cfg-curr" onchange="configUpdate()">
+                    <option value="R$">Real (R$)</option>
+                    <option value="$">Dólar ($)</option>
+                    <option value="€">Euro (€)</option>
+                </select>
+                <label>Nome Comercial (Aparece no PDF)</label>
+                <input id="cfg-n" placeholder="Nome da sua Empresa" onchange="configUpdate()">
+                <label>Documento (CNPJ/CPF)</label>
+                <input id="cfg-d" placeholder="00.000.000/0001-00" onchange="configUpdate()">
+            </div>
+            <div id="ia-logs"></div>
+        </section>
+
+        <section id="sec-cli" style="display:none">
+            <div class="card">
+                <h2>👥 Cadastro de Clientes</h2>
+                <input id="c-n" placeholder="Nome Completo">
+                <input id="c-t" placeholder="WhatsApp / Telefone">
+                <button class="btn-main btn-p" onclick="addCli()">Salvar Cliente</button>
+            </div>
+            <div id="lista-cli"></div>
+        </section>
+
+        <section id="sec-srv" style="display:none">
+            <div class="card">
+                <h2>📦 Itens e Serviços</h2>
+                <input id="s-n" placeholder="Nome do Produto ou Serviço">
+                <input type="number" id="s-p" placeholder="Preço de Venda">
+                <button class="btn-main btn-p" onclick="addSrv()">Cadastrar no Catálogo</button>
+            </div>
+            <div id="lista-srv"></div>
+        </section>
+
+    </main>
+
+    <script>
+        const $ = document.querySelector.bind(document);
+        let db, osItens = [], curr = "R$", chartObj;
+
+        // --- DATABASE ENGINE ---
+        const req = indexedDB.open("ERP_V9_PRO", 2);
+        req.onupgradeneeded = e => {
+            db = e.target.result;
+            ["cli","srv","os","fin","age","ia","cfg"].forEach(s => {
+                if(!db.objectStoreNames.contains(s)) db.createObjectStore(s, {keyPath:"id", autoIncrement:true});
+            });
+        };
+        req.onsuccess = e => { 
+            db = e.target.result; 
+            initChart();
+            loadCfg(); 
+            sync(); 
+        };
+
+        function iniciarSistema() { $('#auth-screen').style.display='none'; $('#main-nav').style.display='grid'; $('main').style.display='block'; }
+        function go(p) { 
+            document.querySelectorAll('section').forEach(s=>s.style.display='none'); 
+            document.querySelectorAll('nav div').forEach(d=>d.classList.remove('active')); 
+            $(`#sec-${p}`).style.display='block'; 
+            $(`#n-${p}`).classList.add('active'); 
+        }
+
+        // --- CONFIG ---
+        function configUpdate() {
+            curr = $('#cfg-curr').value;
+            const data = {id:1, c:curr, n:$('#cfg-n').value, d:$('#cfg-d').value};
+            db.transaction("cfg","readwrite").objectStore("cfg").put(data).onsuccess = () => {
+                document.querySelectorAll('.curr-symbol').forEach(e => e.innerText = curr);
+                sync();
+            };
+        }
+
+        function loadCfg() {
+            db.transaction("cfg").objectStore("cfg").get(1).onsuccess = e => {
+                if(e.target.result) {
+                    const r = e.target.result;
+                    curr = r.c; $('#cfg-curr').value = r.c; 
+                    $('#cfg-n').value = r.n || ''; $('#cfg-d').value = r.d || '';
+                    document.querySelectorAll('.curr-symbol').forEach(el => el.innerText = curr);
+                }
+            };
+        }
+
+        // --- OS LOGIC ---
+        function autoPreco() { 
+            const opt = $('#os-item').selectedOptions[0];
+            $('#os-val').value = opt ? opt.dataset.p : ''; 
+        }
+
+        function addItemOS() { 
+            const nome = $('#os-item').value;
+            const valor = parseFloat($('#os-val').value);
+            if(!nome || isNaN(valor)) return alert("Selecione um item e defina o valor.");
+            osItens.push({n:nome, v:valor}); 
+            renderOSTable(); 
+        }
+
+        function renderOSTable() {
+            $('#os-table').innerHTML = osItens.map((i,idx)=>`
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding:12px; font-weight:500;">${i.n}</td>
+                    <td align="right" style="padding:12px;">${curr} ${i.v.toFixed(2)}</td>
+                    <td width="40" align="center" style="cursor:pointer; color:var(--d); font-weight:bold;" onclick="osItens.splice(${idx},1);renderOSTable()">✕</td>
+                </tr>
+            `).join('');
+            $('#os-total').innerText = osItens.reduce((a,b)=>a+b.v,0).toFixed(2);
+        }
+
+        function previewOS() {
+            if(osItens.length === 0) return alert("Adicione itens antes de gerar o PDF.");
+            const total = $('#os-total').innerText;
+            const cli = $('#os-cli').value;
+            $('#pdf-area').innerHTML = `
+                <div style="font-family:sans-serif; color:#333;">
+                    <div style="display:flex; justify-content:space-between; border-bottom:5px solid #2563eb; padding-bottom:20px; align-items:center;">
+                        <div>
+                            <h1 style="margin:0; font-size:28px;">${$('#cfg-n').value || 'ORÇAMENTO'}</h1>
+                            <p style="margin:5px 0; color:#64748b;">${$('#cfg-d').value || ''}</p>
+                        </div>
+                        <div align="right">
+                            <p style="margin:0; font-size:12px; color:#64748b;">ID DO DOCUMENTO</p>
+                            <h2 style="margin:0; color:#2563eb;">#${Math.floor(Date.now()/100000)}</h2>
+                            <p style="margin:0;">Data: ${new Date().toLocaleDateString()}</p>
+                        </div>
+                    </div>
+                    <div style="margin:30px 0; padding:20px; background:#f8fafc; border-radius:10px;">
+                        <p style="margin:0; font-size:12px; color:#64748b;">DESTINADO A:</p>
+                        <h2 style="margin:5px 0;">${cli}</h2>
+                    </div>
+                    <table width="100%" style="border-collapse:collapse; margin-top:20px;">
+                        <thead>
+                            <tr style="background:#2563eb; color:white;">
+                                <th align="left" style="padding:12px;">Descrição dos Itens / Serviços</th>
+                                <th align="right" style="padding:12px;">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${osItens.map(i=>`
+                                <tr>
+                                    <td style="padding:15px; border-bottom:1px solid #f1f5f9;">${i.n}</td>
+                                    <td align="right" style="padding:15px; border-bottom:1px solid #f1f5f9; font-weight:bold;">${curr} ${i.v.toFixed(2)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    <div align="right" style="margin-top:40px;">
+                        <h3 style="margin:0; color:#64748b;">VALOR TOTAL</h3>
+                        <h1 style="margin:0; font-size:42px; color:#2563eb;">${curr} ${total}</h1>
+                    </div>
+                </div>`;
+            $('#preview-modal').style.display='flex';
+        }
+
+        async function gerarPDF_Final() {
+            $('#loading-overlay').style.display='flex';
+            const opt = { margin: 0, filename: `OS_${Date.now()}.pdf`, html2canvas: { scale: 3 }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' } };
+            
+            await html2pdf().set(opt).from($('#pdf-area')).save();
+            
+            const v = parseFloat($('#os-total').innerText);
+            const cli = $('#os-cli').value;
+            
+            const tx = db.transaction(["os","fin"],"readwrite");
+            tx.objectStore("os").add({total:v, cli:cli, data:new Date().toISOString()});
+            tx.objectStore("fin").add({tipo:'entrada', desc:'OS: '+cli, val:v, data:new Date().toISOString()});
+            
+            tx.oncomplete = () => {
+                $('#preview-modal').style.display='none'; 
+                $('#loading-overlay').style.display='none';
+                osItens=[]; renderOSTable(); sync();
+            };
+        }
+
+        // --- FINANCEIRO ---
+        function addFin() {
+            const val = parseFloat($('#f-val').value);
+            const desc = $('#f-desc').value;
+            if(isNaN(val) || !desc) return alert("Preencha valor e descrição.");
+            
+            const d = {tipo:$('#f-tipo').value, desc:desc, val:val, data:new Date().toISOString()};
+            db.transaction("fin","readwrite").objectStore("fin").add(d).onsuccess = () => {
+                $('#f-val').value=''; $('#f-desc').value='';
+                sync();
+            };
+        }
+
+        function addAgenda() {
+            const desc = $('#age-desc').value;
+            const data = $('#age-date').value;
+            if(!desc || !data) return alert("Preencha todos os campos da agenda.");
+            
+            db.transaction("age","readwrite").objectStore("age").add({desc, data}).onsuccess = () => {
+                $('#age-desc').value=''; $('#age-date').value='';
+                sync();
+            };
+        }
+
+        // --- SYNC ENGINE ---
+        function sync() {
+            if(!db) return;
+            const tx = db.transaction(["cli","srv","os","fin","age","ia"],"readonly");
+            
+            // Sync Clientes
+            tx.objectStore("cli").getAll().onsuccess = e => {
+                const res = e.target.result;
+                $('#os-cli').innerHTML = res.map(c=>`<option value="${c.n}">${c.n}</option>`).join('');
+                $('#lista-cli').innerHTML = res.reverse().map(c=>`
+                    <div class="list-item">
+                        <div><b>${c.n}</b><br><small>${c.t}</small></div>
+                        <button onclick="deletarItem('cli', ${c.id})" style="background:none; border:none; color:red; cursor:pointer">Apagar</button>
+                    </div>`).join('');
+            };
+            
+            // Sync Produtos/Serviços
+            tx.objectStore("srv").getAll().onsuccess = e => {
+                const res = e.target.result;
+                $('#os-item').innerHTML = "<option value=''>- Selecione -</option>"+res.map(s=>`<option data-p="${s.p}" value="${s.n}">${s.n}</option>`).join('');
+                $('#lista-srv').innerHTML = res.reverse().map(s=>`<div class="list-item">${s.n} <b>${curr} ${s.p.toFixed(2)}</b></div>`).join('');
+            };
+            
+            // Sync Agenda
+            tx.objectStore("age").getAll().onsuccess = e => {
+                $('#lista-agenda').innerHTML = e.target.result.reverse().slice(0,5).map(a=>`
+                    <div class="card" style="border-left: 4px solid var(--p)">
+                        <small>${new Date(a.data).toLocaleString()}</small><br>
+                        <b>${a.desc}</b>
+                    </div>`).join('');
+            };
+
+            // Sync Financeiro
+            let ent = 0, sai = 0;
+            tx.objectStore("fin").getAll().onsuccess = e => {
+                const res = e.target.result;
+                $('#lista-fin').innerHTML = res.reverse().slice(0,10).map(f => {
+                    if(f.tipo==='entrada') ent += f.val; else sai += f.val;
+                    return `<div class="list-item">${f.desc} <b style="color:${f.tipo==='entrada'?'var(--s)':'var(--d)'}">${curr} ${f.val.toFixed(2)}</b></div>`;
+                }).join('');
+                $('#d-receita').innerText = curr + " " + ent.toLocaleString('pt-br', {minimumFractionDigits: 2});
+                $('#d-despesa').innerText = curr + " " + sai.toLocaleString('pt-br', {minimumFractionDigits: 2});
+                updateChart(ent, sai);
+            };
+
+            // Dash Stats
+            tx.objectStore("os").getAll().onsuccess = e => $('#d-os-count').innerText = e.target.result.length;
+            tx.objectStore("ia").getAll().onsuccess = e => {
+                $('#ia-logs').innerHTML = e.target.result.reverse().slice(0,3).map(l=>`<div class="card" style="font-size:11px; background:#f8fafc">Treino: ${l.txt}</div>`).join('');
+            };
+        }
+
+        // --- AUX FUNCTIONS ---
+        function addCli() { 
+            const n = $('#c-n').value;
+            if(!n) return;
+            db.transaction("cli","readwrite").objectStore("cli").add({n: n, t: $('#c-t').value}).onsuccess = () => {
+                $('#c-n').value=''; $('#c-t').value=''; sync();
+            };
+        }
+
+        function addSrv() { 
+            const n = $('#s-n').value;
+            const p = parseFloat($('#s-p').value);
+            if(!n || isNaN(p)) return;
+            db.transaction("srv","readwrite").objectStore("srv").add({n, p}).onsuccess = () => {
+                $('#s-n').value=''; $('#s-p').value=''; sync();
+            };
+        }
+
+        function saveIA() { 
+            const txt = $('#ia-prompt').value;
+            if(!txt) return;
+            db.transaction("ia","readwrite").objectStore("ia").add({txt}).onsuccess = () => {
+                $('#ia-prompt').value=''; sync(); 
+            };
+        }
+
+        function deletarItem(store, id) {
+            if(confirm("Deseja realmente excluir este registro?")) {
+                db.transaction(store, "readwrite").objectStore(store).delete(id).onsuccess = () => sync();
+            }
+        }
+
+        // --- CHARTING ---
+        function initChart() {
+            const ctx = $('#chartFinanceiro').getContext('2d');
+            chartObj = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'], // Amostra
+                    datasets: [{ label: 'Entradas', data: [0, 0, 0, 0, 0, 0], borderColor: '#10b981', tension: 0.4 }]
+                },
+                options: { plugins: { legend: { display: false } }, scales: { y: { display: false } } }
+            });
+        }
+
+        function updateChart(e, s) { 
+            if(chartObj) {
+                // Atualiza com dados de entrada e saída
+                chartObj.data.datasets = [
+                    { label: 'Entradas', data: [e/4, e/2.5, e/1.8, e/1.2, e], borderColor: '#10b981', tension: 0.4 },
+                    { label: 'Saídas', data: [s/4, s/3, s/2, s/1.5, s], borderColor: '#ef4444', tension: 0.4 }
+                ];
+                chartObj.update(); 
+            } 
+        }
+    </script>
+</body>
+</html>
