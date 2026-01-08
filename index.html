@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ERP ENTERPRISE V13 - ADM NATANJKL</title>
+    <title>ERP ENTERPRISE V14 - ADMIN MASTER</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
@@ -19,7 +19,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         body { background: var(--bg); color: var(--dark); padding-bottom: 100px; }
 
-        /* TELA DE LOGIN */
+        /* TELA DE AUTENTICAÇÃO */
         #auth-screen { position: fixed; inset: 0; z-index: 9999; background: var(--dark); display: flex; align-items: center; justify-content: center; }
         .auth-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 30px; border-radius: 24px; width: 95%; max-width: 400px; color: white; }
         .auth-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); justify-content: space-around; }
@@ -27,46 +27,47 @@
         .auth-tabs span.active { opacity: 1; color: var(--p); border-bottom: 2px solid var(--p); }
 
         /* NAVBAR */
-        nav { position: fixed; bottom: 0; width: 100%; background: var(--dark); display: none; grid-template-columns: repeat(8, 1fr); padding: 12px 5px; z-index: 1000; }
+        nav { position: fixed; bottom: 0; width: 100%; background: var(--dark); display: none; grid-template-columns: repeat(5, 1fr); padding: 12px 5px; z-index: 1000; }
         nav div { color: #94a3b8; font-size: 9px; text-align: center; cursor: pointer; }
-        nav div i { display: block; font-size: 20px; margin-bottom: 4px; font-style: normal; }
+        nav div i { display: block; font-size: 22px; margin-bottom: 4px; font-style: normal; }
         nav div.active { color: white; font-weight: bold; }
 
         /* UI */
         main { padding: 20px; max-width: 1200px; margin: auto; display: none; }
-        .card { background: var(--card); border-radius: 15px; padding: 20px; border: 1px solid var(--border); margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .card { background: var(--card); border-radius: 15px; padding: 20px; border: 1px solid var(--border); margin-bottom: 20px; }
         input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 10px; outline: none; }
         .btn-main { padding: 12px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; width: 100%; transition: 0.2s; }
         .btn-p { background: var(--p); color: white; }
         .btn-s { background: var(--s); color: white; }
         .btn-d { background: var(--d); color: white; }
 
-        /* CHAT WHATSAPP */
+        /* CHAT */
         #chat-container { display: grid; grid-template-columns: 180px 1fr; height: 500px; background: white; border-radius: 15px; overflow: hidden; border: 1px solid var(--border); }
-        #chat-users { background: #f1f5f9; border-right: 1px solid var(--border); overflow-y: auto; }
-        .chat-user-item { padding: 15px; border-bottom: 1px solid #e2e8f0; cursor: pointer; font-size: 13px; font-weight: 500; }
+        #chat-users { background: #f8fafc; border-right: 1px solid var(--border); overflow-y: auto; }
+        .chat-user-item { padding: 15px; border-bottom: 1px solid #e2e8f0; cursor: pointer; font-size: 13px; }
         .chat-user-item.active { background: var(--p); color: white; }
-        #chat-messages { display: flex; flex-direction: column; padding: 15px; overflow-y: auto; background: #e5ddd5; flex-grow: 1; }
-        .msg { margin-bottom: 8px; padding: 10px; border-radius: 10px; max-width: 80%; font-size: 13px; position: relative; }
-        .msg.sent { align-self: flex-end; background: #dcf8c6; border-bottom-right-radius: 2px; }
-        .msg.received { align-self: flex-start; background: white; border-bottom-left-radius: 2px; }
+        #chat-messages { display: flex; flex-direction: column; padding: 15px; overflow-y: auto; background: #e5ddd5; flex-grow: 1; height: 380px; }
+        .msg { margin-bottom: 8px; padding: 10px; border-radius: 10px; max-width: 80%; font-size: 13px; }
+        .msg.sent { align-self: flex-end; background: #dcf8c6; }
+        .msg.received { align-self: flex-start; background: white; }
 
-        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #f1f5f9; }
-        .status-badge { font-size: 10px; padding: 3px 8px; border-radius: 12px; font-weight: bold; }
+        /* LISTA ADM */
+        .list-item { display: flex; flex-direction: column; gap: 8px; padding: 15px; border-bottom: 1px solid #f1f5f9; background: #fdfdfd; border-radius: 10px; margin-bottom: 10px; }
+        .badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div id="auth-screen">
         <div class="auth-card">
-            <h2 style="text-align:center; margin-bottom:20px">ERP ENTERPRISE</h2>
+            <h2 style="text-align:center; margin-bottom:20px; font-weight:800">SISTEMA ERP</h2>
             <div class="auth-tabs">
                 <span id="tab-login" class="active" onclick="setAuth('login')">LOGIN</span>
                 <span id="tab-reg" onclick="setAuth('reg')">CADASTRAR</span>
                 <span id="tab-adm" onclick="setAuth('adm')" style="color:var(--s)">ADM</span>
             </div>
             <div id="auth-box">
-                <input type="text" id="u-name" placeholder="Usuário">
+                <input type="text" id="u-name" placeholder="Nome de Usuário">
                 <input type="password" id="u-pass" placeholder="Senha">
                 <button id="btn-auth" class="btn-main btn-p" onclick="handleAuth()">Acessar</button>
             </div>
@@ -78,7 +79,7 @@
         <div onclick="go('dash')" id="n-dash" class="active"><i>📊</i>Dash</div>
         <div onclick="go('os')" id="n-os"><i>📝</i>OS</div>
         <div onclick="go('chat')" id="n-chat"><i>💬</i>Chat</div>
-        <div onclick="go('fin')" id="n-fin"><i>💰</i>Caixa</div>
+        <div onclick="go('fin')" id="n-fin"><i>💰</i>Fin</div>
         <div onclick="go('adm')" id="n-adm"><i>⚙️</i>Adm</div>
     </nav>
 
@@ -86,8 +87,8 @@
         <section id="sec-dash">
             <h2>📊 Bem-vindo, <span id="display-user"></span></h2>
             <div class="card">
-                <p>Status: <b id="display-level" style="color:var(--p)"></b></p>
-                <p>Expira em: <span id="display-exp" style="font-weight:bold"></span></p>
+                <p>Nível de Acesso: <b id="display-level" style="color:var(--p)"></b></p>
+                <p>Validade da Licença: <span id="display-exp" style="font-weight:bold"></span></p>
             </div>
         </section>
 
@@ -106,35 +107,34 @@
 
         <section id="sec-adm" style="display:none">
             <div class="card">
-                <h2>⚙️ Painel de Controle (Contas e Licenças)</h2>
+                <h2>⚙️ Gestão de Usuários e Licenças</h2>
                 <div id="adm-user-list"></div>
             </div>
         </section>
 
-        <section id="sec-fin" style="display:none"><div class="card"><h2>💰 Financeiro</h2><p>Área restrita de faturamento.</p></div></section>
-        <section id="sec-os" style="display:none"><div class="card"><h2>📝 Ordens de Serviço</h2><p>Painel operacional.</p></div></section>
+        <section id="sec-fin" style="display:none"><div class="card"><h2>💰 Financeiro</h2><p>Módulo de Caixa Administrativo.</p></div></section>
+        <section id="sec-os" style="display:none"><div class="card"><h2>📝 Ordens de Serviço</h2><p>Módulo Operacional.</p></div></section>
     </main>
 
     <script>
         const $ = document.querySelector.bind(document);
         let db, userAtual = null, chatAtivo = null, currentMode = 'login';
 
-        // DATABASE E USUÁRIO NATANJKL
-        const req = indexedDB.open("ERP_V13_NATAN", 1);
+        // INICIALIZAÇÃO DO BANCO COM SEU USUÁRIO
+        const req = indexedDB.open("ERP_FINAL_DB", 1);
         req.onupgradeneeded = e => {
             db = e.target.result;
             ["users", "msgs"].forEach(s => db.createObjectStore(s, {keyPath:"id", autoIncrement:true}));
             
             const store = e.currentTarget.transaction.objectStore("users");
-            // Criando seu usuário específico solicitado
+            // SEU USUÁRIO ADM SOLICITADO
             store.add({
                 user: "natanjkl", 
                 pass: "91538300Aa", 
                 level: "admin", 
-                exp: 4102444800000, // Validade até 2100
+                exp: 4102444800000, // Ano 2100
                 active: true 
             });
-            // Admin padrão auxiliar
             store.add({ user: "admin", pass: "1234", level: "admin", exp: 4102444800000, active: true });
         };
         req.onsuccess = e => db = e.target.result;
@@ -162,10 +162,10 @@
             } else {
                 store.getAll().onsuccess = e => {
                     const user = e.target.result.find(x => x.user === u && x.pass === p);
-                    if(!user) return $('#auth-msg').innerText = "Erro: Usuário/Senha incorretos.";
-                    if(!user.active) return $('#auth-msg').innerText = "CONTA BLOQUEADA.";
+                    if(!user) return $('#auth-msg').innerText = "Usuário ou senha incorretos.";
+                    if(!user.active) return $('#auth-msg').innerText = "CONTA BLOQUEADA PELO ADM.";
                     if(Date.now() > user.exp) return $('#auth-msg').innerText = "LICENÇA EXPIRADA.";
-                    if(currentMode === 'adm' && user.level !== 'admin') return $('#auth-msg').innerText = "Acesso negado.";
+                    if(currentMode === 'adm' && user.level !== 'admin') return $('#auth-msg').innerText = "Acesso ADM negado.";
                     logar(user);
                 };
             }
@@ -195,7 +195,7 @@
             if(p === 'chat') renderChatList();
         }
 
-        // CHAT
+        // CHAT WHATSAPP
         function renderChatList() {
             db.transaction("users").objectStore("users").getAll().onsuccess = e => {
                 const outros = e.target.result.filter(x => x.user !== userAtual.user);
@@ -221,20 +221,20 @@
             };
         }
 
-        // ADM CONTROLE POR DIAS E BLOQUEIO
+        // ADM: CONTROLE DE DIAS E BAN
         function syncAdm() {
             db.transaction("users").objectStore("users").getAll().onsuccess = e => {
                 $('#adm-user-list').innerHTML = e.target.result.map(u => `
-                    <div class="list-item" style="flex-direction:column; align-items:flex-start">
-                        <div style="width:100%; display:flex; justify-content:space-between">
-                            <b>${u.user}</b>
-                            <span class="status-badge" style="background:${u.active ? '#dcfce7' : '#fee2e2'}">${u.active ? 'ATIVO' : 'BLOQUEADO'}</span>
+                    <div class="list-item">
+                        <div style="display:flex; justify-content:space-between">
+                            <b>${u.user} (${u.level})</b>
+                            <span class="badge" style="background:${u.active ? '#dcfce7' : '#fee2e2'}">${u.active ? 'ATIVO' : 'BLOQUEADO'}</span>
                         </div>
-                        <div style="font-size:11px; margin: 8px 0">Expira em: ${new Date(u.exp).toLocaleDateString()}</div>
-                        <div style="display:flex; gap:5px; width:100%">
-                            <input type="number" id="days-${u.id}" placeholder="+ Dias" style="margin:0; flex:1; padding:5px">
-                            <button class="btn-main btn-s" style="width:70px; padding:5px" onclick="updateUser(${u.id}, 'days')">Add</button>
-                            ${u.user !== 'natanjkl' ? `<button class="btn-main btn-d" style="width:70px; padding:5px" onclick="updateUser(${u.id}, 'toggle')">${u.active ? 'Banir' : 'Ativar'}</button>` : ''}
+                        <span style="font-size:11px">Expiração: ${new Date(u.exp).toLocaleDateString()}</span>
+                        <div style="display:flex; gap:5px; margin-top:5px">
+                            <input type="number" id="add-${u.id}" placeholder="+ Dias" style="margin:0; padding:5px; flex:1">
+                            <button class="btn-main btn-s" style="width:60px; padding:5px" onclick="updateUser(${u.id}, 'days')">Add</button>
+                            ${u.user !== 'natanjkl' ? `<button class="btn-main btn-d" style="width:70px; padding:5px" onclick="updateUser(${u.id}, 'toggle')">${u.active ? 'Banir' : 'Liberar'}</button>` : ''}
                         </div>
                     </div>
                 `).join('');
@@ -247,7 +247,7 @@
             store.get(id).onsuccess = e => {
                 const u = e.target.result;
                 if(action === 'days') {
-                    const d = parseInt($(`#days-${id}`).value);
+                    const d = parseInt($(`#add-${id}`).value);
                     if(d) u.exp = (u.exp < Date.now() ? Date.now() : u.exp) + (d * 86400000);
                 } else if(action === 'toggle') u.active = !u.active;
                 store.put(u).onsuccess = () => syncAdm();
