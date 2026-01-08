@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ERP TOTAL V30 - SISTEMA PROFISSIONAL</title>
+    <title>ERP TOTAL V33 - CADASTRO ABERTO</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -12,43 +12,36 @@
         :root { 
             --primary: #2563eb; --success: #10b981; --danger: #ef4444; 
             --warning: #f59e0b; --dark: #0f172a; --bg: #f8fafc; --text: #1e293b;
-            --card: #ffffff; --border: #e2e8f0;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         body { background: var(--bg); color: var(--text); padding-bottom: 90px; }
 
-        /* --- MODAIS --- */
-        #loading-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.95); color: #fff; display: none; align-items: center; justify-content: center; z-index: 10000; }
-        #preview-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; padding: 10px; }
-        #preview-content { background: white; width: 100%; max-width: 600px; height: 75vh; overflow-y: auto; border-radius: 15px; padding: 15px; }
-
-        /* --- LOGIN --- */
-        #auth-screen { position: fixed; inset: 0; z-index: 9000; background: var(--dark); display: flex; align-items: center; justify-content: center; padding: 20px; }
+        /* MODAIS E TELAS */
+        #auth-screen, #block-screen { position: fixed; inset: 0; z-index: 9000; background: var(--dark); display: flex; align-items: center; justify-content: center; padding: 20px; }
+        #block-screen { display: none; z-index: 9500; text-align: center; color: white; }
         .auth-container { background: rgba(255, 255, 255, 0.05); border-radius: 24px; width: 100%; max-width: 400px; border: 1px solid rgba(255,255,255,0.1); padding: 30px; }
-        .auth-input { width: 100%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); padding: 14px; border-radius: 12px; color: white; margin-bottom: 15px; outline: none; }
+        
+        .auth-tabs { display: flex; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .auth-tab { flex: 1; color: #94a3b8; padding: 10px; text-align: center; cursor: pointer; font-weight: 600; }
+        .auth-tab.active { color: white; border-bottom: 2px solid var(--primary); }
 
-        /* --- NAV --- */
+        .auth-input { width: 100%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); padding: 14px; border-radius: 12px; color: white; margin-bottom: 15px; outline: none; }
+        
+        #preview-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; padding: 10px; }
+        #preview-content { background: white; width: 100%; max-width: 600px; height: 70vh; overflow-y: auto; border-radius: 15px; padding: 15px; }
+
+        /* UI BASE */
         nav { position: fixed; bottom: 0; width: 100%; background: var(--dark); display: none; justify-content: space-around; padding: 12px 0; z-index: 100; }
         nav div { color: #94a3b8; font-size: 10px; text-align: center; cursor: pointer; }
         nav div.active { color: white; }
         nav div i { font-style: normal; font-size: 20px; display: block; }
 
-        /* --- UI BASE --- */
         main { padding: 20px; max-width: 800px; margin: auto; display: none; }
         .card { background: white; padding: 20px; border-radius: 20px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
-        .card-dark { background: var(--dark); color: white; border: none; }
-        input, select, textarea { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #cbd5e1; margin-bottom: 12px; font-size: 14px; }
         .btn-main { width: 100%; padding: 14px; border-radius: 12px; background: var(--primary); color: white; font-weight: 700; border: none; cursor: pointer; margin-bottom: 8px; }
 
-        /* TABELAS */
         table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 13px; }
-        th { text-align: left; padding: 8px; color: #64748b; border-bottom: 1px solid #eee; }
         td { padding: 10px 8px; border-bottom: 1px solid #f8fafc; }
-
-        .badge { padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; }
-        .bg-s { background: #dcfce7; color: #15803d; }
-        .bg-w { background: #fef3c7; color: #92400e; }
-        
         .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; margin-top: 10px; }
         .photo-item { width: 80px; height: 80px; border-radius: 10px; overflow: hidden; border: 2px solid var(--primary); }
         .photo-item img { width: 100%; height: 100%; object-fit: cover; }
@@ -56,25 +49,46 @@
 </head>
 <body>
 
-    <div id="preview-modal">
-        <div id="preview-content"></div>
-        <div style="display:flex; gap:10px; width:100%; max-width:600px; margin-top:10px">
-            <button class="btn-main" style="background:var(--danger); flex:1" onclick="fecharPreview()">Cancelar</button>
-            <button class="btn-main" style="background:var(--success); flex:2" onclick="confirmarEGerar()">Confirmar e Salvar</button>
+    <div id="block-screen">
+        <div class="auth-container">
+            <h2 style="color:var(--danger)">ACESSO EXPIRADO</h2>
+            <p style="margin: 20px 0; color: #94a3b8;">Sua assinatura venceu. Realize o pagamento para liberar.</p>
+            <div style="background: white; padding: 15px; border-radius: 15px; margin-bottom: 20px;">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=CHAVE_PIX_AQUI" alt="QR Code Pix">
+                <p style="color: black; font-weight: bold; margin-top: 10px; font-size: 12px;">CHAVE PIX: 91538300Aa</p>
+            </div>
+            <button class="btn-main" onclick="location.reload()" style="background:var(--success)">Validar Pagamento</button>
+            <button class="btn-main" onclick="$('#block-screen').style.display='none'; $('#auth-screen').style.display='flex'" style="background:transparent; border: 1px solid #444;">Sair</button>
         </div>
     </div>
 
-    <div id="loading-overlay"><h3>Gerando Documento...</h3></div>
-
     <div id="auth-screen">
         <div class="auth-container">
-            <h2 style="color:white; text-align:center; margin-bottom:20px">Acesso ao ERP</h2>
-            <input type="text" id="l-user" class="auth-input" placeholder="E-mail ou Usuário">
-            <input type="password" id="l-pass" class="auth-input" placeholder="Senha">
-            <button class="btn-main" onclick="handleAuth()">Entrar no Sistema</button>
-            <p style="color:#64748b; font-size:11px; text-align:center; margin-top:15px">
-                Acesso Administrativo: Favor preencher login e senha master fornecidos pelo suporte.
-            </p>
+            <div class="auth-tabs">
+                <div class="auth-tab active" id="tab-login" onclick="switchTab('login')">Entrar</div>
+                <div class="auth-tab" id="tab-reg" onclick="switchTab('reg')">Criar Conta</div>
+            </div>
+
+            <div id="form-login">
+                <input type="text" id="l-user" class="auth-input" placeholder="Usuário">
+                <input type="password" id="l-pass" class="auth-input" placeholder="Senha">
+                <button class="btn-main" onclick="handleAuth()">Entrar</button>
+            </div>
+
+            <div id="form-reg" style="display:none">
+                <input type="text" id="r-user" class="auth-input" placeholder="Defina um Usuário">
+                <input type="password" id="r-pass" class="auth-input" placeholder="Crie uma Senha">
+                <p style="color:#94a3b8; font-size:11px; margin-bottom:15px">Ao criar conta, você ganha 7 dias de teste grátis.</p>
+                <button class="btn-main" style="background:var(--success)" onclick="handleRegister()">Criar Minha Conta</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="preview-modal">
+        <div id="preview-content"></div>
+        <div style="display:flex; gap:10px; width:100%; max-width:600px; margin-top:10px">
+            <button class="btn-main" style="background:var(--danger); flex:1" onclick="$('#preview-modal').style.display='none'">Cancelar</button>
+            <button class="btn-main" style="background:var(--success); flex:2" onclick="confirmarEGerar()">Gerar PDF</button>
         </div>
     </div>
 
@@ -92,75 +106,33 @@
                 <select id="os-sel-cli"></select>
                 <div style="background:#f1f5f9; padding:15px; border-radius:15px; margin:10px 0">
                     <select id="os-sel-srv" onchange="autoPreco()"></select>
-                    <input type="number" id="os-srv-val" placeholder="Preço R$">
-                    <button class="btn-main" style="background:var(--dark)" onclick="addItem()">+ Adicionar Item</button>
+                    <input type="number" id="os-srv-val" placeholder="R$">
+                    <button class="btn-main" style="background:var(--dark)" onclick="addItem()">+ Adicionar</button>
                 </div>
                 <table style="width:100%"><tbody id="lista-venda"></tbody></table>
                 <h3 style="text-align:right">Total: R$ <span id="total-venda">0.00</span></h3>
-                
-                <label>Forma de Recebimento:</label>
-                <select id="os-pagamento">
-                    <option>Pix</option>
-                    <option>Dinheiro</option>
-                    <option>Cartão Crédito</option>
-                    <option>Cartão Débito</option>
-                </select>
-
                 <input type="file" id="foto-input" accept="image/*" multiple onchange="handleFiles(this.files)" style="display:none">
-                <button onclick="$('#foto-input').click()" class="btn-main" style="background:#fff; color:var(--primary); border:1px dashed #ccc">Anexar Fotos do Serviço</button>
+                <button onclick="$('#foto-input').click()" class="btn-main" style="background:#fff; color:var(--primary); border:1px dashed #ccc">Anexar Fotos</button>
                 <div id="preview-fotos" class="photo-grid"></div>
-                
-                <button class="btn-main" onclick="prepararOrcamento()" style="margin-top:20px; background:var(--success)">Ver Preview e Gerar PDF</button>
+                <button class="btn-main" onclick="prepararOrcamento()" style="margin-top:20px; background:var(--success)">Ver Preview</button>
             </div>
         </section>
 
-        <section id="sec-fin" style="display:none">
-            <div class="card">
-                <h2>Extrato de Caixa</h2>
-                <div id="extrato-lista"></div>
-            </div>
-        </section>
-
+        <section id="sec-fin" style="display:none"><div class="card"><h2>Caixa</h2><div id="extrato-lista"></div></div></section>
         <section id="sec-cli" style="display:none">
-            <div class="card">
-                <h2>Cadastro de Clientes</h2>
-                <input id="c-nome" placeholder="Nome">
-                <input id="c-tel" placeholder="WhatsApp">
-                <button class="btn-main" onclick="addCli()">Salvar Cliente</button>
-            </div>
+            <div class="card"><h2>Clientes</h2><input id="c-nome" placeholder="Nome"><input id="c-tel" placeholder="Whats"><button class="btn-main" onclick="addCli()">Salvar</button></div>
             <div id="cli-lista"></div>
         </section>
 
         <section id="sec-adm" style="display:none">
-            <div class="card card-dark">
-                <h3>💳 Baixas e Recebimentos</h3>
-                <table style="color:white">
-                    <thead><tr style="color:#94a3b8"><th>Cliente</th><th>Valor</th><th>Status</th><th>Ação</th></tr></thead>
-                    <tbody id="adm-pg-lista"></tbody>
-                </table>
-            </div>
-
             <div class="card">
-                <h3>👤 Controle de Usuários</h3>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                    <input type="text" id="new-u" placeholder="Novo Usuário">
-                    <input type="password" id="new-p" placeholder="Senha">
-                    <select id="new-l"><option value="user">Usuário Comum</option><option value="admin">Administrador</option></select>
-                    <input type="number" id="new-d" value="30" placeholder="Dias de Acesso">
-                </div>
-                <button class="btn-main" onclick="addUsuario()">Cadastrar Acesso</button>
-                <table>
-                    <thead><tr><th>Usuário</th><th>Nível</th><th>Expira em</th><th>Ação</th></tr></thead>
-                    <tbody id="adm-user-table"></tbody>
-                </table>
+                <h3>📦 Importador em Massa</h3>
+                <textarea id="adm-txt-import" placeholder="Serviço - 100.00" style="height:80px"></textarea>
+                <button class="btn-main" onclick="importarMassa()">Importar Lista</button>
             </div>
-
             <div class="card">
-                <h3>🛠️ Catálogo de Serviços</h3>
-                <input id="s-nome" placeholder="Nome do Serviço">
-                <input type="number" id="s-val" placeholder="Valor Padrão">
-                <button class="btn-main" onclick="addSrv()">Salvar no Catálogo</button>
-                <div id="srv-lista-full"></div>
+                <h3>👤 Usuários Cadastrados</h3>
+                <table id="adm-user-table-body"></table>
             </div>
         </section>
     </main>
@@ -169,31 +141,56 @@
         const $ = document.querySelector.bind(document);
         let db, itensVenda = [], fotosVenda = [], currentDocData = null, userAtual = null;
 
-        const req = indexedDB.open("ERP_V30_FINAL", 1);
+        const req = indexedDB.open("ERP_V33_OPEN", 1);
         req.onupgradeneeded = e => {
             db = e.target.result;
             ["usuarios","clientes","servicos","docs","financeiro"].forEach(s => db.createObjectStore(s, {keyPath: "id", autoIncrement: true}));
-            // Cria usuário master inicial
             const os = e.currentTarget.transaction.objectStore("usuarios");
             os.add({user: "natanjkl", pass: "91538300Aa", level: "admin", exp: 4102444800000});
         };
         req.onsuccess = e => { db = e.target.result; sync(); };
 
-        // AUTH COM PREENCHIMENTO MANUAL
-        function handleAuth() {
-            const u = $('#l-user').value;
-            const p = $('#l-pass').value;
-            if(!u || !p) return alert("Preencha Login e Senha!");
+        function switchTab(t) {
+            if(t === 'login') {
+                $('#form-login').style.display='block'; $('#form-reg').style.display='none';
+                $('#tab-login').classList.add('active'); $('#tab-reg').classList.remove('active');
+            } else {
+                $('#form-login').style.display='none'; $('#form-reg').style.display='block';
+                $('#tab-reg').classList.add('active'); $('#tab-login').classList.remove('active');
+            }
+        }
 
+        function handleRegister() {
+            const u = $('#r-user').value, p = $('#r-pass').value;
+            if(!u || !p) return alert("Preencha todos os campos!");
+            
+            const tx = db.transaction("usuarios", "readwrite");
+            tx.objectStore("usuarios").add({
+                user: u, pass: p, level: "user", 
+                exp: Date.now() + (7 * 86400000) // 7 DIAS GRÁTIS
+            });
+            tx.oncomplete = () => {
+                alert("Conta criada com sucesso! 7 dias de teste liberados.");
+                switchTab('login');
+                $('#l-user').value = u;
+            };
+        }
+
+        function handleAuth() {
+            const u = $('#l-user').value, p = $('#l-pass').value;
             db.transaction("usuarios").objectStore("usuarios").getAll().onsuccess = e => {
                 const user = e.target.result.find(x => x.user === u && x.pass === p);
                 if(user) {
-                    if(Date.now() > user.exp) return alert("Seu acesso expirou!");
+                    if(Date.now() > user.exp) {
+                        $('#auth-screen').style.display = 'none';
+                        $('#block-screen').style.display = 'flex';
+                        return;
+                    }
                     userAtual = user;
                     $('#auth-screen').style.display='none'; $('#main-nav').style.display='flex'; $('#app-content').style.display='block';
                     if(user.level === 'admin') $('#n-adm').style.display='block';
                     go('os');
-                } else alert("Usuário ou senha incorretos!");
+                } else alert("Usuário ou Senha incorretos!");
             };
         }
 
@@ -201,137 +198,62 @@
             document.querySelectorAll('section').forEach(s=>s.style.display='none');
             document.querySelectorAll('nav div').forEach(d=>d.classList.remove('active'));
             $(`#sec-${p}`).style.display='block'; $(`#n-${p}`).classList.add('active');
-            if(p === 'adm') { renderUsers(); renderPagamentos(); }
+            if(p === 'adm') renderUsers();
         }
 
-        // --- GESTÃO DE USUÁRIOS ---
-        function addUsuario() {
-            const u = $('#new-u').value, p = $('#new-p').value, l = $('#new-l').value, d = $('#new-d').value;
-            if(!u || !p) return alert("Preencha os dados do novo usuário!");
-            const exp = Date.now() + (d * 86400000);
-            const tx = db.transaction("usuarios", "readwrite");
-            tx.objectStore("usuarios").add({user:u, pass:p, level:l, exp});
-            tx.oncomplete = () => { alert("Usuário cadastrado!"); renderUsers(); };
+        function importarMassa() {
+            const t = $('#adm-txt-import').value; if(!t) return;
+            const tx = db.transaction("servicos", "readwrite");
+            t.split('\n').forEach(l => { if(l.includes('-')){ const [n,p]=l.split('-'); tx.objectStore("servicos").add({nome:n.trim(), val:parseFloat(p.trim())}); }});
+            tx.oncomplete = () => { alert("Importado!"); sync(); };
         }
 
         function renderUsers() {
             db.transaction("usuarios").objectStore("usuarios").getAll().onsuccess = e => {
-                $('#adm-user-table').innerHTML = e.target.result.map(u => `
-                    <tr>
-                        <td><b>${u.user}</b></td>
-                        <td>${u.level}</td>
-                        <td>${new Date(u.exp).toLocaleDateString()}</td>
-                        <td><button style="color:red; border:none; background:none; cursor:pointer" onclick="del('usuarios', ${u.id}, renderUsers)">Excluir</button></td>
-                    </tr>
-                `).join('');
+                $('#adm-user-table-body').innerHTML = e.target.result.map(u => `<tr><td>${u.user}</td><td>Expira: ${new Date(u.exp).toLocaleDateString()}</td><td><button onclick="del('usuarios', ${u.id}, renderUsers)">X</button></td></tr>`).join('');
             };
         }
 
-        // --- PAGAMENTOS E BAIXAS ---
-        function renderPagamentos() {
-            db.transaction("docs").objectStore("docs").getAll().onsuccess = e => {
-                $('#adm-pg-lista').innerHTML = e.target.result.reverse().map(r => `
-                    <tr>
-                        <td>${r.cliente}</td>
-                        <td>R$ ${r.total}</td>
-                        <td><span class="badge ${r.status==='Pago'?'bg-s':'bg-w'}">${r.status || 'Pendente'}</span></td>
-                        <td><button class="btn-main" style="padding:4px; font-size:10px; background:var(--success)" onclick="darBaixa(${r.id})">Baixa</button></td>
-                    </tr>
-                `).join('');
-            };
-        }
-
-        function darBaixa(id) {
-            const tx = db.transaction("docs", "readwrite");
-            const store = tx.objectStore("docs");
-            store.get(id).onsuccess = e => {
-                const d = e.target.result; d.status='Pago'; store.put(d);
-                tx.oncomplete = () => renderPagamentos();
-            };
-        }
-
-        // --- LÓGICA DE ORÇAMENTO E PREVIEW ---
-        function addItem() { 
-            const srv = $('#os-sel-srv').value;
-            const val = parseFloat($('#os-srv-val').value);
-            if(!srv || isNaN(val)) return alert("Selecione um serviço e valor!");
-            itensVenda.push({s:srv, v:val}); renderItens(); 
-        }
-
+        function addItem() { const s=$('#os-sel-srv').value, v=parseFloat($('#os-srv-val').value); if(s && v) { itensVenda.push({s, v}); renderItens(); } }
         function renderItens() {
             $('#lista-venda').innerHTML = itensVenda.map(i=>`<tr><td>${i.s}</td><td align="right">R$ ${i.v.toFixed(2)}</td></tr>`).join('');
             $('#total-venda').innerText = itensVenda.reduce((a,b)=>a+b.v,0).toFixed(2);
         }
 
-        function handleFiles(f) { Array.from(f).forEach(file => { const r = new FileReader(); r.onload = e => { fotosVenda.push(e.target.result); renderFotos(); }; r.readAsDataURL(file); }); }
+        function handleFiles(f) { Array.from(f).forEach(file => { const r=new FileReader(); r.onload=e=>{fotosVenda.push(e.target.result); renderFotos();}; r.readAsDataURL(file); }); }
         function renderFotos() { $('#preview-fotos').innerHTML = fotosVenda.map(s=>`<div class="photo-item"><img src="${s}"></div>`).join(''); }
 
         function prepararOrcamento() {
-            if(itensVenda.length === 0) return alert("Adicione itens!");
-            currentDocData = {
-                cliente: $('#os-sel-cli').value,
-                itens: [...itensVenda],
-                total: $('#total-venda').innerText,
-                pagamento: $('#os-pagamento').value,
-                data: new Date().toLocaleDateString('pt-BR'),
-                fotos: [...fotosVenda],
-                status: 'Pendente'
-            };
-
-            const html = `
-                <div id="pdf-area" style="padding:20px; font-size:13px; color:#333;">
-                    <h2 style="color:var(--primary); text-align:center; border-bottom:1px solid #eee; padding-bottom:10px">ORÇAMENTO #00${Math.floor(Math.random()*100)}</h2>
-                    <p><strong>Cliente:</strong> ${currentDocData.cliente}</p>
-                    <p><strong>Data:</strong> ${currentDocData.data}</p>
-                    <table width="100%" style="margin:15px 0">
-                        <tr style="background:#f1f5f9"><th align="left">Serviço</th><th align="right">Valor</th></tr>
-                        ${currentDocData.itens.map(i => `<tr><td>${i.s}</td><td align="right">R$ ${i.v.toFixed(2)}</td></tr>`).join('')}
-                    </table>
-                    <h3 style="text-align:right">Total: R$ ${currentDocData.total}</h3>
-                    <p>Forma de Pagamento: ${currentDocData.pagamento}</p>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-top:15px">
-                        ${currentDocData.fotos.map(f => `<img src="${f}" style="width:100%; border-radius:5px">`).join('')}
-                    </div>
-                </div>`;
-            $('#preview-content').innerHTML = html;
-            $('#preview-modal').style.display = 'flex';
+            currentDocData = { cliente:$('#os-sel-cli').value, itens:[...itensVenda], total:$('#total-venda').innerText, data:new Date().toLocaleDateString(), fotos:[...fotosVenda] };
+            const html = `<div id="pdf-area" style="padding:20px"><h2>ORÇAMENTO</h2><p>Cliente: ${currentDocData.cliente}</p><table>${currentDocData.itens.map(i=>`<tr><td>${i.s}</td><td>R$ ${i.v.toFixed(2)}</td></tr>`).join('')}</table><h3>Total: R$ ${currentDocData.total}</h3><div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">${currentDocData.fotos.map(f=>`<img src="${f}" style="width:100%">`).join('')}</div></div>`;
+            $('#preview-content').innerHTML = html; $('#preview-modal').style.display='flex';
         }
-
-        function fecharPreview() { $('#preview-modal').style.display = 'none'; }
 
         async function confirmarEGerar() {
-            fecharPreview();
-            $('#loading-overlay').style.display = 'flex';
             const tx = db.transaction(["docs","financeiro"],"readwrite");
             tx.objectStore("docs").add(currentDocData);
-            tx.objectStore("financeiro").add({desc: `OS: ${currentDocData.cliente}`, val: parseFloat(currentDocData.total)});
-            
+            tx.objectStore("financeiro").add({desc:`OS: ${currentDocData.cliente}`, val:parseFloat(currentDocData.total)});
             await html2pdf().from($('#pdf-area')).save(`OS_${currentDocData.cliente}.pdf`);
-            
             itensVenda=[]; fotosVenda=[]; renderItens(); renderFotos(); sync();
-            $('#loading-overlay').style.display = 'none';
-            alert("Sucesso! Orçamento registrado e PDF gerado.");
+            $('#preview-modal').style.display='none';
         }
 
-        // --- AUXILIARES ---
         function autoPreco() { $('#os-srv-val').value = $('#os-sel-srv').selectedOptions[0].dataset.p || ""; }
         function sync() {
             const tx = db.transaction(["clientes","servicos","financeiro"],"readonly");
             tx.objectStore("clientes").getAll().onsuccess = e => {
                 $('#os-sel-cli').innerHTML = e.target.result.map(c => `<option>${c.nome}</option>`).join("");
-                $('#cli-lista').innerHTML = e.target.result.map(c => `<div class="card">${c.nome} <button onclick="del('clientes', ${c.id}, sync)">Excluir</button></div>`).join("");
+                $('#cli-lista').innerHTML = e.target.result.map(c => `<div>${c.nome} <button onclick="del('clientes', ${c.id}, sync)">X</button></div>`).join("");
             };
             tx.objectStore("servicos").getAll().onsuccess = e => {
-                $('#os-sel-srv').innerHTML = "<option value=''>Item...</option>" + e.target.result.map(s => `<option data-p="${s.val}">${s.nome}</option>`).join("");
-                $('#srv-lista-full').innerHTML = e.target.result.map(s => `<div class="card">${s.nome} - R$ ${s.val} <button onclick="del('servicos', ${s.id}, sync)">Excluir</button></div>`).join("");
+                $('#os-sel-srv').innerHTML = "<option value=''>Serviço...</option>" + e.target.result.map(s => `<option data-p="${s.val}">${s.nome}</option>`).join("");
             };
             tx.objectStore("financeiro").getAll().onsuccess = e => {
-                $('#extrato-lista').innerHTML = e.target.result.reverse().map(f => `<div class="card">${f.desc} <b>R$ ${f.val.toFixed(2)}</b></div>`).join("");
+                $('#extrato-lista').innerHTML = e.target.result.reverse().map(f => `<div>${f.desc} <b>R$ ${f.val.toFixed(2)}</b></div>`).join("");
             };
         }
-        function del(s, id, callback) { db.transaction(s,"readwrite").objectStore(s).delete(id).onsuccess = () => callback(); }
+        function del(s, id, cb) { db.transaction(s,"readwrite").objectStore(s).delete(id).onsuccess = () => cb(); }
         function addCli() { db.transaction("clientes","readwrite").objectStore("clientes").add({nome:$('#c-nome').value, tel:$('#c-tel').value}).onsuccess=()=>sync(); }
-        function addSrv() { db.transaction("servicos","readwrite").objectStore("servicos").add({nome:$('#s-nome').value, val:parseFloat($('#s-val').value)}).onsuccess=()=>sync(); }
     </script>
 </body>
 </html>
