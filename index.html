@@ -3,100 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ERP ENTERPRISE V16 - SISTEMA INTEGRAL</title>
+    <title>ERP ENTERPRISE V18 - SISTEMA COMPLETO</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
-        :root { --p: #2563eb; --s: #10b981; --d: #ef4444; --dark: #0f172a; --slate: #64748b; --bg: #f1f5f9; --card: #ffffff; --border: #e2e8f0; }
+        :root { 
+            --p: #2563eb; 
+            --s: #10b981; 
+            --d: #ef4444; 
+            --dark: #0f172a; 
+            --slate: #64748b; 
+            --bg: #f1f5f9; 
+            --card: #ffffff; 
+            --border: #e2e8f0; 
+        }
+
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         body { background: var(--bg); color: var(--dark); padding-bottom: 100px; }
 
-        /* AUTH & MODAL */
-        #auth-screen, #pix-modal { position: fixed; inset: 0; z-index: 9999; background: var(--dark); display: flex; align-items: center; justify-content: center; }
-        #pix-modal { background: rgba(0,0,0,0.9); z-index: 10001; display: none; }
-        .auth-card, .pix-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 30px; border-radius: 24px; width: 95%; max-width: 400px; color: white; }
-        .pix-card { background: white; color: var(--dark); text-align: center; }
+        /* --- TELA DE AUTENTICAÇÃO --- */
+        #auth-screen { position: fixed; inset: 0; z-index: 9999; background: var(--dark); display: flex; align-items: center; justify-content: center; }
+        .auth-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 30px; border-radius: 24px; width: 95%; max-width: 400px; color: white; }
+        .auth-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); justify-content: space-around; }
+        .auth-tabs span { cursor: pointer; opacity: 0.5; font-weight: 700; font-size: 13px; padding-bottom: 10px; transition: 0.3s; }
+        .auth-tabs span.active { opacity: 1; color: var(--p); border-bottom: 2px solid var(--p); }
 
-        /* NAV */
-        nav { position: fixed; bottom: 0; width: 100%; background: var(--dark); display: none; grid-template-columns: repeat(5, 1fr); padding: 12px 5px; z-index: 1000; }
+        /* --- NAVEGAÇÃO PRINCIPAL --- */
+        nav { position: fixed; bottom: 0; width: 100%; background: var(--dark); display: none; grid-template-columns: repeat(5, 1fr); padding: 12px 5px; z-index: 1000; border-top: 1px solid rgba(255,255,255,0.1); }
         nav div { color: #94a3b8; font-size: 9px; text-align: center; cursor: pointer; position: relative; }
         nav div i { display: block; font-size: 22px; margin-bottom: 4px; font-style: normal; }
         nav div.active { color: white; font-weight: bold; }
-        .notify { position: absolute; top: 0; right: 25%; background: var(--d); color: white; border-radius: 50%; width: 15px; height: 15px; font-size: 10px; display: none; align-items: center; justify-content: center; }
+        
+        /* Notificações Visuais */
+        .notify { position: absolute; top: -5px; right: 20%; background: var(--d); color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; display: none; align-items: center; justify-content: center; font-weight: bold; border: 2px solid var(--dark); }
 
-        /* UI ELEMENTS */
+        /* --- INTERFACE GERAL --- */
         main { padding: 20px; max-width: 1200px; margin: auto; display: none; }
-        .card { background: var(--card); border-radius: 15px; padding: 20px; border: 1px solid var(--border); margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        input, select, textarea { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 10px; outline: none; font-size: 14px; }
-        .btn-main { padding: 12px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; width: 100%; transition: 0.2s; }
+        .card { background: var(--card); border-radius: 15px; padding: 20px; border: 1px solid var(--border); margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        h2, h3 { margin-bottom: 15px; font-weight: 700; }
+        
+        input, select, textarea { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 10px; outline: none; font-size: 14px; background: #fff; color: var(--dark); }
+        .btn-main { padding: 12px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; width: 100%; transition: 0.2s; display: block; text-align: center; text-decoration: none; }
         .btn-p { background: var(--p); color: white; }
         .btn-s { background: var(--s); color: white; }
         .btn-d { background: var(--d); color: white; }
 
-        /* CHAT */
-        #chat-container { display: grid; grid-template-columns: 140px 1fr; height: 450px; background: white; border-radius: 15px; overflow: hidden; border: 1px solid var(--border); }
-        #chat-users { background: #f8fafc; border-right: 1px solid var(--border); overflow-y: auto; }
-        .chat-user-item { padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; font-size: 12px; }
-        .chat-user-item.active { background: var(--p); color: white; }
-        #chat-messages { display: flex; flex-direction: column; padding: 15px; overflow-y: auto; background: #e5ddd5; flex-grow: 1; }
-        .msg { margin-bottom: 8px; padding: 10px; border-radius: 10px; max-width: 80%; font-size: 13px; }
-        .msg.sent { align-self: flex-end; background: #dcf8c6; }
-        .msg.received { align-self: flex-start; background: white; }
+        /* --- MODAL PIX --- */
+        #pix-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 10000; align-items: center; justify-content: center; padding: 20px; }
+        .pix-card { background: white; padding: 30px; border-radius: 25px; width: 100%; max-width: 400px; text-align: center; color: var(--dark); }
 
-        /* LISTS */
-        .item-list { padding: 12px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
-        .badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+        /* --- ESTILO DO CHAT --- */
+        #chat-window { background: #e5ddd5; height: 350px; overflow-y: auto; padding: 15px; border-radius: 10px; display: flex; flex-direction: column; margin-bottom: 10px; }
+        .msg { margin-bottom: 10px; padding: 10px; border-radius: 10px; max-width: 80%; font-size: 13px; word-wrap: break-word; }
+        .msg.sent { align-self: flex-end; background: #dcf8c6; border-bottom-right-radius: 2px; }
+        .msg.received { align-self: flex-start; background: white; border-bottom-left-radius: 2px; }
+
+        /* --- TABELAS E LISTAS --- */
+        .list-row { padding: 15px; border-bottom: 1px solid #f1f5f9; display: flex; flex-direction: column; gap: 8px; }
+        .status-tag { font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: bold; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
-    <div id="pix-modal">
-        <div class="pix-card">
-            <h2 style="color:var(--d)">ASSINATURA VENCIDA</h2>
-            <p style="margin:15px 0; font-size:14px">Realize o pagamento para liberar seu acesso.</p>
-            <div id="pix-key-display" style="background:#f1f5f9; padding:15px; border-radius:10px; font-weight:bold; margin-bottom:10px"></div>
-            <p id="pix-val-display" style="font-size:20px; font-weight:900; color:var(--s)"></p>
-            <button class="btn-main btn-p" onclick="location.reload()">Já paguei</button>
+    <div id="auth-screen">
+        <div class="auth-card">
+            <h2 style="text-align:center; font-size:24px">ERP ENTERPRISE</h2>
+            <div class="auth-tabs">
+                <span id="tab-login" class="active" onclick="setAuth('login')">LOGIN</span>
+                <span id="tab-reg" onclick="setAuth('reg')">CADASTRAR</span>
+                <span id="tab-adm" onclick="setAuth('adm')" style="color:var(--s)">ADM MASTER</span>
+            </div>
+            <div id="auth-box">
+                <input type="text" id="u-name" placeholder="Usuário">
+                <input type="password" id="u-pass" placeholder="Senha">
+                <button id="btn-auth" class="btn-main btn-p" onclick="handleAuth()">Entrar</button>
+            </div>
+            <p id="auth-msg" style="color:var(--d); font-size:12px; margin-top:15px; text-align:center; font-weight:bold"></p>
         </div>
     </div>
 
-    <div id="auth-screen">
-        <div class="auth-card">
-            <h2 style="text-align:center; margin-bottom:20px">ERP ENTERPRISE</h2>
-            <div style="display:flex; justify-content:space-around; margin-bottom:20px; border-bottom:1px solid rgba(255,255,255,0.1)">
-                <span onclick="setAuth('login')" id="t-login" style="cursor:pointer; padding-bottom:10px">LOGIN</span>
-                <span onclick="setAuth('reg')" id="t-reg" style="cursor:pointer; padding-bottom:10px">CADASTRAR</span>
-            </div>
-            <input type="text" id="u-name" placeholder="Usuário">
-            <input type="password" id="u-pass" placeholder="Senha">
-            <button class="btn-main btn-p" onclick="handleAuth()" id="btn-auth">Entrar</button>
-            <p id="auth-msg" style="color:var(--d); font-size:12px; margin-top:10px; text-align:center"></p>
+    <div id="pix-modal">
+        <div class="pix-card">
+            <h2 style="color:var(--d)">ASSINATURA EXPIRADA</h2>
+            <p style="margin-bottom:20px; font-size:14px">Sua conta foi suspensa por falta de pagamento. Utilize os dados abaixo para renovar via PIX:</p>
+            <div id="pix-key-box" style="background:#f1f5f9; padding:15px; border-radius:12px; font-weight:800; margin-bottom:10px"></div>
+            <p id="pix-val-box" style="font-size:24px; font-weight:900; color:var(--s); margin-bottom:20px"></p>
+            <button class="btn-main btn-p" onclick="location.reload()">Confirmar Pagamento</button>
         </div>
     </div>
 
     <nav id="main-nav">
         <div onclick="go('dash')" id="n-dash" class="active"><i>📊</i>Dash</div>
         <div onclick="go('os')" id="n-os"><i>📝</i>O.S</div>
-        <div onclick="go('chat')" id="n-chat"><span class="notify" id="chat-not">!</span><i>💬</i>Chat</div>
+        <div onclick="go('chat')" id="n-chat"><span class="notify" id="not-chat">!</span><i>💬</i>Chat</div>
         <div onclick="go('fin')" id="n-fin"><i>💰</i>Fin</div>
-        <div onclick="go('adm')" id="n-adm"><span class="notify" id="adm-not">!</span><i>⚙️</i>Adm</div>
+        <div onclick="go('adm')" id="n-adm"><span class="notify" id="not-adm">!</span><i>⚙️</i>Adm</div>
     </nav>
 
     <main id="app-content">
+        
         <section id="sec-dash">
-            <h2>📊 Dashboard</h2>
+            <h2>Bem-vindo, <span id="user-display"></span></h2>
             <div class="card">
-                <p>Usuário: <b id="d-user"></b></p>
-                <p>Licença: <span id="d-exp"></span></p>
+                <p>Status da Licença: <b id="status-display"></b></p>
+                <p>Vencimento: <span id="exp-display"></span></p>
             </div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
-                <div class="card" style="border-left:5px solid var(--s)">
-                    <small>Faturamento</small><h3 id="dash-fin">R$ 0,00</h3>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
+                <div class="card" style="border-top: 4px solid var(--s)">
+                    <small>Vendas do Mês</small>
+                    <h3 id="dash-vendas">R$ 0,00</h3>
                 </div>
-                <div class="card" style="border-left:5px solid var(--p)">
-                    <small>O.S Ativas</small><h3 id="dash-os">0</h3>
+                <div class="card" style="border-top: 4px solid var(--p)">
+                    <small>O.S em Aberto</small>
+                    <h3 id="dash-os-count">0</h3>
                 </div>
             </div>
         </section>
@@ -104,174 +125,242 @@
         <section id="sec-os" style="display:none">
             <div class="card">
                 <h3>Nova Ordem de Serviço</h3>
-                <input type="text" id="os-cli" placeholder="Cliente">
-                <textarea id="os-serv" placeholder="Descrição do Serviço"></textarea>
-                <input type="number" id="os-val" placeholder="Valor R$">
-                <button class="btn-main btn-p" onclick="addOS()">Abrir O.S</button>
+                <input type="text" id="os-cli" placeholder="Nome do Cliente">
+                <textarea id="os-desc" placeholder="Detalhes do serviço ou produto..."></textarea>
+                <input type="number" id="os-valor" placeholder="Valor Total R$">
+                <button class="btn-main btn-p" onclick="gerarOS()">Registrar e Cobrar</button>
             </div>
-            <div id="os-list"></div>
+            <h3>Histórico Recente</h3>
+            <div id="os-render"></div>
         </section>
 
         <section id="sec-chat" style="display:none">
-            <div id="chat-container">
-                <div id="chat-users"></div>
-                <div style="display:flex; flex-direction:column; background:white">
-                    <div id="chat-messages"></div>
-                    <div style="padding:10px; display:flex; gap:5px">
-                        <input type="text" id="chat-in" placeholder="Texto..." style="margin:0">
-                        <button class="btn-main btn-p" style="width:60px" onclick="sendMsg()">></button>
-                    </div>
+            <div class="card" style="padding:0; overflow:hidden">
+                <div style="background:var(--p); color:white; padding:10px; font-weight:bold; text-align:center">CONTATO COM SUPORTE / EQUIPE</div>
+                <div id="chat-window"></div>
+                <div style="padding:10px; display:flex; gap:10px; background:white">
+                    <input type="text" id="chat-input" placeholder="Digite aqui..." style="margin:0">
+                    <button class="btn-main btn-p" style="width:60px" onclick="enviarMensagem()">></button>
                 </div>
             </div>
         </section>
 
         <section id="sec-fin" style="display:none">
             <div class="card">
-                <h3>Fluxo de Caixa</h3>
-                <div id="fin-list"></div>
+                <h3>Fluxo de Caixa Administrativo</h3>
+                <div id="fin-render"></div>
             </div>
         </section>
 
         <section id="sec-adm" style="display:none">
             <div class="card" style="background:var(--dark); color:white">
-                <h3>Configuração PIX</h3>
-                <input type="text" id="cfg-pix-key" placeholder="Chave PIX">
-                <input type="text" id="cfg-pix-val" placeholder="Valor Mensalidade">
-                <button class="btn-main btn-s" onclick="saveCfg()">Salvar Configurações</button>
+                <h3>Configurar Cobrança Automática</h3>
+                <label><small>Sua Chave PIX</small></label>
+                <input type="text" id="cfg-pix" placeholder="E-mail, CPF ou Aleatória">
+                <label><small>Valor da Assinatura</small></label>
+                <input type="text" id="cfg-val" placeholder="R$ 0,00">
+                <button class="btn-main btn-s" onclick="salvarConfig()">Salvar Dados de Recebimento</button>
             </div>
             <div class="card">
-                <h3>Gerenciar Usuários</h3>
-                <div id="adm-users"></div>
+                <h3>Gerenciar Assinantes</h3>
+                <div id="user-render"></div>
             </div>
         </section>
+
     </main>
 
     <script>
         const $ = document.querySelector.bind(document);
-        let db, userAtual = null, chatAtivo = null, mode = 'login';
+        let db, userAtual = null, chatCom = 'Suporte', authMode = 'login';
 
-        const req = indexedDB.open("ERP_MASTER_V16", 1);
-        req.onupgradeneeded = e => {
+        // INICIALIZAÇÃO DO BANCO (TUDO INCLUSO)
+        const request = indexedDB.open("ERP_ULTIMATE_V18", 1);
+        request.onupgradeneeded = e => {
             db = e.target.result;
-            ["users", "msgs", "os", "fin", "cfg"].forEach(s => db.createObjectStore(s, {keyPath:"id", autoIncrement:true}));
-            const u = e.currentTarget.transaction.objectStore("users");
-            u.add({user:"natanjkl", pass:"91538300Aa", level:"admin", exp:4102444800000, active:true});
-            e.currentTarget.transaction.objectStore("cfg").add({id:"pix", key:"financeiro@empresa.com", val:"R$ 100,00"});
+            db.createObjectStore("users", {keyPath: "id", autoIncrement: true});
+            db.createObjectStore("os", {keyPath: "id", autoIncrement: true});
+            db.createObjectStore("fin", {keyPath: "id", autoIncrement: true});
+            db.createObjectStore("msgs", {keyPath: "id", autoIncrement: true});
+            db.createObjectStore("cfg", {keyPath: "id"});
+            
+            const tx = e.currentTarget.transaction;
+            tx.objectStore("users").add({user: "natanjkl", pass: "91538300Aa", level: "admin", exp: 4102444800000, active: true});
+            tx.objectStore("cfg").add({id: "pix", key: "financeiro@natan.com", val: "R$ 59,90"});
         };
-        req.onsuccess = e => db = e.target.result;
+        request.onsuccess = e => db = e.target.result;
 
+        // AUTH LOGIC
         function setAuth(m) {
-            mode = m;
-            $('#t-login').style.borderBottom = m === 'login' ? '2px solid var(--p)' : 'none';
-            $('#t-reg').style.borderBottom = m === 'reg' ? '2px solid var(--p)' : 'none';
+            authMode = m;
+            document.querySelectorAll('.auth-tabs span').forEach(s => s.classList.remove('active'));
+            $(`#tab-${m}`).classList.add('active');
+            $('#btn-auth').innerText = m === 'reg' ? 'Criar Conta Agora' : (m === 'adm' ? 'Entrar como Master' : 'Entrar');
         }
 
         function handleAuth() {
             const u = $('#u-name').value, p = $('#u-pass').value;
+            if(!u || !p) return;
+            
             const store = db.transaction("users", "readwrite").objectStore("users");
             store.getAll().onsuccess = e => {
                 const user = e.target.result.find(x => x.user === u && x.pass === p);
-                if(mode === 'reg' && !user) {
-                    const n = {user:u, pass:p, level:"user", exp:Date.now()+(3*86400000), active:true};
+                
+                if(authMode === 'reg') {
+                    if(user) return alert("Nome já cadastrado!");
+                    const n = {user: u, pass: p, level: "user", exp: Date.now() + (3*86400000), active: true};
                     store.add(n).onsuccess = () => logar(n);
-                } else if (user) {
-                    if(!user.active) return $('#auth-msg').innerText = "BLOQUEADO";
+                } else {
+                    if(!user) return $('#auth-msg').innerText = "Usuário ou Senha incorretos!";
+                    if(!user.active) return $('#auth-msg').innerText = "SUA CONTA FOI BANIDA/DESATIVADA.";
                     if(Date.now() > user.exp && user.level !== 'admin') {
-                        return db.transaction("cfg").objectStore("cfg").get("pix").onsuccess = r => {
-                            $('#pix-key-display').innerText = r.target.result.key;
-                            $('#pix-val-display').innerText = r.target.result.val;
+                        return db.transaction("cfg").objectStore("cfg").get("pix").onsuccess = c => {
+                            $('#pix-key-box').innerText = c.target.result.key;
+                            $('#pix-val-box').innerText = c.target.result.val;
                             $('#pix-modal').style.display = 'flex';
                         };
                     }
+                    if(authMode === 'adm' && user.level !== 'admin') return $('#auth-msg').innerText = "ACESSO NEGADO: VOCÊ NÃO É ADM.";
                     logar(user);
-                } else $('#auth-msg').innerText = "Dados Inválidos";
+                }
             };
         }
 
         function logar(u) {
-            userAtual = u; $('#auth-screen').style.display = 'none'; $('#main-nav').style.display = 'grid'; $('main').style.display = 'block';
-            $('#d-user').innerText = u.user; $('#d-exp').innerText = new Date(u.exp).toLocaleDateString();
+            userAtual = u;
+            $('#auth-screen').style.display = 'none';
+            $('#main-nav').style.display = 'grid';
+            $('main').style.display = 'block';
+            $('#user-display').innerText = u.user;
+            $('#status-display').innerText = u.level.toUpperCase();
+            $('#exp-display').innerText = new Date(u.exp).toLocaleDateString();
+
             const isAdm = u.level === 'admin';
             $('#n-fin').style.display = isAdm ? 'block' : 'none';
             $('#n-adm').style.display = isAdm ? 'block' : 'none';
-            go('dash'); sync();
+            
+            go('dash');
+            carregarDados();
         }
 
         function go(p) {
             document.querySelectorAll('section').forEach(s => s.style.display='none');
             document.querySelectorAll('nav div').forEach(d => d.classList.remove('active'));
-            $(`#sec-${p}`).style.display='block'; $(`#n-${p}`).classList.add('active');
-            if(p === 'chat') { $('#chat-not').style.display='none'; renderChatList(); }
+            $(`#sec-${p}`).style.display='block';
+            $(`#n-${p}`).classList.add('active');
+            if(p === 'chat') $('#not-chat').style.display = 'none';
         }
 
-        // OS & FINANCEIRO
-        function addOS() {
-            const cli = $('#os-cli').value, serv = $('#os-serv').value, val = $('#os-val').value;
-            if(!cli || !val) return;
+        // --- SISTEMA OPERACIONAL (OS / FIN) ---
+        function gerarOS() {
+            const cli = $('#os-cli').value, desc = $('#os-desc').value, val = $('#os-valor').value;
+            if(!cli || !val) return alert("Preencha cliente e valor!");
+
             const tx = db.transaction(["os", "fin"], "readwrite");
-            tx.objectStore("os").add({cli, serv, val, status:"Aberto", user:userAtual.user});
-            tx.objectStore("fin").add({desc: `O.S - ${cli}`, val, tipo:"entrada", data:Date.now()});
-            tx.oncomplete = () => { alert("O.S Gerada!"); sync(); };
+            tx.objectStore("os").add({cli, desc, val, status: "Pendente", ts: Date.now()});
+            tx.objectStore("fin").add({tipo: "Receita", desc: `Venda p/ ${cli}`, val: val, ts: Date.now()});
+            
+            tx.oncomplete = () => {
+                alert("O.S e Lançamento Financeiro criados!");
+                $('#os-cli').value = ''; $('#os-desc').value = ''; $('#os-valor').value = '';
+                carregarDados();
+            };
         }
 
-        function sync() {
-            // Dashboard
+        function carregarDados() {
+            // Render OS
             db.transaction("os").objectStore("os").getAll().onsuccess = e => {
-                $('#dash-os').innerText = e.target.result.filter(x => x.status === "Aberto").length;
-                $('#os-list').innerHTML = e.target.result.map(o => `<div class="item-list"><span>${o.cli} - R$ ${o.val}</span><span class="badge" style="background:#eee">${o.status}</span></div>`).join('');
+                const lista = e.target.result;
+                $('#dash-os-count').innerText = lista.filter(x => x.status === "Pendente").length;
+                $('#os-render').innerHTML = lista.map(o => `
+                    <div class="card" style="margin-bottom:10px">
+                        <b>${o.cli}</b><br><small>${o.desc}</small><br>
+                        <div style="display:flex; justify-content:space-between; margin-top:5px">
+                            <span style="color:var(--p); font-weight:bold">R$ ${o.val}</span>
+                            <span class="status-tag" style="background:#eee">${o.status}</span>
+                        </div>
+                    </div>
+                `).join('');
             };
+
+            // Render Financeiro
             db.transaction("fin").objectStore("fin").getAll().onsuccess = e => {
-                let total = 0; e.target.result.forEach(f => total += parseFloat(f.val));
-                $('#dash-fin').innerText = `R$ ${total.toFixed(2)}`;
-                $('#fin-list').innerHTML = e.target.result.map(f => `<div class="item-list"><span>${f.desc}</span><b style="color:var(--s)">R$ ${f.val}</b></div>`).join('');
+                let total = 0;
+                $('#fin-render').innerHTML = e.target.result.map(f => {
+                    total += parseFloat(f.val);
+                    return `<div class="list-row"><span>${f.desc}</span><b style="color:var(--s)">+ R$ ${f.val}</b></div>`;
+                }).join('');
+                $('#dash-vendas').innerText = `R$ ${total.toFixed(2)}`;
             };
+
+            // Render ADM Users
             if(userAtual.level === 'admin') {
                 db.transaction("users").objectStore("users").getAll().onsuccess = e => {
-                    const exp = e.target.result.some(u => Date.now() > u.exp && u.user !== 'natanjkl');
-                    if(exp) $('#adm-not').style.display = 'flex';
-                    $('#adm-users').innerHTML = e.target.result.map(u => `
-                        <div class="item-list">
-                            <div><b>${u.user}</b><br><small>${new Date(u.exp).toLocaleDateString()}</small></div>
+                    const ulist = e.target.result;
+                    if(ulist.some(u => Date.now() > u.exp && u.user !== 'natanjkl')) $('#not-adm').style.display = 'flex';
+                    $('#user-render').innerHTML = ulist.map(u => `
+                        <div class="list-row">
+                            <div style="display:flex; justify-content:space-between">
+                                <b>${u.user}</b>
+                                <span class="status-tag" style="background:${u.active ? '#dcfce7' : '#fee2e2'}">${u.active ? 'Ativo' : 'Banido'}</span>
+                            </div>
+                            <small>Expira: ${new Date(u.exp).toLocaleDateString()}</small>
                             <div style="display:flex; gap:5px">
-                                <button onclick="addDays(${u.id})" class="btn-s" style="padding:5px 10px; border-radius:5px; border:none">+</button>
-                                ${u.user !== 'natanjkl' ? `<button onclick="ban(${u.id})" class="btn-d" style="padding:5px 10px; border-radius:5px; border:none">X</button>` : ''}
+                                <input type="number" id="days-${u.id}" placeholder="+ Dias" style="margin:0; flex:1">
+                                <button class="btn-main btn-s" style="width:60px; padding:5px" onclick="ajustarUser(${u.id}, 'dias')">Add</button>
+                                ${u.user !== 'natanjkl' ? `<button class="btn-main btn-d" style="width:60px; padding:5px" onclick="ajustarUser(${u.id}, 'ban')">X</button>` : ''}
                             </div>
                         </div>
                     `).join('');
                 };
+                db.transaction("cfg").objectStore("cfg").get("pix").onsuccess = e => {
+                    if(e.target.result) { $('#cfg-pix').value = e.target.result.key; $('#cfg-val').value = e.target.result.val; }
+                };
             }
         }
 
-        // CHAT
-        function renderChatList() {
-            db.transaction("users").objectStore("users").getAll().onsuccess = e => {
-                $('#chat-users').innerHTML = e.target.result.filter(u => u.user !== userAtual.user).map(u => `<div class="chat-user-item" onclick="openChat('${u.user}')">${u.user}</div>`).join('');
-            };
+        // --- CHAT ---
+        function enviarMensagem() {
+            const text = $('#chat-input').value; if(!text) return;
+            db.transaction("msgs", "readwrite").objectStore("msgs").add({from: userAtual.user, to: chatCom, text: text, ts: Date.now(), seen: false});
+            $('#chat-input').value = '';
+            atualizarChat();
         }
-        function openChat(u) { chatAtivo = u; document.querySelectorAll('.chat-user-item').forEach(i => i.classList.remove('active')); refreshMsgs(); }
-        function sendMsg() {
-            const t = $('#chat-in').value; if(!t || !chatAtivo) return;
-            db.transaction("msgs","readwrite").objectStore("msgs").add({from:userAtual.user, to:chatAtivo, text:t, ts:Date.now(), seen:false});
-            $('#chat-in').value = ''; refreshMsgs();
-        }
-        function refreshMsgs() {
+
+        function atualizarChat() {
             db.transaction("msgs").objectStore("msgs").getAll().onsuccess = e => {
-                const f = e.target.result.filter(m => (m.from === userAtual.user && m.to === chatAtivo) || (m.from === chatAtivo && m.to === userAtual.user));
-                $('#chat-messages').innerHTML = f.map(m => `<div class="msg ${m.from === userAtual.user ? 'sent' : 'received'}">${m.text}</div>`).join('');
-                $('#chat-messages').scrollTop = $('#chat-messages').scrollHeight;
-                if(e.target.result.some(m => m.to === userAtual.user && !m.seen)) $('#chat-not').style.display = 'flex';
+                const todas = e.target.result;
+                if(todas.some(m => m.to === userAtual.user && !m.seen)) $('#not-chat').style.display = 'flex';
+                
+                $('#chat-window').innerHTML = todas.map(m => `
+                    <div class="msg ${m.from === userAtual.user ? 'sent' : 'received'}">
+                        <small style="display:block; font-size:9px; opacity:0.6">${m.from}</small>
+                        ${m.text}
+                    </div>
+                `).join('');
+                $('#chat-window').scrollTop = $('#chat-window').scrollHeight;
             };
         }
 
-        // ADM ACTIONS
-        function saveCfg() { db.transaction("cfg","readwrite").objectStore("cfg").put({id:"pix", key:$('#cfg-pix-key').value, val:$('#cfg-pix-val').value}); alert("Salvo!"); }
-        function addDays(id) { 
-            const st = db.transaction("users", "readwrite").objectStore("users");
-            st.get(id).onsuccess = e => { const u = e.target.result; u.exp += (30*86400000); st.put(u).onsuccess = () => sync(); };
+        // --- ADM CONFIG ---
+        function salvarConfig() {
+            db.transaction("cfg","readwrite").objectStore("cfg").put({id: "pix", key: $('#cfg-pix').value, val: $('#cfg-val').value});
+            alert("Configuração PIX atualizada!");
         }
-        function ban(id) { const st = db.transaction("users", "readwrite").objectStore("users"); st.get(id).onsuccess = e => { const u = e.target.result; u.active = !u.active; st.put(u).onsuccess = () => sync(); }; }
 
-        setInterval(() => { if(userAtual) refreshMsgs(); }, 5000);
+        function ajustarUser(id, acao) {
+            const tx = db.transaction("users", "readwrite");
+            const st = tx.objectStore("users");
+            st.get(id).onsuccess = e => {
+                const u = e.target.result;
+                if(acao === 'dias') {
+                    const d = parseInt($(`#days-${id}`).value);
+                    u.exp = (u.exp < Date.now() ? Date.now() : u.exp) + (d * 86400000);
+                } else u.active = !u.active;
+                st.put(u).onsuccess = () => carregarDados();
+            };
+        }
+
+        setInterval(() => { if(userAtual) atualizarChat(); }, 4000);
     </script>
 </body>
 </html>
