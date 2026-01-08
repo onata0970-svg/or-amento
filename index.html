@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ERP ENTERPRISE V26 - MASTER ACCESS</title>
+    <title>ERP ENTERPRISE V27 - SISTEMA INTEGRADO</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -18,36 +18,42 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
         body { background: var(--bg); color: var(--dark); padding-bottom: 110px; }
 
-        /* --- TELA DE LOGIN COM BOTÃO ADM --- */
+        /* LOGIN */
         #auth-screen { position: fixed; inset: 0; z-index: 9999; background: var(--dark); display: flex; align-items: center; justify-content: center; }
-        .auth-card { background: var(--slate); padding: 40px; border-radius: 28px; width: 90%; max-width: 400px; color: white; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+        .auth-card { background: var(--slate); padding: 40px; border-radius: 28px; width: 90%; max-width: 400px; color: white; border: 1px solid rgba(255,255,255,0.1); }
         
         .btn-adm-shortcut { 
             background: rgba(255,255,255,0.1); color: #94a3b8; border: 1px dashed #475569; 
             margin-top: 15px; font-size: 11px; padding: 10px; border-radius: 12px; cursor: pointer;
-            width: 100%; text-align: center; transition: 0.3s;
+            width: 100%; text-align: center;
         }
-        .btn-adm-shortcut:hover { background: var(--p); color: white; border-style: solid; }
 
-        /* --- NAVIGATION --- */
+        /* NAVBAR */
         nav { position: fixed; bottom: 0; width: 100%; background: var(--dark); display: none; grid-template-columns: repeat(5, 1fr); padding: 15px 5px; z-index: 1000; border-top: 1px solid rgba(255,255,255,0.1); }
         nav div { color: #64748b; font-size: 10px; text-align: center; cursor: pointer; }
         nav div i { display: block; font-size: 20px; margin-bottom: 5px; font-style: normal; }
         nav div.active { color: white; font-weight: bold; }
 
-        /* --- UI COMPONENTS --- */
-        main { padding: 20px; max-width: 900px; margin: auto; display: none; }
+        /* UI */
+        main { padding: 20px; max-width: 1000px; margin: auto; display: none; }
         .card { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid var(--border); margin-bottom: 20px; box-shadow: var(--shadow); }
-        .card-adm { background: #111827; color: white; border-left: 5px solid var(--p); }
+        .card-dark { background: var(--dark); color: white; }
         
-        input, select, textarea { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 12px; font-size: 14px; }
-        .btn { padding: 14px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; width: 100%; text-align: center; }
+        input, select, textarea { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 10px; font-size: 14px; }
+        .btn { padding: 12px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; width: 100%; text-align: center; margin-bottom: 5px; }
         .btn-p { background: var(--p); color: white; }
         .btn-s { background: var(--s); color: white; }
+        .btn-d { background: var(--d); color: white; }
 
-        .cat-item { padding: 12px; border: 1px solid #eee; border-radius: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; cursor: pointer; background: white; }
-        
-        /* PDF HIDDEN */
+        /* TABELA DE USUÁRIOS */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+        th { text-align: left; padding: 10px; border-bottom: 2px solid #eee; color: #64748b; }
+        td { padding: 12px 10px; border-bottom: 1px solid #f1f5f9; }
+        .badge { padding: 3px 8px; border-radius: 5px; font-size: 10px; font-weight: bold; }
+        .bg-p { background: #dbeafe; color: #1e40af; }
+        .bg-s { background: #dcfce7; color: #15803d; }
+
+        .cat-item { padding: 10px; border: 1px solid #eee; border-radius: 8px; margin-bottom: 5px; display: flex; justify-content: space-between; cursor: pointer; }
         #pdf-render { position: absolute; left: -9999px; width: 600px; padding: 40px; background: white; color: black; }
     </style>
 </head>
@@ -55,31 +61,19 @@
 
     <div id="pdf-render">
         <h1 style="text-align:center; border-bottom: 2px solid #000; padding-bottom:10px">ORÇAMENTO</h1>
-        <div style="margin: 20px 0;">
-            <p><strong>CLIENTE:</strong> <span id="p-cli"></span></p>
-            <p><strong>DATA:</strong> <span id="p-data"></span></p>
-            <p><strong>PROFISSIONAL:</strong> <span id="p-user"></span></p>
-        </div>
-        <div style="min-height: 250px; border: 1px solid #eee; padding: 15px;">
-            <p id="p-desc" style="white-space: pre-line;"></p>
-        </div>
+        <p><strong>CLIENTE:</strong> <span id="p-cli"></span></p>
+        <p><strong>DATA:</strong> <span id="p-data"></span></p>
+        <div style="min-height: 200px; margin: 20px 0; border: 1px solid #eee; padding: 10px;" id="p-desc"></div>
         <h2 style="text-align:right">TOTAL: R$ <span id="p-total"></span></h2>
     </div>
 
     <div id="auth-screen">
         <div class="auth-card">
             <h2 style="text-align:center; margin-bottom:20px">ERP ENTERPRISE</h2>
-            
             <input type="text" id="l-user" placeholder="Usuário">
             <input type="password" id="l-pass" placeholder="Senha">
-            
-            <button class="btn btn-p" onclick="handleLogin()">Entrar</button>
-            
-            <div class="btn-adm-shortcut" onclick="fillAdm()">
-                🔓 Entrar como Administrador (Natan)
-            </div>
-            
-            <p id="l-msg" style="color:var(--d); text-align:center; margin-top:15px; font-size:12px"></p>
+            <button class="btn btn-p" onclick="handleLogin()">Acessar Sistema</button>
+            <div class="btn-adm-shortcut" onclick="fillAdm()">🔓 Acesso Direto (Natan)</div>
         </div>
     </div>
 
@@ -94,53 +88,74 @@
     <main id="app-content">
         <section id="sec-dash">
             <h2>Dashboard</h2>
-            <div class="card" style="background: var(--p); color: white;">
-                <p>Bem-vindo, <b id="display-name"></b></p>
+            <div class="card" style="background: var(--p); color:white">
+                <p>Usuário: <b id="display-name"></b></p>
                 <p>Nível: <span id="display-level"></span></p>
             </div>
         </section>
 
         <section id="sec-os" style="display:none">
             <div class="card">
-                <h3>Novo Orçamento</h3>
+                <h3>Gerar Orçamento</h3>
                 <input type="text" id="os-cliente" placeholder="Nome do Cliente">
-                
-                <label style="font-size:11px; font-weight:800">CATEGORIA PROFISSIONAL</label>
                 <select id="os-prof-select" onchange="carregarItens(this.value)"></select>
-                
-                <div id="lista-catalogo" style="max-height: 150px; overflow-y: auto; margin: 10px 0;"></div>
-
-                <textarea id="os-desc" placeholder="Descrição..." style="height:80px"></textarea>
+                <div id="lista-cat" style="max-height: 150px; overflow-y:auto; margin:10px 0"></div>
+                <textarea id="os-desc" placeholder="Descrição do serviço..." style="height:80px"></textarea>
                 <input type="number" id="os-valor" placeholder="Valor R$">
-                <button class="btn btn-p" onclick="gerarPDF()">Gerar Orçamento PDF</button>
+                <button class="btn btn-p" onclick="gerarPDF()">Salvar e Imprimir PDF</button>
             </div>
             <div id="os-hist"></div>
         </section>
 
         <section id="sec-fin" style="display:none">
             <div class="card">
-                <h3>Relatório de Vendas</h3>
+                <h3>Entradas de Caixa</h3>
                 <div id="fin-lista"></div>
             </div>
         </section>
 
         <section id="sec-adm" style="display:none">
-            <div class="card card-adm">
+            <div class="card card-dark">
                 <h3>📦 Importador de Serviços</h3>
-                <input type="text" id="adm-prof" placeholder="Nome da Profissão">
-                <textarea id="adm-txt" placeholder="Serviço 1 - 100.00&#10;Serviço 2 - 200.00" style="height:100px"></textarea>
-                <button class="btn btn-s" onclick="importarItens()">Cadastrar no Catálogo</button>
+                <input type="text" id="adm-prof" placeholder="Profissão (Ex: Pintor)">
+                <textarea id="adm-txt" placeholder="Pintura Parede - 50.00&#10;Pintura Teto - 80.00" style="height:80px"></textarea>
+                <button class="btn btn-s" onclick="importarItens()">Salvar Catálogo</button>
             </div>
+
             <div class="card">
-                <h3>Usuários Ativos</h3>
-                <div id="adm-user-list"></div>
+                <h3>👤 Cadastrar Novo Usuário</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <input type="text" id="new-u" placeholder="Login">
+                    <input type="password" id="new-p" placeholder="Senha">
+                    <select id="new-l">
+                        <option value="user">Usuário Comum</option>
+                        <option value="admin">Administrador Master</option>
+                    </select>
+                    <input type="number" id="new-d" value="30" placeholder="Dias">
+                </div>
+                <button class="btn btn-p" onclick="cadastrarUsuario()">Criar Acesso</button>
+                
+                <hr style="margin: 20px 0; opacity: 0.2;">
+                
+                <h3>Gerenciar Acessos</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Login</th>
+                            <th>Nível</th>
+                            <th>Expira</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adm-user-table"></tbody>
+                </table>
             </div>
         </section>
 
         <section id="sec-chat" style="display:none">
-            <div id="chat-box" style="height:300px; overflow-y:auto; background:#f1f5f9; padding:15px; border-radius:15px; margin-bottom:10px"></div>
+            <div id="chat-box" style="height:300px; overflow-y:auto; background:#eee; padding:15px; border-radius:15px; margin-bottom:10px"></div>
             <div style="display:flex; gap:5px">
-                <input type="text" id="chat-in" placeholder="Sua mensagem...">
+                <input type="text" id="chat-in" placeholder="Mensagem...">
                 <button class="btn btn-p" style="width:60px" onclick="enviarMsg()">></button>
             </div>
         </section>
@@ -150,8 +165,7 @@
         const $ = document.querySelector.bind(document);
         let db, userAtual = null;
 
-        // DB INIT
-        const req = indexedDB.open("ERP_V26_FINAL", 1);
+        const req = indexedDB.open("ERP_V27_ULTIMATE", 1);
         req.onupgradeneeded = e => {
             db = e.target.result;
             db.createObjectStore("users", {keyPath:"id", autoIncrement:true});
@@ -160,16 +174,11 @@
             db.createObjectStore("cat", {keyPath:"id", autoIncrement:true});
             db.createObjectStore("chat", {keyPath:"id", autoIncrement:true});
             const s = e.currentTarget.transaction.objectStore("users");
-            s.add({user:"natanjkl", pass:"91538300Aa", level:"admin", active:true});
+            s.add({user:"natanjkl", pass:"91538300Aa", level:"admin", exp: 4102444800000});
         };
         req.onsuccess = e => db = e.target.result;
 
-        // LOGIN FUNCTIONS
-        function fillAdm() {
-            $('#l-user').value = "natanjkl";
-            $('#l-pass').value = "91538300Aa";
-            handleLogin(); // Já loga automaticamente ao clicar
-        }
+        function fillAdm() { $('#l-user').value="natanjkl"; $('#l-pass').value="91538300Aa"; handleLogin(); }
 
         function handleLogin() {
             const u = $('#l-user').value, p = $('#l-pass').value;
@@ -177,19 +186,15 @@
                 const user = e.target.result.find(x => x.user === u && x.pass === p);
                 if(user) {
                     userAtual = user;
-                    $('#auth-screen').style.display = 'none';
-                    $('#main-nav').style.display = 'grid';
-                    $('main').style.display = 'block';
+                    $('#auth-screen').style.display='none';
+                    $('#main-nav').style.display='grid';
+                    $('main').style.display='block';
                     $('#display-name').innerText = userAtual.user;
                     $('#display-level').innerText = userAtual.level.toUpperCase();
-                    
-                    if(userAtual.level === 'admin') {
-                        $('#n-fin').style.display = 'block';
-                        $('#n-adm').style.display = 'block';
-                    }
+                    if(userAtual.level === 'admin') { $('#n-fin').style.display='block'; $('#n-adm').style.display='block'; }
                     go('dash');
                     sync();
-                } else alert("Erro no Login");
+                } else alert("Dados incorretos!");
             };
         }
 
@@ -199,54 +204,73 @@
             $(`#sec-${p}`).style.display='block';
             $(`#n-${p}`).classList.add('active');
             if(p === 'os') popularSelect();
-            if(p === 'adm') renderAdm();
+            if(p === 'adm') renderAdmUsers();
         }
 
-        // IMPORTADOR E CATÁLOGO
+        // ADM: GESTÃO DE USUÁRIOS
+        function cadastrarUsuario() {
+            const user = $('#new-u').value, pass = $('#new-p').value, level = $('#new-l').value, days = $('#new-d').value;
+            if(!user || !pass) return alert("Preencha tudo!");
+            const exp = Date.now() + (days * 86400000);
+            const tx = db.transaction("users", "readwrite");
+            tx.objectStore("users").add({user, pass, level, exp});
+            tx.oncomplete = () => { alert("Usuário Criado!"); renderAdmUsers(); };
+        }
+
+        function renderAdmUsers() {
+            db.transaction("users").objectStore("users").getAll().onsuccess = e => {
+                $('#adm-user-table').innerHTML = e.target.result.map(u => `
+                    <tr>
+                        <td><b>${u.user}</b></td>
+                        <td><span class="badge ${u.level==='admin'?'bg-p':'bg-s'}">${u.level}</span></td>
+                        <td>${new Date(u.exp).toLocaleDateString()}</td>
+                        <td><button class="btn btn-d" style="font-size:10px; padding:5px" onclick="deletarU(${u.id})">Remover</button></td>
+                    </tr>
+                `).join('');
+            };
+        }
+
+        function deletarU(id) {
+            if(confirm("Excluir usuário?")) {
+                const tx = db.transaction("users", "readwrite");
+                tx.objectStore("users").delete(id);
+                tx.oncomplete = () => renderAdmUsers();
+            }
+        }
+
+        // ADM: IMPORTADOR
         function importarItens() {
             const p = $('#adm-prof').value, t = $('#adm-txt').value;
-            if(!p || !t) return alert("Vazio!");
             const tx = db.transaction("cat", "readwrite");
-            t.split('\n').forEach(l => {
-                if(l.includes('-')) {
-                    const [n, v] = l.split('-');
-                    tx.objectStore("cat").add({prof:p, nome:n.trim(), preco:v.trim()});
-                }
-            });
-            tx.oncomplete = () => { alert("Importado!"); $('#adm-txt').value=''; };
+            t.split('\n').forEach(l => { if(l.includes('-')) { const [n,v]=l.split('-'); tx.objectStore("cat").add({prof:p, nome:n.trim(), preco:v.trim()}); }});
+            tx.oncomplete = () => { alert("Catálogo OK!"); $('#adm-txt').value=''; };
         }
 
+        // O.S E PDF
         function popularSelect() {
             db.transaction("cat").objectStore("cat").getAll().onsuccess = e => {
                 const p = [...new Set(e.target.result.map(i => i.prof))];
-                $('#os-prof-select').innerHTML = '<option value="">-- Selecionar --</option>' + 
-                    p.map(x => `<option value="${x}">${x}</option>`).join('');
+                $('#os-prof-select').innerHTML = '<option value="">-- Profissão --</option>' + p.map(x => `<option value="${x}">${x}</option>`).join('');
             };
         }
 
         function carregarItens(prof) {
             db.transaction("cat").objectStore("cat").getAll().onsuccess = e => {
                 const f = e.target.result.filter(i => i.prof === prof);
-                $('#lista-catalogo').innerHTML = f.map(s => `
-                    <div class="cat-item" onclick="setOS('${s.nome}', '${s.preco}')">
-                        <span>${s.nome}</span> <b>R$ ${s.preco}</b>
-                    </div>
-                `).join('');
+                $('#lista-cat').innerHTML = f.map(s => `<div class="cat-item" onclick="setOS('${s.nome}', '${s.preco}')">${s.nome} <b>R$ ${s.preco}</b></div>`).join('');
             };
         }
 
         function setOS(n, p) { $('#os-desc').value += n + "\n"; $('#os-valor').value = p; }
 
-        // PDF
         function gerarPDF() {
             const cli = $('#os-cliente').value, desc = $('#os-desc').value, val = $('#os-valor').value;
             const tx = db.transaction(["os", "fin"], "readwrite");
             tx.objectStore("os").add({cli, desc, val, ts: Date.now()});
             tx.objectStore("fin").add({cli, val, ts: Date.now()});
             tx.oncomplete = () => {
-                $('#p-cli').innerText = cli; $('#p-data').innerText = new Date().toLocaleDateString();
-                $('#p-user').innerText = userAtual.user; $('#p-desc').innerText = desc;
-                $('#p-total').innerText = val;
+                $('#p-cli').innerText=cli; $('#p-data').innerText=new Date().toLocaleDateString();
+                $('#p-desc').innerText=desc; $('#p-total').innerText=val;
                 html2pdf().from($('#pdf-render')).save(`Orcamento_${cli}.pdf`);
                 sync();
             };
@@ -257,13 +281,20 @@
                 $('#os-hist').innerHTML = e.target.result.reverse().slice(0,3).map(o => `<div class="card">${o.cli} - R$ ${o.val}</div>`).join('');
             };
             db.transaction("fin").objectStore("fin").getAll().onsuccess = e => {
-                $('#fin-lista').innerHTML = e.target.result.map(f => `<div class="card" style="color:green">+ R$ ${f.val}</div>`).join('');
+                $('#fin-lista').innerHTML = e.target.result.map(f => `<div class="cat-item"><span>${f.cli}</span> <b style="color:green">+ R$ ${f.val}</b></div>`).join('');
             };
         }
 
-        function renderAdm() {
-            db.transaction("users").objectStore("users").getAll().onsuccess = e => {
-                $('#adm-user-list').innerHTML = e.target.result.map(u => `<div class="card">${u.user} (${u.level})</div>`).join('');
+        function enviarMsg() {
+            const t = $('#chat-in').value; if(!t) return;
+            db.transaction("chat", "readwrite").objectStore("chat").add({u: userAtual.user, t, ts: Date.now()});
+            $('#chat-in').value=''; syncChat();
+        }
+
+        function syncChat() {
+            db.transaction("chat").objectStore("chat").getAll().onsuccess = e => {
+                $('#chat-box').innerHTML = e.target.result.map(m => `<div style="margin-bottom:10px"><b>${m.u}:</b> ${m.t}</div>`).join('');
+                $('#chat-box').scrollTop = $('#chat-box').scrollHeight;
             };
         }
     </script>
