@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ERP ENTERPRISE V12 - SISTEMA COMPLETO</title>
+    <title>ERP ENTERPRISE V13 - ADM NATANJKL</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
@@ -19,14 +19,14 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         body { background: var(--bg); color: var(--dark); padding-bottom: 100px; }
 
-        /* TELA DE AUTENTICAÇÃO */
+        /* TELA DE LOGIN */
         #auth-screen { position: fixed; inset: 0; z-index: 9999; background: var(--dark); display: flex; align-items: center; justify-content: center; }
-        .auth-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 30px; border-radius: 24px; width: 90%; max-width: 400px; color: white; }
-        .auth-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; justify-content: space-around; }
-        .auth-tabs span { cursor: pointer; opacity: 0.5; font-weight: 700; font-size: 13px; transition: 0.3s; }
+        .auth-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 30px; border-radius: 24px; width: 95%; max-width: 400px; color: white; }
+        .auth-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); justify-content: space-around; }
+        .auth-tabs span { cursor: pointer; opacity: 0.5; font-weight: 700; font-size: 13px; padding-bottom: 10px; }
         .auth-tabs span.active { opacity: 1; color: var(--p); border-bottom: 2px solid var(--p); }
 
-        /* NAVEGAÇÃO */
+        /* NAVBAR */
         nav { position: fixed; bottom: 0; width: 100%; background: var(--dark); display: none; grid-template-columns: repeat(8, 1fr); padding: 12px 5px; z-index: 1000; }
         nav div { color: #94a3b8; font-size: 9px; text-align: center; cursor: pointer; }
         nav div i { display: block; font-size: 20px; margin-bottom: 4px; font-style: normal; }
@@ -34,44 +34,41 @@
 
         /* UI */
         main { padding: 20px; max-width: 1200px; margin: auto; display: none; }
-        .card { background: var(--card); border-radius: 15px; padding: 20px; border: 1px solid var(--border); margin-bottom: 20px; }
-        input, select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 10px; outline: none; }
+        .card { background: var(--card); border-radius: 15px; padding: 20px; border: 1px solid var(--border); margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 10px; outline: none; }
         .btn-main { padding: 12px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; width: 100%; transition: 0.2s; }
         .btn-p { background: var(--p); color: white; }
         .btn-s { background: var(--s); color: white; }
         .btn-d { background: var(--d); color: white; }
 
-        /* CHAT STYLE */
+        /* CHAT WHATSAPP */
         #chat-container { display: grid; grid-template-columns: 180px 1fr; height: 500px; background: white; border-radius: 15px; overflow: hidden; border: 1px solid var(--border); }
         #chat-users { background: #f1f5f9; border-right: 1px solid var(--border); overflow-y: auto; }
-        .chat-user-item { padding: 15px; border-bottom: 1px solid #e2e8f0; cursor: pointer; font-size: 13px; }
+        .chat-user-item { padding: 15px; border-bottom: 1px solid #e2e8f0; cursor: pointer; font-size: 13px; font-weight: 500; }
         .chat-user-item.active { background: var(--p); color: white; }
         #chat-messages { display: flex; flex-direction: column; padding: 15px; overflow-y: auto; background: #e5ddd5; flex-grow: 1; }
-        .msg { margin-bottom: 8px; padding: 10px; border-radius: 10px; max-width: 80%; font-size: 13px; }
-        .msg.sent { align-self: flex-end; background: #dcf8c6; }
-        .msg.received { align-self: flex-start; background: white; }
+        .msg { margin-bottom: 8px; padding: 10px; border-radius: 10px; max-width: 80%; font-size: 13px; position: relative; }
+        .msg.sent { align-self: flex-end; background: #dcf8c6; border-bottom-right-radius: 2px; }
+        .msg.received { align-self: flex-start; background: white; border-bottom-left-radius: 2px; }
 
-        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #f1f5f9; }
-        .status-tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
-        .status-active { background: #dcfce7; color: #166534; }
-        .status-blocked { background: #fee2e2; color: #991b1b; }
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #f1f5f9; }
+        .status-badge { font-size: 10px; padding: 3px 8px; border-radius: 12px; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div id="auth-screen">
         <div class="auth-card">
-            <h2 style="text-align:center; margin-bottom:20px; font-weight:800">ERP ENTERPRISE</h2>
+            <h2 style="text-align:center; margin-bottom:20px">ERP ENTERPRISE</h2>
             <div class="auth-tabs">
-                <span id="tab-login" class="active" onclick="setAuth('login')">USUÁRIO</span>
+                <span id="tab-login" class="active" onclick="setAuth('login')">LOGIN</span>
                 <span id="tab-reg" onclick="setAuth('reg')">CADASTRAR</span>
                 <span id="tab-adm" onclick="setAuth('adm')" style="color:var(--s)">ADM</span>
             </div>
-
             <div id="auth-box">
-                <input type="text" id="u-name" placeholder="Nome de Usuário">
+                <input type="text" id="u-name" placeholder="Usuário">
                 <input type="password" id="u-pass" placeholder="Senha">
-                <button id="btn-auth-action" class="btn-main btn-p" onclick="handleAuth()">Entrar no Sistema</button>
+                <button id="btn-auth" class="btn-main btn-p" onclick="handleAuth()">Acessar</button>
             </div>
             <p id="auth-msg" style="color:var(--d); font-size:12px; margin-top:15px; text-align:center"></p>
         </div>
@@ -88,9 +85,9 @@
     <main id="app-content">
         <section id="sec-dash">
             <h2>📊 Bem-vindo, <span id="display-user"></span></h2>
-            <div class="card" id="dash-info">
-                <p>Nível: <b id="display-level"></b></p>
-                <p>Validade: <span id="display-exp" style="font-weight:bold"></span></p>
+            <div class="card">
+                <p>Status: <b id="display-level" style="color:var(--p)"></b></p>
+                <p>Expira em: <span id="display-exp" style="font-weight:bold"></span></p>
             </div>
         </section>
 
@@ -107,70 +104,68 @@
             </div>
         </section>
 
-        <section id="sec-fin" style="display:none">
-            <div class="card">
-                <h2>💰 Fluxo de Caixa (Administrativo)</h2>
-                <input type="number" id="f-valor" placeholder="Valor R$">
-                <button class="btn-main btn-s" onclick="alert('Lançamento salvo!')">Lançar Receita</button>
-            </div>
-        </section>
-
         <section id="sec-adm" style="display:none">
             <div class="card">
-                <h2>⚙️ Painel de Gestão e Licenças</h2>
+                <h2>⚙️ Painel de Controle (Contas e Licenças)</h2>
                 <div id="adm-user-list"></div>
             </div>
         </section>
+
+        <section id="sec-fin" style="display:none"><div class="card"><h2>💰 Financeiro</h2><p>Área restrita de faturamento.</p></div></section>
+        <section id="sec-os" style="display:none"><div class="card"><h2>📝 Ordens de Serviço</h2><p>Painel operacional.</p></div></section>
     </main>
 
     <script>
         const $ = document.querySelector.bind(document);
         let db, userAtual = null, chatAtivo = null, currentMode = 'login';
 
-        // DB CONFIG
-        const req = indexedDB.open("ERP_V12_OFFICIAL", 1);
+        // DATABASE E USUÁRIO NATANJKL
+        const req = indexedDB.open("ERP_V13_NATAN", 1);
         req.onupgradeneeded = e => {
             db = e.target.result;
             ["users", "msgs"].forEach(s => db.createObjectStore(s, {keyPath:"id", autoIncrement:true}));
-            // Criação do administrador mestre padrão
-            e.currentTarget.transaction.objectStore("users").add({
-                user: "admin", pass: "1234", level: "admin", exp: 4102444800000, active: true 
+            
+            const store = e.currentTarget.transaction.objectStore("users");
+            // Criando seu usuário específico solicitado
+            store.add({
+                user: "natanjkl", 
+                pass: "91538300Aa", 
+                level: "admin", 
+                exp: 4102444800000, // Validade até 2100
+                active: true 
             });
+            // Admin padrão auxiliar
+            store.add({ user: "admin", pass: "1234", level: "admin", exp: 4102444800000, active: true });
         };
         req.onsuccess = e => db = e.target.result;
 
-        // AUTH LOGIC
+        // AUTH
         function setAuth(m) {
             currentMode = m;
             document.querySelectorAll('.auth-tabs span').forEach(s => s.classList.remove('active'));
-            if(m === 'login') { $('#tab-login').classList.add('active'); $('#btn-auth-action').className = 'btn-main btn-p'; $('#btn-auth-action').innerText = 'Entrar'; }
-            if(m === 'reg') { $('#tab-reg').classList.add('active'); $('#btn-auth-action').className = 'btn-main btn-s'; $('#btn-auth-action').innerText = 'Criar Minha Conta'; }
-            if(m === 'adm') { $('#tab-adm').classList.add('active'); $('#btn-auth-action').className = 'btn-main btn-p'; $('#btn-auth-action').innerText = 'Login Administrativo'; }
+            $(`#tab-${m}`).classList.add('active');
+            $('#btn-auth').innerText = m === 'reg' ? 'Criar Conta' : 'Entrar';
         }
 
         function handleAuth() {
             const u = $('#u-name').value, p = $('#u-pass').value;
             if(!u || !p) return;
-
             const tx = db.transaction("users", "readwrite");
             const store = tx.objectStore("users");
 
             if(currentMode === 'reg') {
                 store.getAll().onsuccess = e => {
-                    if(e.target.result.find(x => x.user === u)) return alert("Este nome já está em uso.");
-                    const newUser = { user: u, pass: p, level: "user", exp: Date.now() + (7*24*60*60*1000), active: true };
-                    store.add(newUser).onsuccess = () => logar(newUser);
+                    if(e.target.result.find(x => x.user === u)) return alert("Usuário já existe!");
+                    const n = { user: u, pass: p, level: "user", exp: Date.now() + (7*86400000), active: true };
+                    store.add(n).onsuccess = () => logar(n);
                 };
             } else {
                 store.getAll().onsuccess = e => {
                     const user = e.target.result.find(x => x.user === u && x.pass === p);
-                    if(!user) return $('#auth-msg').innerText = "Usuário ou senha inválidos.";
-                    if(!user.active) return $('#auth-msg').innerText = "CONTA BLOQUEADA PELO ADM.";
-                    if(Date.now() > user.exp) return $('#auth-msg').innerText = "LICENÇA EXPIRADA. Fale com o suporte.";
-                    
-                    if(currentMode === 'adm' && user.level !== 'admin') {
-                        return $('#auth-msg').innerText = "Você não tem privilégios de Administrador.";
-                    }
+                    if(!user) return $('#auth-msg').innerText = "Erro: Usuário/Senha incorretos.";
+                    if(!user.active) return $('#auth-msg').innerText = "CONTA BLOQUEADA.";
+                    if(Date.now() > user.exp) return $('#auth-msg').innerText = "LICENÇA EXPIRADA.";
+                    if(currentMode === 'adm' && user.level !== 'admin') return $('#auth-msg').innerText = "Acesso negado.";
                     logar(user);
                 };
             }
@@ -181,8 +176,8 @@
             $('#auth-screen').style.display = 'none';
             $('#main-nav').style.display = 'grid';
             $('main').style.display = 'block';
-            $('#display-user').innerText = u.user.toUpperCase();
-            $('#display-level').innerText = u.level === 'admin' ? 'ADMINISTRADOR' : 'OPERADOR';
+            $('#display-user').innerText = u.user;
+            $('#display-level').innerText = u.level.toUpperCase();
             $('#display-exp').innerText = new Date(u.exp).toLocaleDateString();
 
             const isAdm = u.level === 'admin';
@@ -200,7 +195,7 @@
             if(p === 'chat') renderChatList();
         }
 
-        // CHAT WHATSAPP
+        // CHAT
         function renderChatList() {
             db.transaction("users").objectStore("users").getAll().onsuccess = e => {
                 const outros = e.target.result.filter(x => x.user !== userAtual.user);
@@ -226,20 +221,20 @@
             };
         }
 
-        // ADM LOGIC
+        // ADM CONTROLE POR DIAS E BLOQUEIO
         function syncAdm() {
             db.transaction("users").objectStore("users").getAll().onsuccess = e => {
                 $('#adm-user-list').innerHTML = e.target.result.map(u => `
                     <div class="list-item" style="flex-direction:column; align-items:flex-start">
-                        <div style="display:flex; justify-content:space-between; width:100%">
+                        <div style="width:100%; display:flex; justify-content:space-between">
                             <b>${u.user}</b>
-                            <span class="status-tag ${u.active ? 'status-active' : 'status-blocked'}">${u.active ? 'ATIVO' : 'BLOQUEADO'}</span>
+                            <span class="status-badge" style="background:${u.active ? '#dcfce7' : '#fee2e2'}">${u.active ? 'ATIVO' : 'BLOQUEADO'}</span>
                         </div>
-                        <div style="font-size:11px; margin: 5px 0">Expira em: ${new Date(u.exp).toLocaleDateString()}</div>
+                        <div style="font-size:11px; margin: 8px 0">Expira em: ${new Date(u.exp).toLocaleDateString()}</div>
                         <div style="display:flex; gap:5px; width:100%">
-                            <input type="number" id="add-${u.id}" placeholder="+ Dias" style="margin:0; flex:1">
-                            <button class="btn-main btn-s" style="width:60px; padding:5px" onclick="updateUser(${u.id}, 'days')">Add</button>
-                            ${u.user !== 'admin' ? `<button class="btn-main btn-d" style="width:60px; padding:5px" onclick="updateUser(${u.id}, 'toggle')">${u.active ? 'Banir' : 'Ativar'}</button>` : ''}
+                            <input type="number" id="days-${u.id}" placeholder="+ Dias" style="margin:0; flex:1; padding:5px">
+                            <button class="btn-main btn-s" style="width:70px; padding:5px" onclick="updateUser(${u.id}, 'days')">Add</button>
+                            ${u.user !== 'natanjkl' ? `<button class="btn-main btn-d" style="width:70px; padding:5px" onclick="updateUser(${u.id}, 'toggle')">${u.active ? 'Banir' : 'Ativar'}</button>` : ''}
                         </div>
                     </div>
                 `).join('');
@@ -252,11 +247,9 @@
             store.get(id).onsuccess = e => {
                 const u = e.target.result;
                 if(action === 'days') {
-                    const d = parseInt($(`#add-${id}`).value);
+                    const d = parseInt($(`#days-${id}`).value);
                     if(d) u.exp = (u.exp < Date.now() ? Date.now() : u.exp) + (d * 86400000);
-                } else if(action === 'toggle') {
-                    u.active = !u.active;
-                }
+                } else if(action === 'toggle') u.active = !u.active;
                 store.put(u).onsuccess = () => syncAdm();
             };
         }
