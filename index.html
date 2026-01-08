@@ -3,339 +3,335 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ERP ENTERPRISE V28 - FULL FINANCE & ADMIN</title>
+    <title>ERP TOTAL V30 - SISTEMA PROFISSIONAL</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 
     <style>
-        :root {
-            --p: #2563eb; --p-dark: #1e40af; --s: #10b981; --d: #f43f5e; --w: #f59e0b;
-            --dark: #0f172a; --slate: #1e293b; --bg: #f8fafc; --card: #ffffff;
-            --border: #e2e8f0; --shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+        :root { 
+            --primary: #2563eb; --success: #10b981; --danger: #ef4444; 
+            --warning: #f59e0b; --dark: #0f172a; --bg: #f8fafc; --text: #1e293b;
+            --card: #ffffff; --border: #e2e8f0;
         }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg); color: var(--text); padding-bottom: 90px; }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { background: var(--bg); color: var(--dark); padding-bottom: 110px; }
+        /* --- MODAIS --- */
+        #loading-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.95); color: #fff; display: none; align-items: center; justify-content: center; z-index: 10000; }
+        #preview-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; padding: 10px; }
+        #preview-content { background: white; width: 100%; max-width: 600px; height: 75vh; overflow-y: auto; border-radius: 15px; padding: 15px; }
 
-        /* LOGIN */
-        #auth-screen { position: fixed; inset: 0; z-index: 9999; background: var(--dark); display: flex; align-items: center; justify-content: center; }
-        .auth-card { background: var(--slate); padding: 40px; border-radius: 28px; width: 90%; max-width: 400px; color: white; border: 1px solid rgba(255,255,255,0.1); }
-        
-        /* NAVBAR */
-        nav { position: fixed; bottom: 0; width: 100%; background: var(--dark); display: none; grid-template-columns: repeat(5, 1fr); padding: 15px 5px; z-index: 1000; border-top: 1px solid rgba(255,255,255,0.1); }
-        nav div { color: #64748b; font-size: 10px; text-align: center; cursor: pointer; }
-        nav div i { display: block; font-size: 20px; margin-bottom: 5px; font-style: normal; }
-        nav div.active { color: white; font-weight: bold; }
+        /* --- LOGIN --- */
+        #auth-screen { position: fixed; inset: 0; z-index: 9000; background: var(--dark); display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .auth-container { background: rgba(255, 255, 255, 0.05); border-radius: 24px; width: 100%; max-width: 400px; border: 1px solid rgba(255,255,255,0.1); padding: 30px; }
+        .auth-input { width: 100%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); padding: 14px; border-radius: 12px; color: white; margin-bottom: 15px; outline: none; }
 
-        /* UI */
-        main { padding: 20px; max-width: 1100px; margin: auto; display: none; }
-        .card { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid var(--border); margin-bottom: 20px; box-shadow: var(--shadow); }
-        .card-header-dark { background: var(--dark); color: white; border-radius: 20px 20px 0 0; padding: 15px 20px; margin-bottom: 0; border: none; }
-        .card-body-dark { background: #1e293b; color: white; border-radius: 0 0 20px 20px; padding: 20px; border: none; margin-bottom: 20px; }
-        
-        input, select, textarea { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 10px; font-size: 14px; background: white; }
-        .btn { padding: 12px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; width: 100%; text-align: center; margin-bottom: 5px; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-p { background: var(--p); color: white; }
-        .btn-s { background: var(--s); color: white; }
-        .btn-d { background: var(--d); color: white; }
-        .btn-w { background: var(--w); color: white; }
+        /* --- NAV --- */
+        nav { position: fixed; bottom: 0; width: 100%; background: var(--dark); display: none; justify-content: space-around; padding: 12px 0; z-index: 100; }
+        nav div { color: #94a3b8; font-size: 10px; text-align: center; cursor: pointer; }
+        nav div.active { color: white; }
+        nav div i { font-style: normal; font-size: 20px; display: block; }
+
+        /* --- UI BASE --- */
+        main { padding: 20px; max-width: 800px; margin: auto; display: none; }
+        .card { background: white; padding: 20px; border-radius: 20px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
+        .card-dark { background: var(--dark); color: white; border: none; }
+        input, select, textarea { width: 100%; padding: 12px; border-radius: 12px; border: 1px solid #cbd5e1; margin-bottom: 12px; font-size: 14px; }
+        .btn-main { width: 100%; padding: 14px; border-radius: 12px; background: var(--primary); color: white; font-weight: 700; border: none; cursor: pointer; margin-bottom: 8px; }
 
         /* TABELAS */
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { text-align: left; padding: 12px; font-size: 12px; color: #64748b; border-bottom: 2px solid #f1f5f9; }
-        td { padding: 12px; font-size: 13px; border-bottom: 1px solid #f1f5f9; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 13px; }
+        th { text-align: left; padding: 8px; color: #64748b; border-bottom: 1px solid #eee; }
+        td { padding: 10px 8px; border-bottom: 1px solid #f8fafc; }
 
-        .st-pago { color: var(--s); font-weight: 800; }
-        .st-pend { color: var(--w); font-weight: 800; }
-
-        #pdf-render { position: absolute; left: -9999px; width: 600px; padding: 40px; background: white; color: black; }
+        .badge { padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; }
+        .bg-s { background: #dcfce7; color: #15803d; }
+        .bg-w { background: #fef3c7; color: #92400e; }
+        
+        .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; margin-top: 10px; }
+        .photo-item { width: 80px; height: 80px; border-radius: 10px; overflow: hidden; border: 2px solid var(--primary); }
+        .photo-item img { width: 100%; height: 100%; object-fit: cover; }
     </style>
 </head>
 <body>
 
-    <div id="pdf-render">
-        <h1 style="text-align:center; border-bottom: 2px solid #000; padding-bottom:10px">COMPROVANTE DE ORÇAMENTO</h1>
-        <p><strong>CLIENTE:</strong> <span id="p-cli"></span></p>
-        <p><strong>DATA:</strong> <span id="p-data"></span></p>
-        <div style="min-height: 200px; margin: 20px 0; border: 1px solid #eee; padding: 10px;" id="p-desc"></div>
-        <h2 style="text-align:right">VALOR: R$ <span id="p-total"></span></h2>
+    <div id="preview-modal">
+        <div id="preview-content"></div>
+        <div style="display:flex; gap:10px; width:100%; max-width:600px; margin-top:10px">
+            <button class="btn-main" style="background:var(--danger); flex:1" onclick="fecharPreview()">Cancelar</button>
+            <button class="btn-main" style="background:var(--success); flex:2" onclick="confirmarEGerar()">Confirmar e Salvar</button>
+        </div>
     </div>
 
+    <div id="loading-overlay"><h3>Gerando Documento...</h3></div>
+
     <div id="auth-screen">
-        <div class="auth-card">
-            <h2 style="text-align:center; margin-bottom:20px">ERP ENTERPRISE V28</h2>
-            <input type="text" id="l-user" placeholder="Usuário">
-            <input type="password" id="l-pass" placeholder="Senha">
-            <button class="btn btn-p" onclick="handleLogin()">Entrar no Sistema</button>
-            <div style="background: rgba(255,255,255,0.05); color: #94a3b8; border: 1px dashed #475569; margin-top: 15px; font-size: 11px; padding: 10px; border-radius: 12px; cursor: pointer; text-align: center;" onclick="fillAdm()">🔓 Acesso Direto (Natan)</div>
+        <div class="auth-container">
+            <h2 style="color:white; text-align:center; margin-bottom:20px">Acesso ao ERP</h2>
+            <input type="text" id="l-user" class="auth-input" placeholder="E-mail ou Usuário">
+            <input type="password" id="l-pass" class="auth-input" placeholder="Senha">
+            <button class="btn-main" onclick="handleAuth()">Entrar no Sistema</button>
+            <p style="color:#64748b; font-size:11px; text-align:center; margin-top:15px">
+                Acesso Administrativo: Favor preencher login e senha master fornecidos pelo suporte.
+            </p>
         </div>
     </div>
 
     <nav id="main-nav">
-        <div onclick="go('dash')" id="n-dash" class="active"><i>🏠</i>Início</div>
-        <div onclick="go('os')" id="n-os"><i>📝</i>O.S</div>
-        <div onclick="go('chat')" id="n-chat"><i>💬</i>Chat</div>
-        <div onclick="go('fin')" id="n-fin" style="display:none"><i>💰</i>Finanças</div>
+        <div onclick="go('os')" id="n-os" class="active"><i>📝</i>OS</div>
+        <div onclick="go('fin')" id="n-fin"><i>💰</i>Caixa</div>
+        <div onclick="go('cli')" id="n-cli"><i>👥</i>Clientes</div>
         <div onclick="go('adm')" id="n-adm" style="display:none"><i>⚙️</i>Adm</div>
     </nav>
 
     <main id="app-content">
-        <section id="sec-dash">
-            <h2>Bem-vindo, <span id="display-name"></span></h2>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                <div class="card" style="background: var(--p); color: white;">
-                    <small>Total em O.S</small>
-                    <h2 id="dash-total-os">R$ 0,00</h2>
-                </div>
-                <div class="card" style="background: var(--s); color: white;">
-                    <small>Recebido (Pago)</small>
-                    <h2 id="dash-total-pago">R$ 0,00</h2>
-                </div>
-            </div>
-        </section>
-
-        <section id="sec-os" style="display:none">
+        <section id="sec-os">
             <div class="card">
-                <h3>Novo Orçamento</h3>
-                <input type="text" id="os-cliente" placeholder="Nome do Cliente">
-                <select id="os-prof-select" onchange="carregarItens(this.value)"></select>
-                <div id="lista-cat" style="max-height: 150px; overflow-y:auto; margin:10px 0; border: 1px solid #eee; border-radius: 8px;"></div>
-                <textarea id="os-desc" placeholder="Detalhes técnicos..." style="height:80px"></textarea>
-                <input type="number" id="os-valor" placeholder="Valor Total R$">
-                <button class="btn btn-p" onclick="gerarPDF()">Gerar PDF e Salvar</button>
+                <h2>📝 Novo Orçamento</h2>
+                <select id="os-sel-cli"></select>
+                <div style="background:#f1f5f9; padding:15px; border-radius:15px; margin:10px 0">
+                    <select id="os-sel-srv" onchange="autoPreco()"></select>
+                    <input type="number" id="os-srv-val" placeholder="Preço R$">
+                    <button class="btn-main" style="background:var(--dark)" onclick="addItem()">+ Adicionar Item</button>
+                </div>
+                <table style="width:100%"><tbody id="lista-venda"></tbody></table>
+                <h3 style="text-align:right">Total: R$ <span id="total-venda">0.00</span></h3>
+                
+                <label>Forma de Recebimento:</label>
+                <select id="os-pagamento">
+                    <option>Pix</option>
+                    <option>Dinheiro</option>
+                    <option>Cartão Crédito</option>
+                    <option>Cartão Débito</option>
+                </select>
+
+                <input type="file" id="foto-input" accept="image/*" multiple onchange="handleFiles(this.files)" style="display:none">
+                <button onclick="$('#foto-input').click()" class="btn-main" style="background:#fff; color:var(--primary); border:1px dashed #ccc">Anexar Fotos do Serviço</button>
+                <div id="preview-fotos" class="photo-grid"></div>
+                
+                <button class="btn-main" onclick="prepararOrcamento()" style="margin-top:20px; background:var(--success)">Ver Preview e Gerar PDF</button>
             </div>
-            <h3>Orçamentos Recentes</h3>
-            <div id="os-hist"></div>
         </section>
 
         <section id="sec-fin" style="display:none">
             <div class="card">
-                <h3>Fluxo de Caixa Detalhado</h3>
-                <div id="fin-lista"></div>
+                <h2>Extrato de Caixa</h2>
+                <div id="extrato-lista"></div>
             </div>
+        </section>
+
+        <section id="sec-cli" style="display:none">
+            <div class="card">
+                <h2>Cadastro de Clientes</h2>
+                <input id="c-nome" placeholder="Nome">
+                <input id="c-tel" placeholder="WhatsApp">
+                <button class="btn-main" onclick="addCli()">Salvar Cliente</button>
+            </div>
+            <div id="cli-lista"></div>
         </section>
 
         <section id="sec-adm" style="display:none">
-            
-            <div class="card-header-dark"><i>💳</i> Módulo de Pagamento e Recebimento</div>
-            <div class="card-body-dark">
-                <p style="font-size: 12px; margin-bottom: 15px; opacity: 0.7;">Gerencie o status financeiro de cada O.S gerada pelos usuários.</p>
-                <div id="adm-pagamentos-area">
-                    <table>
-                        <thead>
-                            <tr style="color: white; border-color: #475569;">
-                                <th>Cliente</th>
-                                <th>Valor</th>
-                                <th>Método</th>
-                                <th>Status</th>
-                                <th>Ação</th>
-                            </tr>
-                        </thead>
-                        <tbody id="adm-lista-pagamentos"></tbody>
-                    </table>
-                </div>
+            <div class="card card-dark">
+                <h3>💳 Baixas e Recebimentos</h3>
+                <table style="color:white">
+                    <thead><tr style="color:#94a3b8"><th>Cliente</th><th>Valor</th><th>Status</th><th>Ação</th></tr></thead>
+                    <tbody id="adm-pg-lista"></tbody>
+                </table>
             </div>
 
             <div class="card">
-                <h3>📦 Importador de Catálogo</h3>
-                <input type="text" id="adm-prof" placeholder="Profissão">
-                <textarea id="adm-txt" placeholder="Serviço A - 100.00&#10;Serviço B - 150.00" style="height:60px"></textarea>
-                <button class="btn btn-s" onclick="importarItens()">Cadastrar Serviços</button>
-            </div>
-
-            <div class="card">
-                <h3>👤 Controle de Acessos</h3>
+                <h3>👤 Controle de Usuários</h3>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                    <input type="text" id="new-u" placeholder="Login">
+                    <input type="text" id="new-u" placeholder="Novo Usuário">
                     <input type="password" id="new-p" placeholder="Senha">
+                    <select id="new-l"><option value="user">Usuário Comum</option><option value="admin">Administrador</option></select>
+                    <input type="number" id="new-d" value="30" placeholder="Dias de Acesso">
                 </div>
-                <button class="btn btn-p" onclick="cadastrarUsuario()">Criar Novo Usuário</button>
-                <table id="adm-user-table"></table>
+                <button class="btn-main" onclick="addUsuario()">Cadastrar Acesso</button>
+                <table>
+                    <thead><tr><th>Usuário</th><th>Nível</th><th>Expira em</th><th>Ação</th></tr></thead>
+                    <tbody id="adm-user-table"></tbody>
+                </table>
             </div>
-        </section>
 
-        <section id="sec-chat" style="display:none">
-            <div id="chat-box" style="height:350px; overflow-y:auto; background:#f1f5f9; padding:15px; border-radius:15px; margin-bottom:10px"></div>
-            <div style="display:flex; gap:5px">
-                <input type="text" id="chat-in" placeholder="Escreva aqui...">
-                <button class="btn btn-p" style="width:60px" onclick="enviarMsg()">></button>
+            <div class="card">
+                <h3>🛠️ Catálogo de Serviços</h3>
+                <input id="s-nome" placeholder="Nome do Serviço">
+                <input type="number" id="s-val" placeholder="Valor Padrão">
+                <button class="btn-main" onclick="addSrv()">Salvar no Catálogo</button>
+                <div id="srv-lista-full"></div>
             </div>
         </section>
     </main>
 
     <script>
         const $ = document.querySelector.bind(document);
-        let db, userAtual = null;
+        let db, itensVenda = [], fotosVenda = [], currentDocData = null, userAtual = null;
 
-        // DB INIT
-        const req = indexedDB.open("ERP_V28_MASTER", 1);
+        const req = indexedDB.open("ERP_V30_FINAL", 1);
         req.onupgradeneeded = e => {
             db = e.target.result;
-            db.createObjectStore("users", {keyPath:"id", autoIncrement:true});
-            db.createObjectStore("os", {keyPath:"id", autoIncrement:true});
-            db.createObjectStore("cat", {keyPath:"id", autoIncrement:true});
-            db.createObjectStore("chat", {keyPath:"id", autoIncrement:true});
-            const s = e.currentTarget.transaction.objectStore("users");
-            s.add({user:"natanjkl", pass:"91538300Aa", level:"admin", exp: 4102444800000});
+            ["usuarios","clientes","servicos","docs","financeiro"].forEach(s => db.createObjectStore(s, {keyPath: "id", autoIncrement: true}));
+            // Cria usuário master inicial
+            const os = e.currentTarget.transaction.objectStore("usuarios");
+            os.add({user: "natanjkl", pass: "91538300Aa", level: "admin", exp: 4102444800000});
         };
-        req.onsuccess = e => { db = e.target.result; };
+        req.onsuccess = e => { db = e.target.result; sync(); };
 
-        function fillAdm() { $('#l-user').value="natanjkl"; $('#l-pass').value="91538300Aa"; handleLogin(); }
+        // AUTH COM PREENCHIMENTO MANUAL
+        function handleAuth() {
+            const u = $('#l-user').value;
+            const p = $('#l-pass').value;
+            if(!u || !p) return alert("Preencha Login e Senha!");
 
-        function handleLogin() {
-            const u = $('#l-user').value, p = $('#l-pass').value;
-            db.transaction("users").objectStore("users").getAll().onsuccess = e => {
+            db.transaction("usuarios").objectStore("usuarios").getAll().onsuccess = e => {
                 const user = e.target.result.find(x => x.user === u && x.pass === p);
                 if(user) {
+                    if(Date.now() > user.exp) return alert("Seu acesso expirou!");
                     userAtual = user;
-                    $('#auth-screen').style.display='none';
-                    $('#main-nav').style.display='grid';
-                    $('main').style.display='block';
-                    $('#display-name').innerText = userAtual.user;
-                    if(userAtual.level === 'admin') { $('#n-fin').style.display='block'; $('#n-adm').style.display='block'; }
-                    go('dash');
-                    sync();
-                } else alert("Acesso negado!");
+                    $('#auth-screen').style.display='none'; $('#main-nav').style.display='flex'; $('#app-content').style.display='block';
+                    if(user.level === 'admin') $('#n-adm').style.display='block';
+                    go('os');
+                } else alert("Usuário ou senha incorretos!");
             };
         }
 
         function go(p) {
-            document.querySelectorAll('section').forEach(s => s.style.display='none');
-            document.querySelectorAll('nav div').forEach(d => d.classList.remove('active'));
-            $(`#sec-${p}`).style.display='block';
-            $(`#n-${p}`).classList.add('active');
-            if(p === 'os') popularSelect();
-            if(p === 'adm') { renderAdmUsers(); renderPagamentos(); }
-            if(p === 'dash') renderDash();
+            document.querySelectorAll('section').forEach(s=>s.style.display='none');
+            document.querySelectorAll('nav div').forEach(d=>d.classList.remove('active'));
+            $(`#sec-${p}`).style.display='block'; $(`#n-${p}`).classList.add('active');
+            if(p === 'adm') { renderUsers(); renderPagamentos(); }
         }
 
-        // --- GESTÃO DE PAGAMENTOS ADM ---
-        function renderPagamentos() {
-            db.transaction("os").objectStore("os").getAll().onsuccess = e => {
-                const registros = e.target.result.reverse();
-                $('#adm-lista-pagamentos').innerHTML = registros.map(r => `
-                    <tr style="border-color: #475569;">
-                        <td>${r.cli}</td>
-                        <td>R$ ${r.val}</td>
-                        <td>
-                            <select id="metodo-${r.id}" style="margin:0; padding:5px; font-size:11px;">
-                                <option ${r.metodo === 'Pix' ? 'selected' : ''}>Pix</option>
-                                <option ${r.metodo === 'Cartão' ? 'selected' : ''}>Cartão</option>
-                                <option ${r.metodo === 'Dinheiro' ? 'selected' : ''}>Dinheiro</option>
-                            </select>
-                        </td>
-                        <td>
-                            <span class="${r.status === 'Pago' ? 'st-pago' : 'st-pend'}">${r.status || 'Pendente'}</span>
-                        </td>
-                        <td>
-                            <button class="btn btn-s" style="padding:5px; font-size:10px;" onclick="confirmarPagamento(${r.id})">Baixa</button>
-                        </td>
+        // --- GESTÃO DE USUÁRIOS ---
+        function addUsuario() {
+            const u = $('#new-u').value, p = $('#new-p').value, l = $('#new-l').value, d = $('#new-d').value;
+            if(!u || !p) return alert("Preencha os dados do novo usuário!");
+            const exp = Date.now() + (d * 86400000);
+            const tx = db.transaction("usuarios", "readwrite");
+            tx.objectStore("usuarios").add({user:u, pass:p, level:l, exp});
+            tx.oncomplete = () => { alert("Usuário cadastrado!"); renderUsers(); };
+        }
+
+        function renderUsers() {
+            db.transaction("usuarios").objectStore("usuarios").getAll().onsuccess = e => {
+                $('#adm-user-table').innerHTML = e.target.result.map(u => `
+                    <tr>
+                        <td><b>${u.user}</b></td>
+                        <td>${u.level}</td>
+                        <td>${new Date(u.exp).toLocaleDateString()}</td>
+                        <td><button style="color:red; border:none; background:none; cursor:pointer" onclick="del('usuarios', ${u.id}, renderUsers)">Excluir</button></td>
                     </tr>
                 `).join('');
             };
         }
 
-        function confirmarPagamento(id) {
-            const metodo = $(`#metodo-${id}`).value;
-            const tx = db.transaction("os", "readwrite");
-            const store = tx.objectStore("os");
+        // --- PAGAMENTOS E BAIXAS ---
+        function renderPagamentos() {
+            db.transaction("docs").objectStore("docs").getAll().onsuccess = e => {
+                $('#adm-pg-lista').innerHTML = e.target.result.reverse().map(r => `
+                    <tr>
+                        <td>${r.cliente}</td>
+                        <td>R$ ${r.total}</td>
+                        <td><span class="badge ${r.status==='Pago'?'bg-s':'bg-w'}">${r.status || 'Pendente'}</span></td>
+                        <td><button class="btn-main" style="padding:4px; font-size:10px; background:var(--success)" onclick="darBaixa(${r.id})">Baixa</button></td>
+                    </tr>
+                `).join('');
+            };
+        }
+
+        function darBaixa(id) {
+            const tx = db.transaction("docs", "readwrite");
+            const store = tx.objectStore("docs");
             store.get(id).onsuccess = e => {
-                const data = e.target.result;
-                data.status = 'Pago';
-                data.metodo = metodo;
-                store.put(data);
-                tx.oncomplete = () => { alert("Pagamento Confirmado!"); renderPagamentos(); renderDash(); };
+                const d = e.target.result; d.status='Pago'; store.put(d);
+                tx.oncomplete = () => renderPagamentos();
             };
         }
 
-        // --- DASHBOARD ---
-        function renderDash() {
-            db.transaction("os").objectStore("os").getAll().onsuccess = e => {
-                const dados = e.target.result;
-                const total = dados.reduce((a, b) => a + parseFloat(b.val), 0);
-                const pago = dados.filter(d => d.status === 'Pago').reduce((a, b) => a + parseFloat(b.val), 0);
-                $('#dash-total-os').innerText = "R$ " + total.toFixed(2);
-                $('#dash-total-pago').innerText = "R$ " + pago.toFixed(2);
+        // --- LÓGICA DE ORÇAMENTO E PREVIEW ---
+        function addItem() { 
+            const srv = $('#os-sel-srv').value;
+            const val = parseFloat($('#os-srv-val').value);
+            if(!srv || isNaN(val)) return alert("Selecione um serviço e valor!");
+            itensVenda.push({s:srv, v:val}); renderItens(); 
+        }
+
+        function renderItens() {
+            $('#lista-venda').innerHTML = itensVenda.map(i=>`<tr><td>${i.s}</td><td align="right">R$ ${i.v.toFixed(2)}</td></tr>`).join('');
+            $('#total-venda').innerText = itensVenda.reduce((a,b)=>a+b.v,0).toFixed(2);
+        }
+
+        function handleFiles(f) { Array.from(f).forEach(file => { const r = new FileReader(); r.onload = e => { fotosVenda.push(e.target.result); renderFotos(); }; r.readAsDataURL(file); }); }
+        function renderFotos() { $('#preview-fotos').innerHTML = fotosVenda.map(s=>`<div class="photo-item"><img src="${s}"></div>`).join(''); }
+
+        function prepararOrcamento() {
+            if(itensVenda.length === 0) return alert("Adicione itens!");
+            currentDocData = {
+                cliente: $('#os-sel-cli').value,
+                itens: [...itensVenda],
+                total: $('#total-venda').innerText,
+                pagamento: $('#os-pagamento').value,
+                data: new Date().toLocaleDateString('pt-BR'),
+                fotos: [...fotosVenda],
+                status: 'Pendente'
             };
-        }
 
-        // --- IMPORTADOR ---
-        function importarItens() {
-            const p = $('#adm-prof').value, t = $('#adm-txt').value;
-            const tx = db.transaction("cat", "readwrite");
-            t.split('\n').forEach(l => { if(l.includes('-')) { const [n,v]=l.split('-'); tx.objectStore("cat").add({prof:p, nome:n.trim(), preco:v.trim()}); }});
-            tx.oncomplete = () => { alert("Importado!"); $('#adm-txt').value=''; };
-        }
-
-        // --- ORÇAMENTOS ---
-        function popularSelect() {
-            db.transaction("cat").objectStore("cat").getAll().onsuccess = e => {
-                const p = [...new Set(e.target.result.map(i => i.prof))];
-                $('#os-prof-select').innerHTML = '<option value="">-- Escolha Profissão --</option>' + p.map(x => `<option value="${x}">${x}</option>`).join('');
-            };
-        }
-
-        function carregarItens(prof) {
-            db.transaction("cat").objectStore("cat").getAll().onsuccess = e => {
-                const f = e.target.result.filter(i => i.prof === prof);
-                $('#lista-cat').innerHTML = f.map(s => `<div style="padding:10px; border-bottom:1px solid #eee; cursor:pointer;" onclick="setOS('${s.nome}', '${s.preco}')">${s.nome} <b>R$ ${s.preco}</b></div>`).join('');
-            };
-        }
-
-        function setOS(n, p) { $('#os-desc').value += n + "\n"; $('#os-valor').value = p; }
-
-        function gerarPDF() {
-            const cli = $('#os-cliente').value, desc = $('#os-desc').value, val = $('#os-valor').value;
-            if(!cli || !val) return alert("Preencha tudo!");
-            const tx = db.transaction("os", "readwrite");
-            tx.objectStore("os").add({cli, desc, val, ts: Date.now(), status: 'Pendente', metodo: 'Pix'});
-            tx.oncomplete = () => {
-                $('#p-cli').innerText=cli; $('#p-data').innerText=new Date().toLocaleDateString();
-                $('#p-desc').innerText=desc; $('#p-total').innerText=val;
-                html2pdf().from($('#pdf-render')).save(`Orcamento_${cli}.pdf`);
-                sync();
-            };
-        }
-
-        function sync() {
-            db.transaction("os").objectStore("os").getAll().onsuccess = e => {
-                $('#os-hist').innerHTML = e.target.result.reverse().slice(0,5).map(o => `
-                    <div class="card"><b>${o.cli}</b> - R$ ${o.val} <br> <small>${o.status || 'Pendente'}</small></div>
-                `).join('');
-                $('#fin-lista').innerHTML = e.target.result.map(f => `
-                    <div class="card" style="border-left: 5px solid ${f.status === 'Pago' ? 'var(--s)' : 'var(--w)'}">
-                        <b>${f.cli}</b> - R$ ${f.val} <br> <small>Método: ${f.metodo || 'N/A'}</small>
+            const html = `
+                <div id="pdf-area" style="padding:20px; font-size:13px; color:#333;">
+                    <h2 style="color:var(--primary); text-align:center; border-bottom:1px solid #eee; padding-bottom:10px">ORÇAMENTO #00${Math.floor(Math.random()*100)}</h2>
+                    <p><strong>Cliente:</strong> ${currentDocData.cliente}</p>
+                    <p><strong>Data:</strong> ${currentDocData.data}</p>
+                    <table width="100%" style="margin:15px 0">
+                        <tr style="background:#f1f5f9"><th align="left">Serviço</th><th align="right">Valor</th></tr>
+                        ${currentDocData.itens.map(i => `<tr><td>${i.s}</td><td align="right">R$ ${i.v.toFixed(2)}</td></tr>`).join('')}
+                    </table>
+                    <h3 style="text-align:right">Total: R$ ${currentDocData.total}</h3>
+                    <p>Forma de Pagamento: ${currentDocData.pagamento}</p>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-top:15px">
+                        ${currentDocData.fotos.map(f => `<img src="${f}" style="width:100%; border-radius:5px">`).join('')}
                     </div>
-                `).join('');
+                </div>`;
+            $('#preview-content').innerHTML = html;
+            $('#preview-modal').style.display = 'flex';
+        }
+
+        function fecharPreview() { $('#preview-modal').style.display = 'none'; }
+
+        async function confirmarEGerar() {
+            fecharPreview();
+            $('#loading-overlay').style.display = 'flex';
+            const tx = db.transaction(["docs","financeiro"],"readwrite");
+            tx.objectStore("docs").add(currentDocData);
+            tx.objectStore("financeiro").add({desc: `OS: ${currentDocData.cliente}`, val: parseFloat(currentDocData.total)});
+            
+            await html2pdf().from($('#pdf-area')).save(`OS_${currentDocData.cliente}.pdf`);
+            
+            itensVenda=[]; fotosVenda=[]; renderItens(); renderFotos(); sync();
+            $('#loading-overlay').style.display = 'none';
+            alert("Sucesso! Orçamento registrado e PDF gerado.");
+        }
+
+        // --- AUXILIARES ---
+        function autoPreco() { $('#os-srv-val').value = $('#os-sel-srv').selectedOptions[0].dataset.p || ""; }
+        function sync() {
+            const tx = db.transaction(["clientes","servicos","financeiro"],"readonly");
+            tx.objectStore("clientes").getAll().onsuccess = e => {
+                $('#os-sel-cli').innerHTML = e.target.result.map(c => `<option>${c.nome}</option>`).join("");
+                $('#cli-lista').innerHTML = e.target.result.map(c => `<div class="card">${c.nome} <button onclick="del('clientes', ${c.id}, sync)">Excluir</button></div>`).join("");
+            };
+            tx.objectStore("servicos").getAll().onsuccess = e => {
+                $('#os-sel-srv').innerHTML = "<option value=''>Item...</option>" + e.target.result.map(s => `<option data-p="${s.val}">${s.nome}</option>`).join("");
+                $('#srv-lista-full').innerHTML = e.target.result.map(s => `<div class="card">${s.nome} - R$ ${s.val} <button onclick="del('servicos', ${s.id}, sync)">Excluir</button></div>`).join("");
+            };
+            tx.objectStore("financeiro").getAll().onsuccess = e => {
+                $('#extrato-lista').innerHTML = e.target.result.reverse().map(f => `<div class="card">${f.desc} <b>R$ ${f.val.toFixed(2)}</b></div>`).join("");
             };
         }
-
-        function cadastrarUsuario() {
-            const user = $('#new-u').value, pass = $('#new-p').value;
-            const tx = db.transaction("users", "readwrite");
-            tx.objectStore("users").add({user, pass, level:'user', exp: Date.now() + 2592000000});
-            tx.oncomplete = () => { alert("Usuário criado!"); renderAdmUsers(); };
-        }
-
-        function renderAdmUsers() {
-            db.transaction("users").objectStore("users").getAll().onsuccess = e => {
-                $('#adm-user-table').innerHTML = e.target.result.map(u => `<tr><td>${u.user}</td><td>${u.level}</td><td><button class="btn-d" onclick="delU(${u.id})">X</button></td></tr>`).join('');
-            };
-        }
-
-        function enviarMsg() {
-            const t = $('#chat-in').value; if(!t) return;
-            db.transaction("chat", "readwrite").objectStore("chat").add({u: userAtual.user, t, ts: Date.now()});
-            $('#chat-in').value=''; syncChat();
-        }
-
-        function syncChat() {
-            db.transaction("chat").objectStore("chat").getAll().onsuccess = e => {
-                $('#chat-box').innerHTML = e.target.result.map(m => `<div style="margin-bottom:8px"><b>${m.u}:</b> ${m.t}</div>`).join('');
-                $('#chat-box').scrollTop = $('#chat-box').scrollHeight;
-            };
-        }
+        function del(s, id, callback) { db.transaction(s,"readwrite").objectStore(s).delete(id).onsuccess = () => callback(); }
+        function addCli() { db.transaction("clientes","readwrite").objectStore("clientes").add({nome:$('#c-nome').value, tel:$('#c-tel').value}).onsuccess=()=>sync(); }
+        function addSrv() { db.transaction("servicos","readwrite").objectStore("servicos").add({nome:$('#s-nome').value, val:parseFloat($('#s-val').value)}).onsuccess=()=>sync(); }
     </script>
 </body>
 </html>
