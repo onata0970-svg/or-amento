@@ -3,258 +3,275 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ERP ENTERPRISE V14 - ADMIN MASTER</title>
+    <title>ERP ENTERPRISE V16 - SISTEMA INTEGRAL</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
-        :root {
-            --p: #2563eb; --p-dark: #1e40af; --s: #10b981; --d: #ef4444; 
-            --dark: #0f172a; --slate: #64748b; --bg: #f1f5f9;
-            --card: #ffffff; --border: #e2e8f0;
-        }
-
+        :root { --p: #2563eb; --s: #10b981; --d: #ef4444; --dark: #0f172a; --slate: #64748b; --bg: #f1f5f9; --card: #ffffff; --border: #e2e8f0; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
         body { background: var(--bg); color: var(--dark); padding-bottom: 100px; }
 
-        /* TELA DE AUTENTICAÇÃO */
-        #auth-screen { position: fixed; inset: 0; z-index: 9999; background: var(--dark); display: flex; align-items: center; justify-content: center; }
-        .auth-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 30px; border-radius: 24px; width: 95%; max-width: 400px; color: white; }
-        .auth-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); justify-content: space-around; }
-        .auth-tabs span { cursor: pointer; opacity: 0.5; font-weight: 700; font-size: 13px; padding-bottom: 10px; }
-        .auth-tabs span.active { opacity: 1; color: var(--p); border-bottom: 2px solid var(--p); }
+        /* AUTH & MODAL */
+        #auth-screen, #pix-modal { position: fixed; inset: 0; z-index: 9999; background: var(--dark); display: flex; align-items: center; justify-content: center; }
+        #pix-modal { background: rgba(0,0,0,0.9); z-index: 10001; display: none; }
+        .auth-card, .pix-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 30px; border-radius: 24px; width: 95%; max-width: 400px; color: white; }
+        .pix-card { background: white; color: var(--dark); text-align: center; }
 
-        /* NAVBAR */
+        /* NAV */
         nav { position: fixed; bottom: 0; width: 100%; background: var(--dark); display: none; grid-template-columns: repeat(5, 1fr); padding: 12px 5px; z-index: 1000; }
-        nav div { color: #94a3b8; font-size: 9px; text-align: center; cursor: pointer; }
+        nav div { color: #94a3b8; font-size: 9px; text-align: center; cursor: pointer; position: relative; }
         nav div i { display: block; font-size: 22px; margin-bottom: 4px; font-style: normal; }
         nav div.active { color: white; font-weight: bold; }
+        .notify { position: absolute; top: 0; right: 25%; background: var(--d); color: white; border-radius: 50%; width: 15px; height: 15px; font-size: 10px; display: none; align-items: center; justify-content: center; }
 
-        /* UI */
+        /* UI ELEMENTS */
         main { padding: 20px; max-width: 1200px; margin: auto; display: none; }
-        .card { background: var(--card); border-radius: 15px; padding: 20px; border: 1px solid var(--border); margin-bottom: 20px; }
-        input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 10px; outline: none; }
+        .card { background: var(--card); border-radius: 15px; padding: 20px; border: 1px solid var(--border); margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        input, select, textarea { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 10px; outline: none; font-size: 14px; }
         .btn-main { padding: 12px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; width: 100%; transition: 0.2s; }
         .btn-p { background: var(--p); color: white; }
         .btn-s { background: var(--s); color: white; }
         .btn-d { background: var(--d); color: white; }
 
         /* CHAT */
-        #chat-container { display: grid; grid-template-columns: 180px 1fr; height: 500px; background: white; border-radius: 15px; overflow: hidden; border: 1px solid var(--border); }
+        #chat-container { display: grid; grid-template-columns: 140px 1fr; height: 450px; background: white; border-radius: 15px; overflow: hidden; border: 1px solid var(--border); }
         #chat-users { background: #f8fafc; border-right: 1px solid var(--border); overflow-y: auto; }
-        .chat-user-item { padding: 15px; border-bottom: 1px solid #e2e8f0; cursor: pointer; font-size: 13px; }
+        .chat-user-item { padding: 12px; border-bottom: 1px solid #eee; cursor: pointer; font-size: 12px; }
         .chat-user-item.active { background: var(--p); color: white; }
-        #chat-messages { display: flex; flex-direction: column; padding: 15px; overflow-y: auto; background: #e5ddd5; flex-grow: 1; height: 380px; }
+        #chat-messages { display: flex; flex-direction: column; padding: 15px; overflow-y: auto; background: #e5ddd5; flex-grow: 1; }
         .msg { margin-bottom: 8px; padding: 10px; border-radius: 10px; max-width: 80%; font-size: 13px; }
         .msg.sent { align-self: flex-end; background: #dcf8c6; }
         .msg.received { align-self: flex-start; background: white; }
 
-        /* LISTA ADM */
-        .list-item { display: flex; flex-direction: column; gap: 8px; padding: 15px; border-bottom: 1px solid #f1f5f9; background: #fdfdfd; border-radius: 10px; margin-bottom: 10px; }
+        /* LISTS */
+        .item-list { padding: 12px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
         .badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
     </style>
 </head>
 <body>
 
+    <div id="pix-modal">
+        <div class="pix-card">
+            <h2 style="color:var(--d)">ASSINATURA VENCIDA</h2>
+            <p style="margin:15px 0; font-size:14px">Realize o pagamento para liberar seu acesso.</p>
+            <div id="pix-key-display" style="background:#f1f5f9; padding:15px; border-radius:10px; font-weight:bold; margin-bottom:10px"></div>
+            <p id="pix-val-display" style="font-size:20px; font-weight:900; color:var(--s)"></p>
+            <button class="btn-main btn-p" onclick="location.reload()">Já paguei</button>
+        </div>
+    </div>
+
     <div id="auth-screen">
         <div class="auth-card">
-            <h2 style="text-align:center; margin-bottom:20px; font-weight:800">SISTEMA ERP</h2>
-            <div class="auth-tabs">
-                <span id="tab-login" class="active" onclick="setAuth('login')">LOGIN</span>
-                <span id="tab-reg" onclick="setAuth('reg')">CADASTRAR</span>
-                <span id="tab-adm" onclick="setAuth('adm')" style="color:var(--s)">ADM</span>
+            <h2 style="text-align:center; margin-bottom:20px">ERP ENTERPRISE</h2>
+            <div style="display:flex; justify-content:space-around; margin-bottom:20px; border-bottom:1px solid rgba(255,255,255,0.1)">
+                <span onclick="setAuth('login')" id="t-login" style="cursor:pointer; padding-bottom:10px">LOGIN</span>
+                <span onclick="setAuth('reg')" id="t-reg" style="cursor:pointer; padding-bottom:10px">CADASTRAR</span>
             </div>
-            <div id="auth-box">
-                <input type="text" id="u-name" placeholder="Nome de Usuário">
-                <input type="password" id="u-pass" placeholder="Senha">
-                <button id="btn-auth" class="btn-main btn-p" onclick="handleAuth()">Acessar</button>
-            </div>
-            <p id="auth-msg" style="color:var(--d); font-size:12px; margin-top:15px; text-align:center"></p>
+            <input type="text" id="u-name" placeholder="Usuário">
+            <input type="password" id="u-pass" placeholder="Senha">
+            <button class="btn-main btn-p" onclick="handleAuth()" id="btn-auth">Entrar</button>
+            <p id="auth-msg" style="color:var(--d); font-size:12px; margin-top:10px; text-align:center"></p>
         </div>
     </div>
 
     <nav id="main-nav">
         <div onclick="go('dash')" id="n-dash" class="active"><i>📊</i>Dash</div>
-        <div onclick="go('os')" id="n-os"><i>📝</i>OS</div>
-        <div onclick="go('chat')" id="n-chat"><i>💬</i>Chat</div>
+        <div onclick="go('os')" id="n-os"><i>📝</i>O.S</div>
+        <div onclick="go('chat')" id="n-chat"><span class="notify" id="chat-not">!</span><i>💬</i>Chat</div>
         <div onclick="go('fin')" id="n-fin"><i>💰</i>Fin</div>
-        <div onclick="go('adm')" id="n-adm"><i>⚙️</i>Adm</div>
+        <div onclick="go('adm')" id="n-adm"><span class="notify" id="adm-not">!</span><i>⚙️</i>Adm</div>
     </nav>
 
     <main id="app-content">
         <section id="sec-dash">
-            <h2>📊 Bem-vindo, <span id="display-user"></span></h2>
+            <h2>📊 Dashboard</h2>
             <div class="card">
-                <p>Nível de Acesso: <b id="display-level" style="color:var(--p)"></b></p>
-                <p>Validade da Licença: <span id="display-exp" style="font-weight:bold"></span></p>
+                <p>Usuário: <b id="d-user"></b></p>
+                <p>Licença: <span id="d-exp"></span></p>
             </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
+                <div class="card" style="border-left:5px solid var(--s)">
+                    <small>Faturamento</small><h3 id="dash-fin">R$ 0,00</h3>
+                </div>
+                <div class="card" style="border-left:5px solid var(--p)">
+                    <small>O.S Ativas</small><h3 id="dash-os">0</h3>
+                </div>
+            </div>
+        </section>
+
+        <section id="sec-os" style="display:none">
+            <div class="card">
+                <h3>Nova Ordem de Serviço</h3>
+                <input type="text" id="os-cli" placeholder="Cliente">
+                <textarea id="os-serv" placeholder="Descrição do Serviço"></textarea>
+                <input type="number" id="os-val" placeholder="Valor R$">
+                <button class="btn-main btn-p" onclick="addOS()">Abrir O.S</button>
+            </div>
+            <div id="os-list"></div>
         </section>
 
         <section id="sec-chat" style="display:none">
             <div id="chat-container">
-                <div id="chat-users"><div id="chat-list-render"></div></div>
+                <div id="chat-users"></div>
                 <div style="display:flex; flex-direction:column; background:white">
                     <div id="chat-messages"></div>
-                    <div style="padding:10px; display:flex; gap:10px; border-top:1px solid #eee">
-                        <input type="text" id="chat-in" placeholder="Escreva..." style="margin:0">
-                        <button class="btn-main btn-p" style="width:80px" onclick="sendMsg()">Enviar</button>
+                    <div style="padding:10px; display:flex; gap:5px">
+                        <input type="text" id="chat-in" placeholder="Texto..." style="margin:0">
+                        <button class="btn-main btn-p" style="width:60px" onclick="sendMsg()">></button>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section id="sec-adm" style="display:none">
+        <section id="sec-fin" style="display:none">
             <div class="card">
-                <h2>⚙️ Gestão de Usuários e Licenças</h2>
-                <div id="adm-user-list"></div>
+                <h3>Fluxo de Caixa</h3>
+                <div id="fin-list"></div>
             </div>
         </section>
 
-        <section id="sec-fin" style="display:none"><div class="card"><h2>💰 Financeiro</h2><p>Módulo de Caixa Administrativo.</p></div></section>
-        <section id="sec-os" style="display:none"><div class="card"><h2>📝 Ordens de Serviço</h2><p>Módulo Operacional.</p></div></section>
+        <section id="sec-adm" style="display:none">
+            <div class="card" style="background:var(--dark); color:white">
+                <h3>Configuração PIX</h3>
+                <input type="text" id="cfg-pix-key" placeholder="Chave PIX">
+                <input type="text" id="cfg-pix-val" placeholder="Valor Mensalidade">
+                <button class="btn-main btn-s" onclick="saveCfg()">Salvar Configurações</button>
+            </div>
+            <div class="card">
+                <h3>Gerenciar Usuários</h3>
+                <div id="adm-users"></div>
+            </div>
+        </section>
     </main>
 
     <script>
         const $ = document.querySelector.bind(document);
-        let db, userAtual = null, chatAtivo = null, currentMode = 'login';
+        let db, userAtual = null, chatAtivo = null, mode = 'login';
 
-        // INICIALIZAÇÃO DO BANCO COM SEU USUÁRIO
-        const req = indexedDB.open("ERP_FINAL_DB", 1);
+        const req = indexedDB.open("ERP_MASTER_V16", 1);
         req.onupgradeneeded = e => {
             db = e.target.result;
-            ["users", "msgs"].forEach(s => db.createObjectStore(s, {keyPath:"id", autoIncrement:true}));
-            
-            const store = e.currentTarget.transaction.objectStore("users");
-            // SEU USUÁRIO ADM SOLICITADO
-            store.add({
-                user: "natanjkl", 
-                pass: "91538300Aa", 
-                level: "admin", 
-                exp: 4102444800000, // Ano 2100
-                active: true 
-            });
-            store.add({ user: "admin", pass: "1234", level: "admin", exp: 4102444800000, active: true });
+            ["users", "msgs", "os", "fin", "cfg"].forEach(s => db.createObjectStore(s, {keyPath:"id", autoIncrement:true}));
+            const u = e.currentTarget.transaction.objectStore("users");
+            u.add({user:"natanjkl", pass:"91538300Aa", level:"admin", exp:4102444800000, active:true});
+            e.currentTarget.transaction.objectStore("cfg").add({id:"pix", key:"financeiro@empresa.com", val:"R$ 100,00"});
         };
         req.onsuccess = e => db = e.target.result;
 
-        // AUTH
         function setAuth(m) {
-            currentMode = m;
-            document.querySelectorAll('.auth-tabs span').forEach(s => s.classList.remove('active'));
-            $(`#tab-${m}`).classList.add('active');
-            $('#btn-auth').innerText = m === 'reg' ? 'Criar Conta' : 'Entrar';
+            mode = m;
+            $('#t-login').style.borderBottom = m === 'login' ? '2px solid var(--p)' : 'none';
+            $('#t-reg').style.borderBottom = m === 'reg' ? '2px solid var(--p)' : 'none';
         }
 
         function handleAuth() {
             const u = $('#u-name').value, p = $('#u-pass').value;
-            if(!u || !p) return;
-            const tx = db.transaction("users", "readwrite");
-            const store = tx.objectStore("users");
-
-            if(currentMode === 'reg') {
-                store.getAll().onsuccess = e => {
-                    if(e.target.result.find(x => x.user === u)) return alert("Usuário já existe!");
-                    const n = { user: u, pass: p, level: "user", exp: Date.now() + (7*86400000), active: true };
+            const store = db.transaction("users", "readwrite").objectStore("users");
+            store.getAll().onsuccess = e => {
+                const user = e.target.result.find(x => x.user === u && x.pass === p);
+                if(mode === 'reg' && !user) {
+                    const n = {user:u, pass:p, level:"user", exp:Date.now()+(3*86400000), active:true};
                     store.add(n).onsuccess = () => logar(n);
-                };
-            } else {
-                store.getAll().onsuccess = e => {
-                    const user = e.target.result.find(x => x.user === u && x.pass === p);
-                    if(!user) return $('#auth-msg').innerText = "Usuário ou senha incorretos.";
-                    if(!user.active) return $('#auth-msg').innerText = "CONTA BLOQUEADA PELO ADM.";
-                    if(Date.now() > user.exp) return $('#auth-msg').innerText = "LICENÇA EXPIRADA.";
-                    if(currentMode === 'adm' && user.level !== 'admin') return $('#auth-msg').innerText = "Acesso ADM negado.";
+                } else if (user) {
+                    if(!user.active) return $('#auth-msg').innerText = "BLOQUEADO";
+                    if(Date.now() > user.exp && user.level !== 'admin') {
+                        return db.transaction("cfg").objectStore("cfg").get("pix").onsuccess = r => {
+                            $('#pix-key-display').innerText = r.target.result.key;
+                            $('#pix-val-display').innerText = r.target.result.val;
+                            $('#pix-modal').style.display = 'flex';
+                        };
+                    }
                     logar(user);
-                };
-            }
+                } else $('#auth-msg').innerText = "Dados Inválidos";
+            };
         }
 
         function logar(u) {
-            userAtual = u;
-            $('#auth-screen').style.display = 'none';
-            $('#main-nav').style.display = 'grid';
-            $('main').style.display = 'block';
-            $('#display-user').innerText = u.user;
-            $('#display-level').innerText = u.level.toUpperCase();
-            $('#display-exp').innerText = new Date(u.exp).toLocaleDateString();
-
+            userAtual = u; $('#auth-screen').style.display = 'none'; $('#main-nav').style.display = 'grid'; $('main').style.display = 'block';
+            $('#d-user').innerText = u.user; $('#d-exp').innerText = new Date(u.exp).toLocaleDateString();
             const isAdm = u.level === 'admin';
             $('#n-fin').style.display = isAdm ? 'block' : 'none';
             $('#n-adm').style.display = isAdm ? 'block' : 'none';
-            go('dash');
-            if(isAdm) syncAdm();
+            go('dash'); sync();
         }
 
         function go(p) {
             document.querySelectorAll('section').forEach(s => s.style.display='none');
             document.querySelectorAll('nav div').forEach(d => d.classList.remove('active'));
-            $(`#sec-${p}`).style.display='block';
-            $(`#n-${p}`).classList.add('active');
-            if(p === 'chat') renderChatList();
+            $(`#sec-${p}`).style.display='block'; $(`#n-${p}`).classList.add('active');
+            if(p === 'chat') { $('#chat-not').style.display='none'; renderChatList(); }
         }
 
-        // CHAT WHATSAPP
+        // OS & FINANCEIRO
+        function addOS() {
+            const cli = $('#os-cli').value, serv = $('#os-serv').value, val = $('#os-val').value;
+            if(!cli || !val) return;
+            const tx = db.transaction(["os", "fin"], "readwrite");
+            tx.objectStore("os").add({cli, serv, val, status:"Aberto", user:userAtual.user});
+            tx.objectStore("fin").add({desc: `O.S - ${cli}`, val, tipo:"entrada", data:Date.now()});
+            tx.oncomplete = () => { alert("O.S Gerada!"); sync(); };
+        }
+
+        function sync() {
+            // Dashboard
+            db.transaction("os").objectStore("os").getAll().onsuccess = e => {
+                $('#dash-os').innerText = e.target.result.filter(x => x.status === "Aberto").length;
+                $('#os-list').innerHTML = e.target.result.map(o => `<div class="item-list"><span>${o.cli} - R$ ${o.val}</span><span class="badge" style="background:#eee">${o.status}</span></div>`).join('');
+            };
+            db.transaction("fin").objectStore("fin").getAll().onsuccess = e => {
+                let total = 0; e.target.result.forEach(f => total += parseFloat(f.val));
+                $('#dash-fin').innerText = `R$ ${total.toFixed(2)}`;
+                $('#fin-list').innerHTML = e.target.result.map(f => `<div class="item-list"><span>${f.desc}</span><b style="color:var(--s)">R$ ${f.val}</b></div>`).join('');
+            };
+            if(userAtual.level === 'admin') {
+                db.transaction("users").objectStore("users").getAll().onsuccess = e => {
+                    const exp = e.target.result.some(u => Date.now() > u.exp && u.user !== 'natanjkl');
+                    if(exp) $('#adm-not').style.display = 'flex';
+                    $('#adm-users').innerHTML = e.target.result.map(u => `
+                        <div class="item-list">
+                            <div><b>${u.user}</b><br><small>${new Date(u.exp).toLocaleDateString()}</small></div>
+                            <div style="display:flex; gap:5px">
+                                <button onclick="addDays(${u.id})" class="btn-s" style="padding:5px 10px; border-radius:5px; border:none">+</button>
+                                ${u.user !== 'natanjkl' ? `<button onclick="ban(${u.id})" class="btn-d" style="padding:5px 10px; border-radius:5px; border:none">X</button>` : ''}
+                            </div>
+                        </div>
+                    `).join('');
+                };
+            }
+        }
+
+        // CHAT
         function renderChatList() {
             db.transaction("users").objectStore("users").getAll().onsuccess = e => {
-                const outros = e.target.result.filter(x => x.user !== userAtual.user);
-                $('#chat-list-render').innerHTML = outros.map(o => `
-                    <div class="chat-user-item ${chatAtivo === o.user ? 'active' : ''}" onclick="chatAtivo='${o.user}'; renderChatList(); refreshMsgs();">
-                        ${o.user} ${o.level === 'admin' ? '⭐' : ''}
-                    </div>
-                `).join('');
+                $('#chat-users').innerHTML = e.target.result.filter(u => u.user !== userAtual.user).map(u => `<div class="chat-user-item" onclick="openChat('${u.user}')">${u.user}</div>`).join('');
             };
         }
-
+        function openChat(u) { chatAtivo = u; document.querySelectorAll('.chat-user-item').forEach(i => i.classList.remove('active')); refreshMsgs(); }
         function sendMsg() {
             const t = $('#chat-in').value; if(!t || !chatAtivo) return;
-            db.transaction("msgs","readwrite").objectStore("msgs").add({from: userAtual.user, to: chatAtivo, text: t, ts: Date.now()});
+            db.transaction("msgs","readwrite").objectStore("msgs").add({from:userAtual.user, to:chatAtivo, text:t, ts:Date.now(), seen:false});
             $('#chat-in').value = ''; refreshMsgs();
         }
-
         function refreshMsgs() {
             db.transaction("msgs").objectStore("msgs").getAll().onsuccess = e => {
                 const f = e.target.result.filter(m => (m.from === userAtual.user && m.to === chatAtivo) || (m.from === chatAtivo && m.to === userAtual.user));
                 $('#chat-messages').innerHTML = f.map(m => `<div class="msg ${m.from === userAtual.user ? 'sent' : 'received'}">${m.text}</div>`).join('');
                 $('#chat-messages').scrollTop = $('#chat-messages').scrollHeight;
+                if(e.target.result.some(m => m.to === userAtual.user && !m.seen)) $('#chat-not').style.display = 'flex';
             };
         }
 
-        // ADM: CONTROLE DE DIAS E BAN
-        function syncAdm() {
-            db.transaction("users").objectStore("users").getAll().onsuccess = e => {
-                $('#adm-user-list').innerHTML = e.target.result.map(u => `
-                    <div class="list-item">
-                        <div style="display:flex; justify-content:space-between">
-                            <b>${u.user} (${u.level})</b>
-                            <span class="badge" style="background:${u.active ? '#dcfce7' : '#fee2e2'}">${u.active ? 'ATIVO' : 'BLOQUEADO'}</span>
-                        </div>
-                        <span style="font-size:11px">Expiração: ${new Date(u.exp).toLocaleDateString()}</span>
-                        <div style="display:flex; gap:5px; margin-top:5px">
-                            <input type="number" id="add-${u.id}" placeholder="+ Dias" style="margin:0; padding:5px; flex:1">
-                            <button class="btn-main btn-s" style="width:60px; padding:5px" onclick="updateUser(${u.id}, 'days')">Add</button>
-                            ${u.user !== 'natanjkl' ? `<button class="btn-main btn-d" style="width:70px; padding:5px" onclick="updateUser(${u.id}, 'toggle')">${u.active ? 'Banir' : 'Liberar'}</button>` : ''}
-                        </div>
-                    </div>
-                `).join('');
-            };
+        // ADM ACTIONS
+        function saveCfg() { db.transaction("cfg","readwrite").objectStore("cfg").put({id:"pix", key:$('#cfg-pix-key').value, val:$('#cfg-pix-val').value}); alert("Salvo!"); }
+        function addDays(id) { 
+            const st = db.transaction("users", "readwrite").objectStore("users");
+            st.get(id).onsuccess = e => { const u = e.target.result; u.exp += (30*86400000); st.put(u).onsuccess = () => sync(); };
         }
+        function ban(id) { const st = db.transaction("users", "readwrite").objectStore("users"); st.get(id).onsuccess = e => { const u = e.target.result; u.active = !u.active; st.put(u).onsuccess = () => sync(); }; }
 
-        function updateUser(id, action) {
-            const tx = db.transaction("users", "readwrite");
-            const store = tx.objectStore("users");
-            store.get(id).onsuccess = e => {
-                const u = e.target.result;
-                if(action === 'days') {
-                    const d = parseInt($(`#add-${id}`).value);
-                    if(d) u.exp = (u.exp < Date.now() ? Date.now() : u.exp) + (d * 86400000);
-                } else if(action === 'toggle') u.active = !u.active;
-                store.put(u).onsuccess = () => syncAdm();
-            };
-        }
-
-        setInterval(() => { if($('#sec-chat').style.display === 'block' && chatAtivo) refreshMsgs(); }, 3000);
+        setInterval(() => { if(userAtual) refreshMsgs(); }, 5000);
     </script>
 </body>
 </html>
