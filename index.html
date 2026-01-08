@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ERP ENTERPRISE V24 - MASTER ADMIN</title>
+    <title>ERP ENTERPRISE V25 - FULL ADMIN</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -16,56 +16,65 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { background: var(--bg); color: var(--dark); padding-bottom: 100px; }
+        body { background: var(--bg); color: var(--dark); padding-bottom: 110px; }
 
-        /* LOGIN */
+        /* --- TELA DE ACESSO (LOGIN) --- */
         #auth-screen { position: fixed; inset: 0; z-index: 9999; background: var(--dark); display: flex; align-items: center; justify-content: center; }
-        .auth-card { background: var(--slate); padding: 40px; border-radius: 24px; width: 90%; max-width: 400px; color: white; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); }
-        
-        /* NAVBAR */
+        .auth-card { background: var(--slate); padding: 40px; border-radius: 28px; width: 90%; max-width: 400px; color: white; border: 1px solid rgba(255,255,255,0.1); }
+
+        /* --- BARRA DE NAVEGAÇÃO --- */
         nav { position: fixed; bottom: 0; width: 100%; background: var(--dark); display: none; grid-template-columns: repeat(5, 1fr); padding: 15px 5px; z-index: 1000; border-top: 1px solid rgba(255,255,255,0.1); }
         nav div { color: #64748b; font-size: 10px; text-align: center; cursor: pointer; }
         nav div i { display: block; font-size: 20px; margin-bottom: 5px; font-style: normal; }
         nav div.active { color: white; font-weight: bold; }
 
-        /* UI ELEMENTS */
+        /* --- UI GERAL --- */
         main { padding: 20px; max-width: 900px; margin: auto; display: none; }
         .card { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid var(--border); margin-bottom: 20px; box-shadow: var(--shadow); }
-        .card-adm { background: #0f172a; color: white; border: none; }
+        .card-adm { background: #111827; color: white; border-color: var(--p); }
         
-        input, select, textarea { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 12px; outline: none; font-size: 14px; background: white; }
-        .btn { padding: 14px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; width: 100%; text-align: center; }
+        input, select, textarea { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 12px; outline: none; font-size: 14px; }
+        .btn { padding: 14px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; width: 100%; text-align: center; display: block; }
         .btn-p { background: var(--p); color: white; }
         .btn-s { background: var(--s); color: white; }
-        
-        .cat-item { padding: 12px; border: 1px solid #eee; border-radius: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; cursor: pointer; }
-        .cat-item:hover { background: #f1f5f9; border-color: var(--p); }
+        .btn-d { background: var(--d); color: white; }
 
-        /* PDF HIDDEN */
+        /* --- COMPONENTES --- */
+        .cat-item { padding: 12px; border: 1px solid #eee; border-radius: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; cursor: pointer; background: #fff; }
+        .cat-item:hover { border-color: var(--p); background: #f0f7ff; }
+        #chat-box { height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 15px; background: #f1f5f9; border-radius: 12px; margin-bottom: 10px; }
+        .msg { padding: 10px 15px; border-radius: 15px; max-width: 80%; font-size: 13px; }
+        .msg.sent { align-self: flex-end; background: var(--p); color: white; }
+        .msg.recv { align-self: flex-start; background: white; border: 1px solid #ddd; }
+
+        /* --- PDF OCULTO --- */
         #pdf-render { position: absolute; left: -9999px; width: 600px; padding: 40px; background: white; color: black; }
     </style>
 </head>
 <body>
 
     <div id="pdf-render">
-        <h1 style="text-align:center; border-bottom: 2px solid #000; padding-bottom:10px">ORÇAMENTO DE SERVIÇO</h1>
+        <h1 style="text-align:center; border-bottom: 2px solid #000; padding-bottom:10px">ORÇAMENTO PROFISSIONAL</h1>
         <div style="margin: 20px 0;">
             <p><strong>CLIENTE:</strong> <span id="p-cli"></span></p>
             <p><strong>DATA:</strong> <span id="p-data"></span></p>
+            <p><strong>PROFISSIONAL:</strong> <span id="p-user"></span></p>
         </div>
         <div style="min-height: 250px; border: 1px solid #eee; padding: 15px;">
-            <p><strong>DESCRIÇÃO:</strong></p>
-            <p id="p-desc" style="white-space: pre-line;"></p>
+            <p><strong>DESCRIÇÃO DOS SERVIÇOS:</strong></p>
+            <p id="p-desc" style="white-space: pre-line; margin-top:10px;"></p>
         </div>
         <h2 style="text-align:right; margin-top:20px">TOTAL: R$ <span id="p-total"></span></h2>
     </div>
 
     <div id="auth-screen">
         <div class="auth-card">
-            <h2 style="text-align:center; margin-bottom:25px">ERP LOGIN</h2>
+            <h2 style="text-align:center; margin-bottom:8px">ERP MASTER</h2>
+            <p style="text-align:center; font-size:12px; color:#94a3b8; margin-bottom:30px">Administração e Orçamentos</p>
+            
             <input type="text" id="l-user" placeholder="Usuário">
             <input type="password" id="l-pass" placeholder="Senha">
-            <button class="btn btn-p" onclick="login()">Entrar no Sistema</button>
+            <button class="btn btn-p" onclick="handleLogin()">Acessar Painel</button>
             <p id="l-msg" style="color:var(--d); text-align:center; margin-top:15px; font-size:12px"></p>
         </div>
     </div>
@@ -74,71 +83,76 @@
         <div onclick="go('dash')" id="n-dash" class="active"><i>🏠</i>Dash</div>
         <div onclick="go('os')" id="n-os"><i>📝</i>O.S</div>
         <div onclick="go('chat')" id="n-chat"><i>💬</i>Chat</div>
-        <div onclick="go('fin')" id="n-fin" style="display:none"><i>💰</i>Fin</div>
-        <div onclick="go('adm')" id="n-adm" style="display:none"><i>⚙️</i>Adm</div>
-    </nav>
+        <div onclick="go('fin')" id="n-fin"><i>💰</i>Fin</div> <div onclick="go('adm')" id="n-adm"><i>⚙️</i>Adm</div> </nav>
 
     <main id="app-content">
+        
         <section id="sec-dash">
-            <h2>Olá, <span id="display-name"></span></h2>
-            <div class="card" style="background: var(--p); color: white;">
-                <p>Nível de Acesso: <b id="display-level"></b></p>
-                <p>Status da Conta: <b>Ativo</b></p>
+            <h2>Resumo Geral</h2>
+            <div class="card" style="background: linear-gradient(135deg, var(--p), var(--p-dark)); color:white; border:none">
+                <p style="opacity:0.8">Usuário Conectado</p>
+                <h2 id="display-name">---</h2>
+                <p id="display-level" style="font-size:12px; font-weight:bold; margin-top:5px; text-transform:uppercase"></p>
             </div>
         </section>
 
         <section id="sec-os" style="display:none">
             <div class="card">
-                <h3>Novo Orçamento</h3>
+                <h3>Gerar Novo Orçamento</h3>
                 <input type="text" id="os-cliente" placeholder="Nome do Cliente">
                 
-                <label style="font-size:11px; font-weight:bold">SELECIONAR PROFISSÃO</label>
-                <select id="os-prof-select" onchange="mostrarServicos(this.value)"></select>
+                <label style="font-size:11px; font-weight:800; color:var(--p)">FILTRAR POR PROFISSÃO</label>
+                <select id="os-prof-select" onchange="carregarCatalogo(this.value)"></select>
                 
-                <div id="lista-servicos" style="max-height: 150px; overflow-y: auto; margin-bottom: 10px;"></div>
+                <div id="lista-catalogo" style="max-height: 180px; overflow-y: auto; margin: 10px 0; border: 1px dashed #ddd; padding: 5px; border-radius: 10px;"></div>
 
-                <textarea id="os-desc" placeholder="Detalhes do serviço..." style="height:80px"></textarea>
-                <input type="number" id="os-valor" placeholder="Valor Total R$">
-                <button class="btn btn-p" onclick="salvarOS()">Gerar PDF</button>
+                <textarea id="os-desc" placeholder="Descrição detalhada..." style="height:100px"></textarea>
+                <input type="number" id="os-valor" placeholder="Valor Total (R$)">
+                <button class="btn btn-p" onclick="finalizarOS()">Salvar e Gerar PDF</button>
             </div>
-            <div id="os-hist"></div>
+            <h3>Histórico Recente</h3>
+            <div id="os-historico"></div>
         </section>
 
         <section id="sec-fin" style="display:none">
             <div class="card">
-                <h3>Relatório de Ganhos</h3>
+                <h3>Fluxo de Entradas</h3>
                 <div id="fin-lista"></div>
             </div>
         </section>
 
         <section id="sec-adm" style="display:none">
             <div class="card card-adm">
-                <h3>📦 Importador de Catálogo</h3>
-                <input type="text" id="adm-prof" placeholder="Ex: Eletricista" style="background:#1e293b; border:none; color:white">
-                <textarea id="adm-txt" placeholder="Troca de Fiação - 250.00&#10;Reparo Tomada - 50.00" style="height:100px; background:#1e293b; border:none; color:white"></textarea>
-                <button class="btn btn-s" onclick="importarServicos()">Salvar Serviços</button>
+                <h3>📦 Importador de Serviços</h3>
+                <input type="text" id="adm-prof" placeholder="Nome da Profissão (Ex: Mecânico)" style="background:#1e293b; border:none; color:white">
+                <textarea id="adm-txt" placeholder="Instalação de Freio - 120.00&#10;Troca de Lâmpada - 30.00" style="height:120px; background:#1e293b; border:none; color:white"></textarea>
+                <button class="btn btn-s" onclick="importarServicos()">Cadastrar Catálogo</button>
             </div>
             <div class="card">
-                <h3>Usuários</h3>
-                <div id="adm-users"></div>
+                <h3>Gestão de Usuários</h3>
+                <div id="adm-user-list"></div>
             </div>
         </section>
 
         <section id="sec-chat" style="display:none">
-            <div class="card" id="chat-box" style="height:300px; overflow-y:auto;"></div>
-            <div style="display:flex; gap:5px">
-                <input type="text" id="chat-in" placeholder="Mensagem...">
-                <button class="btn btn-p" style="width:60px" onclick="enviarMsg()">></button>
+            <div class="card" style="padding:0; overflow:hidden">
+                <div id="chat-box"></div>
+                <div style="padding:15px; display:flex; gap:8px; background:white">
+                    <input type="text" id="chat-in" placeholder="Mensagem..." style="margin:0">
+                    <button class="btn btn-p" style="width:70px" onclick="enviarMensagem()">></button>
+                </div>
             </div>
         </section>
+
     </main>
 
     <script>
         const $ = document.querySelector.bind(document);
         let db, userAtual = null;
 
-        const req = indexedDB.open("ERP_V24_DATABASE", 1);
-        req.onupgradeneeded = e => {
+        // --- BANCO DE DADOS SEM CORTES ---
+        const request = indexedDB.open("ERP_V25_STABLE", 1);
+        request.onupgradeneeded = e => {
             db = e.target.result;
             db.createObjectStore("users", {keyPath:"id", autoIncrement:true});
             db.createObjectStore("os", {keyPath:"id", autoIncrement:true});
@@ -147,37 +161,43 @@
             db.createObjectStore("chat", {keyPath:"id", autoIncrement:true});
             
             const store = e.currentTarget.transaction.objectStore("users");
+            // LOGIN DO ADM RE-INSTALADO
             store.add({user:"natanjkl", pass:"91538300Aa", level:"admin", active:true});
         };
-        req.onsuccess = e => db = e.target.result;
+        request.onsuccess = e => db = e.target.result;
 
-        function login() {
+        // --- LÓGICA DE ACESSO ---
+        function handleLogin() {
             const u = $('#l-user').value, p = $('#l-pass').value;
             db.transaction("users").objectStore("users").getAll().onsuccess = e => {
                 const user = e.target.result.find(x => x.user === u && x.pass === p);
                 if(user) {
                     userAtual = user;
-                    entrar();
+                    iniciarApp();
                 } else {
-                    $('#l-msg').innerText = "Dados Inválidos!";
+                    $('#l-msg').innerText = "Usuário ou senha inválidos.";
                 }
             };
         }
 
-        function entrar() {
+        function iniciarApp() {
             $('#auth-screen').style.display = 'none';
             $('#main-nav').style.display = 'grid';
             $('main').style.display = 'block';
             $('#display-name').innerText = userAtual.user;
-            $('#display-level').innerText = userAtual.level.toUpperCase();
+            $('#display-level').innerText = userAtual.level === 'admin' ? "ADMINISTRADOR MASTER" : "USUÁRIO";
 
-            // AQUI REATIVO O ACESSO DO ADM
+            // CORREÇÃO DOS BOTÕES DO ADM
             if(userAtual.level === 'admin') {
                 $('#n-fin').style.display = 'block';
                 $('#n-adm').style.display = 'block';
+            } else {
+                $('#n-fin').style.display = 'none';
+                $('#n-adm').style.display = 'none';
             }
             go('dash');
-            carregarListas();
+            atualizarUI();
+            setInterval(syncChat, 3000);
         }
 
         function go(p) {
@@ -185,14 +205,14 @@
             document.querySelectorAll('nav div').forEach(d => d.classList.remove('active'));
             $(`#sec-${p}`).style.display='block';
             $(`#n-${p}`).classList.add('active');
-            if(p === 'os') carregarFiltroProfissao();
-            if(p === 'adm') renderAdmUsers();
+            if(p === 'os') popularFiltroProfissao();
+            if(p === 'adm') renderAdm();
         }
 
-        // --- IMPORTAÇÃO ---
+        // --- IMPORTADOR ADM ---
         function importarServicos() {
             const prof = $('#adm-prof').value, txt = $('#adm-txt').value;
-            if(!prof || !txt) return alert("Faltam dados!");
+            if(!prof || !txt) return alert("Preencha profissão e lista!");
             const tx = db.transaction("cat", "readwrite");
             txt.split('\n').forEach(l => {
                 if(l.includes('-')) {
@@ -200,70 +220,101 @@
                     tx.objectStore("cat").add({prof, nome: n.trim(), preco: v.trim()});
                 }
             });
-            tx.oncomplete = () => { alert("Importado!"); $('#adm-txt').value = ''; };
-        }
-
-        function carregarFiltroProfissao() {
-            db.transaction("cat").objectStore("cat").getAll().onsuccess = e => {
-                const p = [...new Set(e.target.result.map(i => i.prof))];
-                $('#os-prof-select').innerHTML = '<option value="">-- Escolha --</option>' + 
-                    p.map(x => `<option value="${x}">${x}</option>`).join('');
+            tx.oncomplete = () => {
+                alert("Catálogo atualizado com sucesso!");
+                $('#adm-txt').value = '';
+                popularFiltroProfissao();
             };
         }
 
-        function mostrarServicos(prof) {
+        function renderAdm() {
+            db.transaction("users").objectStore("users").getAll().onsuccess = e => {
+                $('#adm-user-list').innerHTML = e.target.result.map(u => `
+                    <div class="cat-item">
+                        <span>${u.user} (${u.level})</span>
+                        <b style="color:var(--s)">Ativo</b>
+                    </div>
+                `).join('');
+            };
+        }
+
+        // --- ORÇAMENTOS E CATÁLOGO ---
+        function popularFiltroProfissao() {
             db.transaction("cat").objectStore("cat").getAll().onsuccess = e => {
-                const f = e.target.result.filter(i => i.prof === prof);
-                $('#lista-servicos').innerHTML = f.map(s => `
-                    <div class="cat-item" onclick="setOS('${s.nome}', '${s.preco}')">
+                const profs = [...new Set(e.target.result.map(i => i.prof))];
+                $('#os-prof-select').innerHTML = '<option value="">-- Escolha a Profissão --</option>' + 
+                    profs.map(p => `<option value="${p}">${p}</option>`).join('');
+            };
+        }
+
+        function carregarCatalogo(prof) {
+            if(!prof) return $('#lista-catalogo').innerHTML = '';
+            db.transaction("cat").objectStore("cat").getAll().onsuccess = e => {
+                const filtrados = e.target.result.filter(i => i.prof === prof);
+                $('#lista-catalogo').innerHTML = filtrados.map(s => `
+                    <div class="cat-item" onclick="addServico('${s.nome}', '${s.preco}')">
                         <span>${s.nome}</span> <b>R$ ${s.preco}</b>
                     </div>
                 `).join('');
             };
         }
 
-        function setOS(n, p) {
+        function addServico(n, p) {
             $('#os-desc').value += n + "\n";
             $('#os-valor').value = p;
         }
 
-        // --- PDF ---
-        function salvarOS() {
+        // --- PDF E SALVAMENTO ---
+        function finalizarOS() {
             const cli = $('#os-cliente').value, desc = $('#os-desc').value, val = $('#os-valor').value;
-            if(!cli || !val) return;
+            if(!cli || !val) return alert("Preencha cliente e valor!");
+
             const tx = db.transaction(["os", "fin"], "readwrite");
-            tx.objectStore("os").add({cli, desc, val, ts: Date.now()});
+            tx.objectStore("os").add({cli, desc, val, user: userAtual.user, ts: Date.now()});
             tx.objectStore("fin").add({cli, val, ts: Date.now()});
-            
+
             tx.oncomplete = () => {
                 $('#p-cli').innerText = cli;
                 $('#p-data').innerText = new Date().toLocaleDateString();
+                $('#p-user').innerText = userAtual.user;
                 $('#p-desc').innerText = desc;
                 $('#p-total').innerText = val;
+                
                 html2pdf().from($('#pdf-render')).save(`Orcamento_${cli}.pdf`);
-                carregarListas();
+                atualizarUI();
             };
         }
 
-        function carregarListas() {
+        function atualizarUI() {
             db.transaction("os").objectStore("os").getAll().onsuccess = e => {
-                $('#os-hist').innerHTML = e.target.result.reverse().map(o => `<div class="card">${o.cli} - R$ ${o.val}</div>`).join('');
+                $('#os-historico').innerHTML = e.target.result.reverse().slice(0,5).map(o => `
+                    <div class="card"><b>${o.cli}</b> - R$ ${o.val}<br><small>${new Date(o.ts).toLocaleString()}</small></div>
+                `).join('');
             };
             db.transaction("fin").objectStore("fin").getAll().onsuccess = e => {
-                $('#fin-lista').innerHTML = e.target.result.map(f => `<div class="card" style="color:green">+ R$ ${f.val} (${f.cli})</div>`).join('');
+                $('#fin-lista').innerHTML = e.target.result.reverse().map(f => `
+                    <div class="cat-item"><span>${f.cli}</span><b style="color:var(--s)">+ R$ ${f.val}</b></div>
+                `).join('');
             };
         }
 
-        function renderAdmUsers() {
-            db.transaction("users").objectStore("users").getAll().onsuccess = e => {
-                $('#adm-users').innerHTML = e.target.result.map(u => `<div class="card">${u.user} (${u.level})</div>`).join('');
-            };
-        }
-        
-        function enviarMsg() {
+        // --- CHAT ---
+        function enviarMensagem() {
             const t = $('#chat-in').value; if(!t) return;
-            db.transaction("chat", "readwrite").objectStore("chat").add({u: userAtual.user, t, ts:Date.now()});
+            db.transaction("chat", "readwrite").objectStore("chat").add({u: userAtual.user, t, ts: Date.now()});
             $('#chat-in').value = '';
+            syncChat();
+        }
+
+        function syncChat() {
+            db.transaction("chat").objectStore("chat").getAll().onsuccess = e => {
+                $('#chat-box').innerHTML = e.target.result.map(m => `
+                    <div class="msg ${m.u === userAtual.user ? 'sent' : 'recv'}">
+                        <small style="display:block; font-size:9px; opacity:0.7">${m.u}</small>${m.t}
+                    </div>
+                `).join('');
+                $('#chat-box').scrollTop = $('#chat-box').scrollHeight;
+            };
         }
     </script>
 </body>
