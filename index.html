@@ -48,6 +48,10 @@
         .msg { padding: 10px 15px; border-radius: 15px; max-width: 80%; font-size: 13px; line-height: 1.4; }
         .msg.me { align-self: flex-end; background: var(--p); color: white; border-bottom-right-radius: 2px; }
         .msg.other { align-self: flex-start; background: #e2e8f0; color: var(--dark); border-bottom-left-radius: 2px; }
+
+        /* EXPIRATION OVERLAY */
+        #expiration-screen { display: none; padding: 40px 20px; text-align: center; }
+        .plan-card { background: white; border: 2px solid var(--p); border-radius: 20px; padding: 25px; margin-bottom: 20px; }
     </style>
 </head>
 <body>
@@ -66,12 +70,34 @@
 
         <div class="auth-card" id="card-register" style="display:none">
             <h1 style="font-weight: 800; letter-spacing: -1px;">NOVO CADASTRO</h1>
-            <p style="opacity:0.5; margin-bottom:20px; font-size: 11px;">CRIE SUA CONTA GRATUITAMENTE</p>
+            <p style="opacity:0.5; margin-bottom:20px; font-size: 11px;">CRIE SUA CONTA GRATUITAMENTE (7 DIAS DE TESTE)</p>
             <input type="text" id="r-name" placeholder="Seu Nome ou Empresa">
             <input type="text" id="r-user" placeholder="Login Desejado">
             <input type="password" id="r-pass" placeholder="Senha">
             <button class="btn-main btn-s" onclick="registerAccount()">Finalizar Cadastro</button>
             <button class="btn-main btn-ghost" onclick="toggleAuthMode(false)">Já tenho conta / Voltar</button>
+        </div>
+    </div>
+
+    <!-- BLOCKED SCREEN (PLANS) -->
+    <div id="expiration-screen">
+        <div class="card" style="max-width: 500px; margin: auto;">
+            <h1 style="font-size: 40px;">⏳</h1>
+            <h2 style="justify-content: center; color: var(--d);">Seu período de teste expirou!</h2>
+            <p style="margin-bottom: 20px; color: var(--slate);">Para continuar acessando seus dados e ferramentas, escolha um de nossos planos mensais abaixo.</p>
+            
+            <div class="plan-card">
+                <h3 style="color: var(--p)">PLANO MENSAL PRO</h3>
+                <p style="font-size: 24px; font-weight: 800; margin: 10px 0;">R$ 89,90<small style="font-size: 12px; font-weight: 400;">/mês</small></p>
+                <ul style="list-style: none; font-size: 13px; margin-bottom: 15px; color: var(--slate)">
+                    <li>✓ Acesso Ilimitado</li>
+                    <li>✓ Suporte via Chat</li>
+                    <li>✓ Backup de Dados</li>
+                </ul>
+                <button class="btn-main btn-p" onclick="alert('Redirecionando para pagamento...')">Assinar Agora</button>
+            </div>
+            
+            <button class="btn-main btn-ghost" style="color: var(--dark); border-color: var(--border)" onclick="logout()">Sair da Conta</button>
         </div>
     </div>
 
@@ -99,6 +125,7 @@
             <h2>📊 Resumo <span class="user-tag" id="tag-role">USER</span></h2>
             <div class="card">
                 <p>Olá, <b id="display-name">...</b></p>
+                <div id="trial-info" style="font-size: 11px; margin-top: 5px; color: var(--p)"></div>
                 <div id="user-bills-alert" style="margin-top:10px"></div>
             </div>
             <div class="card">
@@ -219,12 +246,13 @@
                 name: $('#r-name').value,
                 login: $('#r-user').value.toLowerCase(),
                 pass: $('#r-pass').value,
-                role: 'USER'
+                role: 'USER',
+                createdAt: Date.now() // Salva data de criação para o teste
             };
             if(!user.login || !user.pass) return alert("Preencha os campos!");
             
             db.transaction("users", "readwrite").objectStore("users").add(user).onsuccess = () => {
-                alert("Conta criada com sucesso! Faça login.");
+                alert("Conta criada com sucesso! Você tem 7 dias grátis.");
                 toggleAuthMode(false);
             };
         }
@@ -246,9 +274,31 @@
             };
         }
 
+        function checkExpiration(u) {
+            if (u.role === 'ADM') return false; // ADM não expira
+            if (!u.createdAt) return false;
+
+            const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000;
+            const diff = Date.now() - u.createdAt;
+            
+            if (diff > sevenDaysInMs) return true; // Expirado
+            
+            // Se não expirou, mostra quanto tempo falta no dashboard
+            const daysLeft = Math.ceil((sevenDaysInMs - diff) / (24 * 60 * 60 * 1000));
+            $('#trial-info').innerText = `⏳ Período de teste: ${daysLeft} dia(s) restante(s).`;
+            return false;
+        }
+
         function loginSuccess(u) {
             currentUser = u;
             $('#auth-screen').style.display = 'none';
+
+            // Verifica expiração
+            if (checkExpiration(u)) {
+                $('#expiration-screen').style.display = 'block';
+                return;
+            }
+
             $('#main-nav').style.display = 'grid';
             $('main').style.display = 'block';
             $('#display-name').innerText = u.name;
