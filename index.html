@@ -3,632 +3,330 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ERP TOTAL V34 PRO | Enterprise</title>
+    <title>ERP ENTERPRISE V9.0</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet"> <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
-        :root { 
-            --primary: #3b82f6; --primary-dark: #2563eb; 
-            --success: #10b981; --danger: #ef4444; --warning: #f59e0b; 
-            --dark: #0f172a; --surface: #ffffff; --bg: #f1f5f9; 
-            --text: #334155; --text-light: #94a3b8; --border: #e2e8f0;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        :root {
+            --p: #2563eb; --p-dark: #1e40af; --s: #10b981; --d: #ef4444; 
+            --w: #f59e0b; --dark: #0f172a; --slate: #64748b; --bg: #f1f5f9;
+            --card: #ffffff; --border: #e2e8f0;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: var(--text); padding-bottom: 90px; height: 100vh; overflow-x: hidden; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg); color: var(--dark); padding-bottom: 100px; overflow-x: hidden; }
 
-        /* --- COMPONENTES UI --- */
-        .card { background: var(--surface); padding: 20px; border-radius: 16px; box-shadow: var(--shadow); margin-bottom: 20px; border: 1px solid var(--border); transition: transform 0.2s; }
-        .card:active { transform: scale(0.99); }
+        /* AUTH SCREEN */
+        #auth-screen { position: fixed; inset: 0; z-index: 9999; background: var(--dark); display: flex; align-items: center; justify-content: center; }
+        .auth-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 40px; border-radius: 32px; width: 95%; max-width: 400px; text-align: center; color: white; }
         
-        h2, h3 { color: var(--dark); font-weight: 700; margin-bottom: 15px; letter-spacing: -0.5px; display: flex; align-items: center; gap: 8px; }
+        /* NAVIGATION */
+        nav { position: fixed; bottom: 0; width: 100%; background: var(--dark); display: none; grid-template-columns: repeat(auto-fit, minmax(45px, 1fr)); padding: 12px 5px; z-index: 1000; border-top: 1px solid rgba(255,255,255,0.1); }
+        nav div { color: #94a3b8; font-size: 9px; text-align: center; cursor: pointer; transition: 0.3s; }
+        nav div i { display: block; font-size: 18px; margin-bottom: 4px; font-style: normal; }
+        nav div.active { color: white; font-weight: bold; }
+
+        /* UI COMPONENTS */
+        main { padding: 20px; max-width: 1200px; margin: auto; display: none; }
+        .card { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid var(--border); box-shadow: 0 4px 6px rgba(0,0,0,0.02); margin-bottom: 20px; }
+        h2 { font-weight: 800; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; font-size: 1.1rem; }
         
-        .btn { width: 100%; padding: 14px; border-radius: 12px; font-weight: 600; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; font-size: 14px; }
-        .btn-primary { background: var(--primary); color: white; } .btn-primary:hover { background: var(--primary-dark); }
-        .btn-success { background: var(--success); color: white; }
-        .btn-danger { background: var(--danger); color: white; }
-        .btn-ghost { background: transparent; color: var(--text-light); border: 1px solid var(--border); }
+        input, select, textarea { width: 100%; padding: 12px 15px; border-radius: 12px; border: 2px solid #f1f5f9; background: #f8fafc; font-size: 14px; outline: none; margin-bottom: 10px; }
+        .btn-main { padding: 12px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px; font-size: 13px; }
+        .btn-p { background: var(--p); color: white; }
+        .btn-s { background: var(--s); color: white; }
+        .btn-ghost { background: transparent; color: white; border: 1px solid rgba(255,255,255,0.2); margin-top: 10px; font-weight: 400; }
         
-        input, select, textarea { width: 100%; background: var(--bg); border: 1px solid var(--border); padding: 14px; border-radius: 12px; color: var(--dark); margin-bottom: 12px; outline: none; transition: 0.3s; font-size: 14px; }
-        input:focus, select:focus { border-color: var(--primary); background: white; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+        .user-tag { background: var(--p); color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; margin-left: 10px; }
 
-        /* --- MODAIS DE BLOQUEIO E AUTH --- */
-        .overlay { position: fixed; inset: 0; z-index: 9000; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; padding: 20px; }
-        .auth-box { background: #1e293b; border-radius: 24px; width: 100%; max-width: 400px; padding: 30px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
-        .auth-input { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: white; }
-        .auth-input:focus { background: rgba(255,255,255,0.1); border-color: var(--primary); }
-        
-        .tabs { display: flex; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
-        .tab { flex: 1; padding: 12px; text-align: center; color: var(--text-light); cursor: pointer; font-weight: 600; border-bottom: 2px solid transparent; }
-        .tab.active { color: white; border-color: var(--primary); }
-
-        /* --- NAVEGAÇÃO --- */
-        .nav-bar { position: fixed; bottom: 0; width: 100%; background: white; display: none; justify-content: space-around; padding: 12px 0; z-index: 1000; border-top: 1px solid var(--border); box-shadow: 0 -4px 6px -1px rgba(0,0,0,0.05); }
-        .nav-item { color: var(--text-light); font-size: 10px; text-align: center; cursor: pointer; flex: 1; transition: 0.3s; }
-        .nav-item i { font-size: 22px; display: block; margin-bottom: 2px; }
-        .nav-item.active { color: var(--primary); transform: translateY(-2px); }
-
-        /* --- DASHBOARD & LISTAS --- */
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .stat-card { background: white; padding: 15px; border-radius: 12px; border: 1px solid var(--border); text-align: center; }
-        .stat-val { font-size: 18px; font-weight: 800; color: var(--dark); display: block; margin-top: 5px; }
-        .stat-label { font-size: 11px; color: var(--text-light); text-transform: uppercase; font-weight: 600; }
-
-        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: white; border-radius: 10px; margin-bottom: 8px; border: 1px solid var(--border); }
-        .list-info b { display: block; color: var(--dark); font-size: 14px; }
-        .list-info span { font-size: 12px; color: var(--text-light); }
-
-        /* --- TOAST NOTIFICATIONS --- */
-        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; }
-        .toast { background: white; padding: 12px 20px; border-radius: 50px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border-left: 4px solid var(--primary); display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; animation: slideIn 0.3s; }
-        .toast.success { border-color: var(--success); } .toast.error { border-color: var(--danger); }
-        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-
-        /* --- PDF PRINT STYLE --- */
-        #preview-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; z-index: 9999; padding: 10px; align-items: center; justify-content: center; }
-        #preview-content { background: white; width: 100%; max-width: 595px; max-height: 80vh; overflow-y: auto; padding: 0; border-radius: 4px; }
-        .paper { padding: 40px; background: white; color: #333; font-family: 'Helvetica', sans-serif; }
-        .paper-header { border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: flex-end; }
-        .paper table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .paper th { text-align: left; border-bottom: 1px solid #ccc; padding: 8px; font-size: 12px; text-transform: uppercase; }
-        .paper td { padding: 8px; border-bottom: 1px solid #eee; font-size: 14px; }
-        
-        /* Utilitários */
-        .hidden { display: none !important; }
-        .photo-grid { display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; }
-        .photo-item { width: 70px; height: 70px; border-radius: 8px; flex-shrink: 0; background-size: cover; background-position: center; border: 2px solid var(--border); position: relative; }
+        /* CHAT BUBBLES */
+        #chat-box { height: 250px; overflow-y: auto; background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--border); }
+        .msg { padding: 10px 15px; border-radius: 15px; max-width: 80%; font-size: 13px; line-height: 1.4; }
+        .msg.me { align-self: flex-end; background: var(--p); color: white; border-bottom-right-radius: 2px; }
+        .msg.other { align-self: flex-start; background: #e2e8f0; color: var(--dark); border-bottom-left-radius: 2px; }
     </style>
 </head>
 <body>
 
-    <div id="toast-container"></div>
+    <!-- AUTH SCREEN -->
+    <div id="auth-screen">
+        <div class="auth-card" id="card-login">
+            <h1 style="font-weight: 800; letter-spacing: -1px;">ENTERPRISE V9</h1>
+            <p style="opacity:0.5; margin-bottom:20px; font-size: 11px;">NÚCLEO DE GESTÃO ABSOLUTA</p>
+            <input type="text" id="l-user" placeholder="Usuário">
+            <input type="password" id="l-pass" placeholder="Senha">
+            <button class="btn-main btn-p" onclick="processAuth()">Entrar no Sistema</button>
+            <button class="btn-main btn-ghost" onclick="toggleAuthMode(true)">Não tenho conta / Criar</button>
+            <p id="auth-msg" style="color:var(--d); font-size:11px; margin-top:10px; display:none"></p>
+        </div>
 
-    <div id="block-screen" class="overlay">
-        <div class="auth-box" style="text-align: center;">
-            <i class="ri-error-warning-fill" style="font-size: 48px; color: var(--danger);"></i>
-            <h2 style="color:white; justify-content: center; margin-top: 10px;">Acesso Expirado</h2>
-            <p style="color: #94a3b8; margin: 15px 0;">Sua licença ERP venceu. Regularize para continuar.</p>
-            <div style="background: white; padding: 15px; border-radius: 12px; margin: 20px 0;">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=00020126580014BR.GOV.BCB.PIX0136123e4567-e89b-12d3-a456-426614174000520400005303986540410.005802BR5913ERP SISTEMAS6008SAO PAULO62070503***6304E67F" alt="QR Pix" style="width: 120px;">
-                <p style="font-size: 12px; font-weight: bold; margin-top: 5px; color:black">CHAVE PIX: erp@sistema.com</p>
-            </div>
-            <button class="btn btn-success" onclick="verificarPagamento()">
-                <i class="ri-check-double-line"></i> Já Paguei
-            </button>
-            <button class="btn btn-ghost" onclick="logout()" style="margin-top: 10px; color:white; border-color:#475569">Sair do Sistema</button>
+        <div class="auth-card" id="card-register" style="display:none">
+            <h1 style="font-weight: 800; letter-spacing: -1px;">NOVO CADASTRO</h1>
+            <p style="opacity:0.5; margin-bottom:20px; font-size: 11px;">CRIE SUA CONTA GRATUITAMENTE</p>
+            <input type="text" id="r-name" placeholder="Seu Nome ou Empresa">
+            <input type="text" id="r-user" placeholder="Login Desejado">
+            <input type="password" id="r-pass" placeholder="Senha">
+            <button class="btn-main btn-s" onclick="registerAccount()">Finalizar Cadastro</button>
+            <button class="btn-main btn-ghost" onclick="toggleAuthMode(false)">Já tenho conta / Voltar</button>
         </div>
     </div>
 
-    <div id="auth-screen" class="overlay" style="display: flex;">
-        <div class="auth-box">
-            <div style="text-align: center; margin-bottom: 20px;">
-                <h1 style="color:white; font-size: 24px;"><i class="ri-building-4-line" style="color:var(--primary)"></i> ERP TOTAL</h1>
-                <p style="color:#64748b; font-size:12px">Versão 34.0 Pro</p>
-            </div>
-            
-            <div class="tabs">
-                <div class="tab active" id="t-login" onclick="tabAuth('login')">Entrar</div>
-                <div class="tab" id="t-reg" onclick="tabAuth('reg')">Nova Conta</div>
-            </div>
-
-            <div id="f-login">
-                <input type="text" id="l-user" class="auth-input" placeholder="Usuário">
-                <input type="password" id="l-pass" class="auth-input" placeholder="Senha">
-                <button class="btn btn-primary" onclick="login()">
-                    Entrar <i class="ri-arrow-right-line"></i>
-                </button>
-            </div>
-
-            <div id="f-reg" class="hidden">
-                <input type="text" id="r-user" class="auth-input" placeholder="Escolha um Usuário">
-                <input type="password" id="r-pass" class="auth-input" placeholder="Crie uma Senha">
-                <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); padding: 10px; border-radius: 8px; margin-bottom: 15px;">
-                    <p style="color: #10b981; font-size: 11px;"><i class="ri-gift-line"></i> 7 Dias de Teste Grátis inclusos.</p>
-                </div>
-                <button class="btn btn-success" onclick="register()">Criar Conta</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="preview-modal">
-        <div style="width:100%; max-width:600px; display:flex; flex-direction:column; height: 90vh;">
-            <div id="preview-content"></div>
-            <div style="display:flex; gap:10px; margin-top:10px;">
-                <button class="btn btn-danger" onclick="$('#preview-modal').style.display='none'">Cancelar</button>
-                <button class="btn btn-success" onclick="gerarPDFFinal()"><i class="ri-printer-line"></i> Imprimir / PDF</button>
-            </div>
-        </div>
-    </div>
-
-    <nav class="nav-bar" id="main-nav">
-        <div class="nav-item" onclick="router('dash')" id="n-dash"><i class="ri-dashboard-line"></i>Início</div>
-        <div class="nav-item" onclick="router('os')" id="n-os"><i class="ri-file-list-3-line"></i>Novo OS</div>
-        <div class="nav-item" onclick="router('fin')" id="n-fin"><i class="ri-wallet-3-line"></i>Caixa</div>
-        <div class="nav-item" onclick="router('cli')" id="n-cli"><i class="ri-group-line"></i>Clientes</div>
-        <div class="nav-item" onclick="router('adm')" id="n-adm"><i class="ri-settings-4-line"></i>Admin</div>
+    <!-- NAV BAR -->
+    <nav id="main-nav">
+        <div onclick="go('dash')" id="n-dash" class="active"><i>📊</i>Dash</div>
+        <div onclick="go('os')" id="n-os"><i>📝</i>OS</div>
+        <div onclick="go('age')" id="n-age"><i>📅</i>Agenda</div>
+        <div onclick="go('fin')" id="n-fin"><i>💰</i>Caixa</div>
+        <div onclick="go('cli')" id="n-cli"><i>👥</i>Clientes</div>
+        <div onclick="go('chat')" id="n-chat"><i>💬</i>Chat</div>
+        
+        <!-- Itens Exclusivos Admin -->
+        <div onclick="go('adm-users')" class="nav-adm" style="display:none; color:var(--w)"><i>👑</i>Gestão</div>
+        <div onclick="go('adm-billing')" class="nav-adm" style="display:none; color:var(--w)"><i>💳</i>Faturas</div>
+        
+        <div onclick="logout()" style="color:var(--d)"><i>🚪</i>Sair</div>
     </nav>
 
+    <!-- MAIN CONTENT -->
     <main id="app-content">
         
-        <section id="p-dash" class="hidden">
-            <div style="padding: 20px;">
-                <h2><i class="ri-bar-chart-box-line" style="color:var(--primary)"></i> Visão Geral</h2>
-                <div class="stat-grid">
-                    <div class="stat-card">
-                        <span class="stat-label">Faturamento (Mês)</span>
-                        <span class="stat-val" style="color:var(--success)" id="dash-faturamento">R$ 0,00</span>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-label">Clientes</span>
-                        <span class="stat-val" id="dash-clientes">0</span>
-                    </div>
-                </div>
-                <div class="card">
-                    <h3>Performance</h3>
-                    <canvas id="chart-fin" style="max-height: 200px;"></canvas>
-                </div>
-                <button class="btn btn-primary" onclick="router('os')">Criar Orçamento Agora</button>
+        <!-- DASHBOARD -->
+        <section id="sec-dash">
+            <h2>📊 Resumo <span class="user-tag" id="tag-role">USER</span></h2>
+            <div class="card">
+                <p>Olá, <b id="display-name">...</b></p>
+                <div id="user-bills-alert" style="margin-top:10px"></div>
+            </div>
+            <div class="card">
+                <canvas id="chartFinanceiro" height="150"></canvas>
             </div>
         </section>
 
-        <section id="p-os" class="hidden">
-            <div style="padding: 20px;">
-                <div class="card">
-                    <h2><i class="ri-file-add-line" style="color:var(--primary)"></i> Novo Orçamento</h2>
-                    
-                    <label style="font-size:12px; font-weight:bold; color:var(--text-light)">CLIENTE</label>
-                    <div style="display:flex; gap:5px;">
-                        <select id="os-cli"></select>
-                        <button class="btn btn-primary" style="width:50px" onclick="router('cli')"><i class="ri-add-line"></i></button>
-                    </div>
+        <!-- OS & SERVIÇOS -->
+        <section id="sec-os" style="display:none">
+            <div class="card">
+                <h2>📝 Ordens de Serviço</h2>
+                <label>Cliente</label>
+                <select id="os-cli"></select>
+                <label>Serviço/Produto</label>
+                <div style="display:grid; grid-template-columns: 2fr 1fr; gap:10px">
+                    <input type="text" id="os-item-manual" placeholder="Item">
+                    <input type="number" id="os-val" placeholder="R$">
+                </div>
+                <button class="btn-main btn-p" onclick="addItemOS()">+ Adicionar Item</button>
+                <div id="os-preview-list" style="margin-top:15px"></div>
+                <h3 style="text-align:right; margin-top:10px">Total: R$ <span id="os-total">0.00</span></h3>
+            </div>
+        </section>
 
-                    <div style="background:var(--bg); padding:15px; border-radius:12px; margin: 15px 0; border:1px dashed var(--border)">
-                        <label style="font-size:12px; font-weight:bold; color:var(--text-light)">ADICIONAR ITEM</label>
-                        <select id="os-serv" onchange="setPrecoAuto()"></select>
-                        <div style="display:flex; gap:10px">
-                            <input type="number" id="os-val" placeholder="0.00" step="0.01">
-                            <button class="btn btn-dark" style="background:var(--dark); width:60px; color:white" onclick="addItemOS()"><i class="ri-check-line"></i></button>
-                        </div>
-                    </div>
+        <!-- AGENDA -->
+        <section id="sec-age" style="display:none">
+            <div class="card">
+                <h2>📅 Agenda</h2>
+                <input id="age-desc" placeholder="O que agendar?">
+                <input type="datetime-local" id="age-date">
+                <button class="btn-main btn-p" onclick="addAgenda()">Agendar</button>
+            </div>
+            <div id="lista-agenda"></div>
+        </section>
 
-                    <table style="width:100%; margin-bottom:15px;">
-                        <tbody id="os-lista-itens"></tbody>
-                    </table>
-                    
-                    <div style="text-align:right; font-size:18px; font-weight:800; margin-bottom:15px;">
-                        Total: <span style="color:var(--success)">R$ <span id="os-total">0.00</span></span>
-                    </div>
+        <!-- CAIXA -->
+        <section id="sec-fin" style="display:none">
+            <div class="card">
+                <h2>💰 Movimentação de Caixa</h2>
+                <select id="f-tipo"><option value="entrada">Entrada (+)</option><option value="saida">Saída (-)</option></select>
+                <input type="number" id="f-val" placeholder="Valor R$">
+                <input id="f-desc" placeholder="Motivo/Descrição">
+                <button class="btn-main btn-s" onclick="addFin()">Registrar</button>
+            </div>
+            <div id="lista-fin"></div>
+        </section>
 
-                    <div style="border-top:1px solid var(--border); padding-top:10px;">
-                        <input type="file" id="os-fotos" multiple accept="image/*" class="hidden" onchange="processarFotos(this)">
-                        <button class="btn btn-ghost" onclick="$('#os-fotos').click()">
-                            <i class="ri-camera-line"></i> Anexar Fotos
-                        </button>
-                        <div id="os-preview-fotos" class="photo-grid"></div>
-                    </div>
+        <!-- CLIENTES -->
+        <section id="sec-cli" style="display:none">
+            <div class="card">
+                <h2>👥 Meus Clientes</h2>
+                <input id="c-n" placeholder="Nome do Cliente">
+                <input id="c-t" placeholder="WhatsApp">
+                <button class="btn-main btn-p" onclick="addCli()">Salvar Cliente</button>
+            </div>
+            <div id="lista-cli"></div>
+        </section>
 
-                    <button class="btn btn-success" style="margin-top:20px" onclick="prepararImpressao()">
-                        <i class="ri-file-pdf-line"></i> Visualizar e Gerar
-                    </button>
+        <!-- CHAT -->
+        <section id="sec-chat" style="display:none">
+            <div class="card">
+                <h2>💬 Chat Interno</h2>
+                <div id="chat-box"></div>
+                <div style="display:flex; gap:10px">
+                    <input id="chat-input" placeholder="Mensagem..." style="margin:0">
+                    <button class="btn-main btn-p" style="width:80px" onclick="sendMsg()">Enviar</button>
                 </div>
             </div>
         </section>
 
-        <section id="p-fin" class="hidden">
-            <div style="padding: 20px;">
-                <h2><i class="ri-money-dollar-circle-line" style="color:var(--success)"></i> Financeiro</h2>
-                <div class="card">
-                    <div id="fin-lista"></div>
-                </div>
+        <!-- ADMIN: GESTÃO DE USUÁRIOS -->
+        <section id="sec-adm-users" style="display:none">
+            <div class="card" style="border-top: 5px solid var(--w)">
+                <h2>👑 Painel de Usuários (Master)</h2>
+                <div id="list-all-users"></div>
             </div>
         </section>
 
-        <section id="p-cli" class="hidden">
-            <div style="padding: 20px;">
-                <h2><i class="ri-user-heart-line" style="color:var(--warning)"></i> Clientes</h2>
-                <div class="card">
-                    <input id="c-nome" placeholder="Nome Completo">
-                    <input id="c-tel" placeholder="WhatsApp / Telefone">
-                    <button class="btn btn-primary" onclick="addCliente()">Salvar Cliente</button>
-                </div>
-                <div id="cli-lista"></div>
+        <!-- ADMIN: COBRANÇA -->
+        <section id="sec-adm-billing" style="display:none">
+            <div class="card" style="border-top: 5px solid var(--w)">
+                <h2>💳 Gerar Cobrança de Uso</h2>
+                <label>Selecionar Cliente do App</label>
+                <select id="bill-user"></select>
+                <label>Valor da Mensalidade</label>
+                <input type="number" id="bill-val" value="150.00">
+                <label>Vencimento</label>
+                <input type="date" id="bill-date">
+                <button class="btn-main btn-s" onclick="generateBill()">Lançar Fatura</button>
             </div>
-        </section>
-
-        <section id="p-adm" class="hidden">
-            <div style="padding: 20px;">
-                <h2><i class="ri-shield-user-line" style="color:var(--danger)"></i> Administração</h2>
-                
-                <div class="card">
-                    <h3><i class="ri-database-2-line"></i> Backup e Dados</h3>
-                    <p style="font-size:12px; color:var(--text-light); margin-bottom:10px">Salve seus dados regularmente.</p>
-                    <div style="display:flex; gap:10px">
-                        <button class="btn btn-primary" onclick="fazerBackup()"><i class="ri-download-cloud-line"></i> Backup</button>
-                        <input type="file" id="file-restore" class="hidden" onchange="restaurarBackup(this)">
-                        <button class="btn btn-ghost" onclick="$('#file-restore').click()"><i class="ri-upload-cloud-line"></i> Restaurar</button>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <h3><i class="ri-list-settings-line"></i> Cadastro em Massa</h3>
-                    <textarea id="adm-import" placeholder="Ex: Formatação - 80.00" style="height:80px; font-family:monospace"></textarea>
-                    <button class="btn btn-dark" style="background:var(--dark); color:white; margin-top:10px" onclick="importarServicos()">Importar Lista</button>
-                </div>
-
-                <div class="card">
-                    <h3>Usuários</h3>
-                    <div id="adm-users-list"></div>
-                </div>
-                
-                <button class="btn btn-danger" onclick="logout()">Sair do Sistema</button>
-            </div>
+            <div id="list-bills"></div>
         </section>
 
     </main>
 
     <script>
-        // --- UTILITÁRIOS ---
-        const $ = q => document.querySelector(q);
-        const $$ = q => document.querySelectorAll(q);
-        const formatBRL = v => v.toLocaleString('pt-br',{style: 'currency', currency: 'BRL'});
-        const now = () => Date.now();
-        
-        function toast(msg, type='success') {
-            const t = document.createElement('div');
-            t.className = `toast ${type}`;
-            t.innerHTML = `<i class="${type==='success'?'ri-checkbox-circle-fill':'ri-error-warning-fill'}" style="font-size:18px"></i> ${msg}`;
-            $('#toast-container').appendChild(t);
-            setTimeout(() => t.remove(), 3000);
-        }
+        const $ = document.querySelector.bind(document);
+        let db, currentUser = null, chartObj;
 
-        // --- BANCO DE DADOS (IndexedDB) ---
-        let db, userSessao = null, itensTemp = [], fotosTemp = [], chartInstance = null;
-        
-        const DB_REQ = indexedDB.open("ERP_V34_PRO", 1);
-        DB_REQ.onupgradeneeded = e => {
-            const d = e.target.result;
-            ['users', 'clientes', 'servicos', 'vendas', 'docs'].forEach(s => {
-                if(!d.objectStoreNames.contains(s)) d.createObjectStore(s, {keyPath:'id', autoIncrement:true});
-            });
-            // Admin Padrão
-            d.transaction("users", "readwrite").objectStore("users").add({
-                user:'admin', pass:'admin', nivel:'admin', exp: 4102444800000 // Ano 2100
+        // DB INIT
+        const req = indexedDB.open("ERP_V10_CORE", 3);
+        req.onupgradeneeded = e => {
+            db = e.target.result;
+            ["users", "bills", "messages", "cli", "fin", "age"].forEach(s => {
+                if(!db.objectStoreNames.contains(s)) db.createObjectStore(s, {keyPath: s === "users" ? "login" : "id", autoIncrement: true});
             });
         };
-        DB_REQ.onsuccess = e => { db = e.target.result; checarSessao(); };
+        req.onsuccess = e => { db = e.target.result; initChart(); syncData(); };
 
-        // --- AUTENTICAÇÃO ---
-        function tabAuth(mode) {
-            if(mode === 'login') {
-                $('#f-login').classList.remove('hidden'); $('#f-reg').classList.add('hidden');
-                $('#t-login').classList.add('active'); $('#t-reg').classList.remove('active');
-            } else {
-                $('#f-login').classList.add('hidden'); $('#f-reg').classList.remove('hidden');
-                $('#t-reg').classList.add('active'); $('#t-login').classList.remove('active');
+        // AUTH LOGIC
+        function toggleAuthMode(reg) {
+            $('#card-login').style.display = reg ? 'none' : 'block';
+            $('#card-register').style.display = reg ? 'block' : 'none';
+        }
+
+        function registerAccount() {
+            const user = {
+                name: $('#r-name').value,
+                login: $('#r-user').value.toLowerCase(),
+                pass: $('#r-pass').value,
+                role: 'USER'
+            };
+            if(!user.login || !user.pass) return alert("Preencha os campos!");
+            
+            db.transaction("users", "readwrite").objectStore("users").add(user).onsuccess = () => {
+                alert("Conta criada com sucesso! Faça login.");
+                toggleAuthMode(false);
+            };
+        }
+
+        function processAuth() {
+            const user = $('#l-user').value.toLowerCase();
+            const pass = $('#l-pass').value;
+
+            if(user === 'natanjkl' && pass === '91538300Aa') {
+                loginSuccess({name: 'Natan (Master ADM)', login: 'natanjkl', role: 'ADM'});
+                return;
             }
+
+            const tx = db.transaction("users", "readonly");
+            tx.objectStore("users").get(user).onsuccess = e => {
+                const u = e.target.result;
+                if(u && u.pass === pass) loginSuccess({...u, role: 'USER'});
+                else { $('#auth-msg').innerText = "Erro no login."; $('#auth-msg').style.display = 'block'; }
+            };
         }
 
-        function login() {
-            const u = $('#l-user').value, p = $('#l-pass').value;
-            read('users').then(users => {
-                const acc = users.find(x => x.user === u && x.pass === p);
-                if(acc) {
-                    if(now() > acc.exp) {
-                        $('#auth-screen').style.display = 'none';
-                        $('#block-screen').style.display = 'flex';
-                    } else {
-                        sessaoStart(acc);
-                    }
-                } else toast("Dados inválidos!", "error");
-            });
-        }
-
-        function register() {
-            const u = $('#r-user').value, p = $('#r-pass').value;
-            if(!u || !p) return toast("Preencha tudo!", "error");
-            add('users', { user: u, pass: p, nivel: 'user', exp: now() + (7 * 86400000) }).then(() => {
-                toast("Conta criada! Teste grátis iniciado.");
-                tabAuth('login'); $('#l-user').value = u;
-            });
-        }
-
-        function sessaoStart(u) {
-            userSessao = u;
-            localStorage.setItem('erp_user', JSON.stringify(u));
+        function loginSuccess(u) {
+            currentUser = u;
             $('#auth-screen').style.display = 'none';
-            $('#main-nav').style.display = 'flex';
-            if(u.nivel !== 'admin') $('#n-adm').classList.add('hidden');
-            router('dash');
-            syncAll();
+            $('#main-nav').style.display = 'grid';
+            $('main').style.display = 'block';
+            $('#display-name').innerText = u.name;
+            $('#tag-role').innerText = u.role;
+
+            if(u.role === 'ADM') {
+                document.querySelectorAll('.nav-adm').forEach(el => el.style.display = 'block');
+            }
+            go('dash');
+            loadChat();
         }
 
-        function checarSessao() {
-            const s = JSON.parse(localStorage.getItem('erp_user'));
-            if(s) loginAuto(s);
+        function go(sec) {
+            document.querySelectorAll('section').forEach(s => s.style.display = 'none');
+            document.querySelectorAll('nav div').forEach(d => d.classList.remove('active'));
+            $(`#sec-${sec}`).style.display = 'block';
+            if($(`#n-${sec}`)) $(`#n-${sec}`).classList.add('active');
         }
 
-        function loginAuto(u) {
-            // Revalida no banco para segurança
-            read('users').then(users => {
-                const acc = users.find(x => x.id === u.id);
-                if(acc && now() < acc.exp) sessaoStart(acc);
-                else { localStorage.removeItem('erp_user'); $('#auth-screen').style.display='flex'; }
-            });
-        }
-
-        function logout() {
-            localStorage.removeItem('erp_user');
-            location.reload();
-        }
-
-        function verificarPagamento() {
-            toast("Verificando pagamento...");
-            setTimeout(() => {
-                // Simulação: Renovaria por 30 dias
-                const tx = db.transaction("users", "readwrite");
-                const store = tx.objectStore("users");
-                // Como não temos o ID do user bloqueado fácil aqui na demo, vamos renovar todos (num real seria pelo ID)
-                store.getAll().onsuccess = e => {
-                    const users = e.target.result;
-                    users.forEach(u => { u.exp = now() + (30 * 86400000); store.put(u); });
-                    location.reload();
-                };
-            }, 2000);
-        }
-
-        // --- ROTEAMENTO ---
-        function router(page) {
-            $$('main section').forEach(s => s.classList.add('hidden'));
-            $$('.nav-item').forEach(n => n.classList.remove('active'));
-            
-            $(`#p-${page}`).classList.remove('hidden');
-            $(`#n-${page}`).classList.add('active');
-            
-            if(page === 'dash') renderChart();
-            if(page === 'adm' && userSessao.nivel === 'admin') renderUsers();
-        }
-
-        // --- DB HELPERS ---
-        function add(store, data) {
-            return new Promise(r => {
-                const tx = db.transaction(store, 'readwrite');
-                tx.objectStore(store).add(data);
-                tx.oncomplete = () => r();
-            });
-        }
-        function read(store) {
-            return new Promise(r => {
-                db.transaction(store).objectStore(store).getAll().onsuccess = e => r(e.target.result);
-            });
-        }
-        function del(store, id, cb) {
-            db.transaction(store, 'readwrite').objectStore(store).delete(id).onsuccess = cb;
-        }
-
-        // --- LÓGICA DE NEGÓCIO ---
-        
-        // Sincronização Geral
-        async function syncAll() {
-            const clientes = await read('clientes');
-            const servicos = await read('servicos');
-            const vendas = await read('vendas');
-
-            // Preenche Selects
-            $('#os-cli').innerHTML = clientes.map(c => `<option>${c.nome}</option>`).join('');
-            $('#os-serv').innerHTML = `<option value="">Selecione...</option>` + servicos.map(s => `<option data-val="${s.val}">${s.nome}</option>`).join('');
-
-            // Listas
-            $('#cli-lista').innerHTML = clientes.map(c => 
-                `<div class="list-item"><div class="list-info"><b>${c.nome}</b><span>${c.tel}</span></div><i class="ri-delete-bin-line" onclick="del('clientes', ${c.id}, syncAll)" style="color:var(--danger)"></i></div>`
-            ).join('');
-
-            $('#fin-lista').innerHTML = vendas.reverse().map(v => 
-                `<div class="list-item"><div class="list-info"><b>${v.desc}</b><span>${new Date(v.data).toLocaleDateString()}</span></div><b style="color:var(--success)">${formatBRL(v.total)}</b></div>`
-            ).join('');
-
-            // Dashboard
-            $('#dash-clientes').innerText = clientes.length;
-            const totalMes = vendas.reduce((acc, v) => acc + v.total, 0);
-            $('#dash-faturamento').innerText = formatBRL(totalMes);
-        }
-
-        // Módulo OS
-        function setPrecoAuto() {
-            const opt = $('#os-serv').selectedOptions[0];
-            if(opt && opt.dataset.val) $('#os-val').value = opt.dataset.val;
-        }
-
-        function addItemOS() {
-            const nome = $('#os-serv').value;
-            const val = parseFloat($('#os-val').value);
-            if(!nome || isNaN(val)) return toast("Item inválido", "error");
-            
-            itensTemp.push({nome, val});
-            renderItensOS();
-            $('#os-val').value = '';
-        }
-
-        function renderItensOS() {
-            $('#os-lista-itens').innerHTML = itensTemp.map((i, idx) => 
-                `<tr><td>${i.nome}</td><td align="right">R$ ${i.val.toFixed(2)}</td></tr>`
-            ).join('');
-            $('#os-total').innerText = itensTemp.reduce((a,b)=>a+b.val,0).toFixed(2);
-        }
-
-        function processarFotos(input) {
-            Array.from(input.files).forEach(f => {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    fotosTemp.push(e.target.result);
-                    $('#os-preview-fotos').innerHTML = fotosTemp.map(img => `<div class="photo-item" style="background-image:url(${img})"></div>`).join('');
-                };
-                reader.readAsDataURL(f);
-            });
-        }
-
-        let docFinalData = {};
-        function prepararImpressao() {
-            if(itensTemp.length === 0) return toast("Adicione itens!", "warning");
-            
-            docFinalData = {
-                cli: $('#os-cli').value,
-                itens: [...itensTemp],
-                total: itensTemp.reduce((a,b)=>a+b.val,0),
-                fotos: [...fotosTemp],
-                data: new Date()
+        // SYNC DATA
+        function syncData() {
+            if(!db) return;
+            db.transaction("cli").objectStore("cli").getAll().onsuccess = e => {
+                const list = e.target.result;
+                $('#lista-cli').innerHTML = list.reverse().map(c => `<div class="list-item">${c.n} <span>${c.t}</span></div>`).join('');
+                $('#os-cli').innerHTML = list.map(c => `<option>${c.n}</option>`).join('');
             };
-
-            const html = `
-                <div class="paper">
-                    <div class="paper-header">
-                        <div>
-                            <h1 style="margin:0; font-size:24px;">ORÇAMENTO</h1>
-                            <p style="margin:0; font-size:12px; color:#666">Emissão: ${docFinalData.data.toLocaleDateString()}</p>
-                        </div>
-                        <div style="text-align:right">
-                            <b>${userSessao.user.toUpperCase()} SERVIÇOS</b><br>
-                            <small>Soluções Profissionais</small>
-                        </div>
-                    </div>
-                    <div style="background:#f8f9fa; padding:10px; border-radius:4px; margin-bottom:20px">
-                        <b>Cliente:</b> ${docFinalData.cli}
-                    </div>
-                    <table>
-                        <thead><tr><th>Descrição</th><th align="right">Valor</th></tr></thead>
-                        <tbody>${docFinalData.itens.map(i=>`<tr><td>${i.nome}</td><td align="right">${formatBRL(i.val)}</td></tr>`).join('')}</tbody>
-                    </table>
-                    <div style="text-align:right; margin-top:20px; font-size:18px; font-weight:bold">
-                        TOTAL: ${formatBRL(docFinalData.total)}
-                    </div>
-                    <div style="margin-top:30px; display:grid; grid-template-columns:1fr 1fr; gap:10px">
-                        ${docFinalData.fotos.map(f => `<img src="${f}" style="width:100%; border-radius:4px; border:1px solid #eee">`).join('')}
-                    </div>
-                </div>
-            `;
-            
-            $('#preview-content').innerHTML = html;
-            $('#preview-modal').style.display = 'flex';
-        }
-
-        function gerarPDFFinal() {
-            // Salva Venda
-            add('vendas', { desc: `OS - ${docFinalData.cli}`, total: docFinalData.total, data: Date.now() });
-            
-            // Gera PDF
-            const opt = { margin: 0, filename: `OS_${docFinalData.cli}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
-            html2pdf().set(opt).from($('#preview-content')).save();
-            
-            // Limpa
-            itensTemp = []; fotosTemp = []; renderItensOS(); $('#os-preview-fotos').innerHTML = '';
-            $('#preview-modal').style.display = 'none';
-            toast("Venda Salva e PDF Gerado!");
-            syncAll();
-        }
-
-        // Módulo Clientes e Admin
-        function addCliente() {
-            const n = $('#c-nome').value, t = $('#c-tel').value;
-            if(n) add('clientes', {nome:n, tel:t}).then(() => { toast("Cliente salvo"); syncAll(); $('#c-nome').value=''; });
-        }
-
-        function importarServicos() {
-            const txt = $('#adm-import').value;
-            const lines = txt.split('\n');
-            let count = 0;
-            const tx = db.transaction('servicos', 'readwrite');
-            lines.forEach(l => {
-                if(l.includes('-')) {
-                    const [n, v] = l.split('-');
-                    tx.objectStore('servicos').add({nome: n.trim(), val: parseFloat(v.trim())});
-                    count++;
-                }
-            });
-            tx.oncomplete = () => { toast(`${count} serviços importados!`); syncAll(); };
-        }
-
-        function renderUsers() {
-            read('users').then(users => {
-                $('#adm-users-list').innerHTML = users.map(u => 
-                    `<div class="list-item">
-                        <div class="list-info"><b>${u.user}</b><span>Vence: ${new Date(u.exp).toLocaleDateString()}</span></div>
-                        ${u.user !== 'admin' ? `<button class="btn btn-danger" style="width:auto; padding:5px 10px" onclick="del('users', ${u.id}, renderUsers)">X</button>` : ''}
-                    </div>`
-                ).join('');
-            });
-        }
-
-        // --- BACKUP SYSTEM ---
-        async function fazerBackup() {
-            const backup = {};
-            backup.clientes = await read('clientes');
-            backup.servicos = await read('servicos');
-            backup.vendas = await read('vendas');
-            backup.users = await read('users');
-            
-            const blob = new Blob([JSON.stringify(backup)], {type: "application/json"});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `Backup_ERP_${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-            toast("Backup baixado!");
-        }
-
-        function restaurarBackup(input) {
-            const file = input.files[0];
-            if(!file) return;
-            const reader = new FileReader();
-            reader.onload = async e => {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    // Limpa DB atual e insere novo (Simplificado)
-                    const tx = db.transaction(['clientes','servicos','vendas','users'], 'readwrite');
-                    // Aqui seria ideal limpar as stores antes, mas para simplicidade vamos adicionar
-                    // Em produção: tx.objectStore('clientes').clear(); etc.
-                    
-                    data.clientes.forEach(x => { delete x.id; tx.objectStore('clientes').add(x); });
-                    data.servicos.forEach(x => { delete x.id; tx.objectStore('servicos').add(x); });
-                    data.vendas.forEach(x => { delete x.id; tx.objectStore('vendas').add(x); });
-                    
-                    tx.oncomplete = () => { toast("Dados restaurados com sucesso!"); setTimeout(()=>location.reload(), 1500); };
-                } catch(err) {
-                    toast("Arquivo inválido!", "error");
-                }
+            db.transaction("users").objectStore("users").getAll().onsuccess = e => {
+                const users = e.target.result;
+                $('#list-all-users').innerHTML = users.map(u => `<div class="list-item"><b>${u.name}</b> <span>${u.login}</span></div>`).join('');
+                $('#bill-user').innerHTML = users.map(u => `<option value="${u.login}">${u.name}</option>`).join('');
             };
-            reader.readAsText(file);
         }
 
-        // --- GRÁFICOS ---
-        function renderChart() {
-            read('vendas').then(vendas => {
-                const ctx = $('#chart-fin').getContext('2d');
-                if(chartInstance) chartInstance.destroy();
-                
-                // Agrupar por data (simples)
-                const dataMap = {};
-                vendas.forEach(v => {
-                    const d = new Date(v.data).toLocaleDateString();
-                    dataMap[d] = (dataMap[d] || 0) + v.total;
-                });
+        // CHAT
+        function sendMsg() {
+            const text = $('#chat-input').value;
+            if(!text) return;
+            const msg = { user: currentUser.name, text };
+            db.transaction("messages", "readwrite").objectStore("messages").add(msg).onsuccess = () => {
+                $('#chat-input').value = '';
+                loadChat();
+            };
+        }
 
-                chartInstance = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: Object.keys(dataMap).slice(-7), // Últimos 7 dias
-                        datasets: [{
-                            label: 'Faturamento Diário',
-                            data: Object.values(dataMap).slice(-7),
-                            backgroundColor: '#3b82f6',
-                            borderRadius: 6
-                        }]
-                    },
-                    options: { responsive: true, plugins: { legend: {display:false} } }
-                });
+        function loadChat() {
+            if(!db) return;
+            db.transaction("messages").objectStore("messages").getAll().onsuccess = e => {
+                $('#chat-box').innerHTML = e.target.result.map(m => `
+                    <div class="msg ${m.user === currentUser.name ? 'me' : 'other'}">
+                        <small style="display:block; font-size:9px">${m.user}</small>${m.text}
+                    </div>
+                `).join('');
+                $('#chat-box').scrollTop = $('#chat-box').scrollHeight;
+            };
+        }
+
+        function addCli() {
+            const n = $('#c-n').value; const t = $('#c-t').value;
+            db.transaction("cli", "readwrite").objectStore("cli").add({n, t}).onsuccess = () => { syncData(); $('#c-n').value=''; $('#c-t').value=''; };
+        }
+
+        function generateBill() {
+            const bill = { user: $('#bill-user').value, val: $('#bill-val').value, date: $('#bill-date').value };
+            db.transaction("bills", "readwrite").objectStore("bills").add(bill).onsuccess = () => { alert("Cobrança gerada!"); };
+        }
+
+        function initChart() {
+            const ctx = $('#chartFinanceiro').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: { labels: ['S1', 'S2', 'S3', 'S4'], datasets: [{ label: 'Fluxo', data: [10, 20, 15, 25], borderColor: '#2563eb', tension: 0.4 }] },
+                options: { plugins: { legend: { display: false } } }
             });
         }
+
+        function logout() { location.reload(); }
+        setInterval(loadChat, 3000);
     </script>
 </body>
 </html>
