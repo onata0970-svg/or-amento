@@ -3,196 +3,285 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ERP ENTERPRISE V9.0</title>
+    <title>ERP ENTERPRISE V9.0 | Professional Edition</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --p: #2563eb; --p-dark: #1e40af; --s: #10b981; --d: #ef4444; 
-            --w: #f59e0b; --dark: #0f172a; --slate: #64748b; --bg: #f1f5f9;
-            --card: #ffffff; --border: #e2e8f0;
+            --p: #4f46e5; 
+            --p-dark: #3730a3; 
+            --s: #10b981; 
+            --d: #ef4444; 
+            --w: #f59e0b; 
+            --dark: #0f172a; 
+            --slate-50: #f8fafc;
+            --slate-100: #f1f5f9;
+            --slate-200: #e2e8f0;
+            --slate-400: #94a3b8;
+            --slate-600: #475569;
+            --card: #ffffff; 
+            --border: #e2e8f0;
+            --radius: 12px;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { background: var(--bg); color: var(--dark); padding-bottom: 100px; overflow-x: hidden; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+        
+        body { background: var(--slate-50); color: var(--dark); padding-bottom: 90px; overflow-x: hidden; }
 
         /* AUTH SCREEN */
-        #auth-screen { position: fixed; inset: 0; z-index: 9999; background: var(--dark); display: flex; align-items: center; justify-content: center; }
-        .auth-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 40px; border-radius: 32px; width: 95%; max-width: 400px; text-align: center; color: white; }
+        #auth-screen { 
+            position: fixed; inset: 0; z-index: 9999; 
+            background: radial-gradient(circle at top right, #1e293b, #0f172a); 
+            display: flex; align-items: center; justify-content: center; 
+        }
+        .auth-card { 
+            background: rgba(255,255,255,0.03); 
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.1); 
+            padding: 48px 32px; 
+            border-radius: 32px; 
+            width: 90%; max-width: 400px; 
+            text-align: center; color: white;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+        }
         
         /* NAVIGATION */
-        nav { position: fixed; bottom: 0; width: 100%; background: var(--dark); display: none; grid-template-columns: repeat(auto-fit, minmax(45px, 1fr)); padding: 12px 5px; z-index: 1000; border-top: 1px solid rgba(255,255,255,0.1); }
-        nav div { color: #94a3b8; font-size: 9px; text-align: center; cursor: pointer; transition: 0.3s; }
-        nav div i { display: block; font-size: 18px; margin-bottom: 4px; font-style: normal; }
-        nav div.active { color: white; font-weight: bold; }
+        nav { 
+            position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+            width: calc(100% - 32px); max-width: 600px;
+            background: rgba(15, 23, 42, 0.95); 
+            backdrop-filter: blur(10px);
+            display: none; grid-template-columns: repeat(auto-fit, minmax(40px, 1fr)); 
+            padding: 8px; z-index: 1000; 
+            border-radius: 24px;
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        nav div { color: var(--slate-400); font-size: 10px; text-align: center; cursor: pointer; transition: 0.2s; padding: 10px 4px; border-radius: 16px; }
+        nav div.active { color: white; background: rgba(255,255,255,0.1); }
+        nav div i { display: block; font-size: 20px; margin-bottom: 4px; font-style: normal; }
 
         /* UI COMPONENTS */
-        main { padding: 20px; max-width: 1200px; margin: auto; display: none; }
-        .card { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid var(--border); box-shadow: 0 4px 6px rgba(0,0,0,0.02); margin-bottom: 20px; }
-        h2 { font-weight: 800; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; font-size: 1.1rem; }
+        main { padding: 24px 16px; max-width: 1000px; margin: auto; display: none; }
+        .card { 
+            background: var(--card); border-radius: var(--radius); padding: 24px; 
+            border: 1px solid var(--border); box-shadow: var(--shadow); 
+            margin-bottom: 24px; 
+        }
+        h2 { font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; font-size: 1.25rem; }
         
-        input, select, textarea { width: 100%; padding: 12px 15px; border-radius: 12px; border: 2px solid #f1f5f9; background: #f8fafc; font-size: 14px; outline: none; margin-bottom: 10px; }
-        .btn-main { padding: 12px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px; font-size: 13px; }
+        input, select, textarea { 
+            width: 100%; padding: 14px 16px; border-radius: 10px; 
+            border: 1px solid var(--slate-200); background: white; 
+            font-size: 14px; outline: none; margin-bottom: 12px; 
+        }
+        input:focus { border-color: var(--p); box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
+
+        .btn-main { 
+            padding: 14px; border-radius: 10px; border: none; font-weight: 600; 
+            cursor: pointer; width: 100%; display: flex; justify-content: center; 
+            align-items: center; gap: 8px; font-size: 14px; transition: 0.2s;
+        }
+        .btn-main:active { transform: scale(0.98); }
         .btn-p { background: var(--p); color: white; }
         .btn-s { background: var(--s); color: white; }
         .btn-d { background: var(--d); color: white; }
-        .btn-ghost { background: transparent; color: white; border: 1px solid rgba(255,255,255,0.2); margin-top: 10px; font-weight: 400; }
+        .btn-ghost { background: transparent; color: white; border: 1px solid rgba(255,255,255,0.2); margin-top: 12px; }
         
-        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
-        .user-tag { background: var(--p); color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; margin-left: 10px; }
+        .list-item { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 16px; border-bottom: 1px solid var(--slate-100); font-size: 14px;
+        }
+        
+        .user-tag { background: var(--p); color: white; padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 700; }
 
-        /* CHAT BUBBLES */
-        #chat-box { height: 250px; overflow-y: auto; background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--border); }
-        .msg { padding: 10px 15px; border-radius: 15px; max-width: 80%; font-size: 13px; line-height: 1.4; }
-        .msg.me { align-self: flex-end; background: var(--p); color: white; border-bottom-right-radius: 2px; }
-        .msg.other { align-self: flex-start; background: #e2e8f0; color: var(--dark); border-bottom-left-radius: 2px; }
+        /* CHAT */
+        #chat-box { 
+            height: 300px; overflow-y: auto; background: var(--slate-50); 
+            padding: 15px; border-radius: 12px; margin-bottom: 12px; 
+            display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--border); 
+        }
+        .msg { padding: 10px 14px; border-radius: 15px; max-width: 80%; font-size: 13px; }
+        .msg.me { align-self: flex-end; background: var(--p); color: white; border-bottom-right-radius: 4px; }
+        .msg.other { align-self: flex-start; background: white; color: var(--dark); border-bottom-left-radius: 4px; border: 1px solid var(--border); }
 
-        /* ADMIN SPECIFIC UI */
         .admin-only { display: none; }
-        .btn-sm { padding: 5px 10px; font-size: 10px; border-radius: 6px; width: auto; display: inline-block; }
+        .btn-sm { padding: 6px 10px; font-size: 11px; width: auto; }
+
+        .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+        .kpi-card { background: white; padding: 16px; border-radius: 16px; border: 1px solid var(--border); }
+        .kpi-card span { font-size: 11px; color: var(--slate-600); display: block; }
+        .kpi-card b { font-size: 18px; color: var(--dark); }
+
+        @media print {
+            body * { visibility: hidden; }
+            #print-area, #print-area * { visibility: visible; }
+            #print-area { position: absolute; left: 0; top: 0; width: 100%; display: block !important; }
+        }
     </style>
 </head>
 <body>
 
-    <!-- AUTH SCREEN -->
+    <div id="print-area" style="display:none; padding: 40px; background: white;"></div>
+
+    <!-- AUTH -->
     <div id="auth-screen">
         <div class="auth-card" id="card-login">
-            <h1 style="font-weight: 800; letter-spacing: -1px;">ENTERPRISE V9</h1>
-            <p style="opacity:0.5; margin-bottom:20px; font-size: 11px;">NÚCLEO DE GESTÃO ABSOLUTA</p>
+            <h1 style="font-weight: 800; letter-spacing: -1px; font-size: 2rem;">ENTERPRISE</h1>
+            <p style="color: var(--p); font-weight: 700; font-size: 10px; letter-spacing: 2px; margin-bottom: 30px;">NEXUS CORE V9.0</p>
             <input type="text" id="l-user" placeholder="Usuário">
             <input type="password" id="l-pass" placeholder="Senha">
-            <button class="btn-main btn-p" onclick="processAuth()">Entrar no Sistema</button>
-            <button class="btn-main btn-ghost" onclick="toggleAuthMode(true)">Criar nova conta</button>
-            <p id="auth-msg" style="color:var(--d); font-size:11px; margin-top:10px; display:none"></p>
+            <button class="btn-main btn-p" onclick="processAuth()">Entrar</button>
+            <button class="btn-main btn-ghost" onclick="toggleAuthMode(true)">Novo Cadastro (Trial)</button>
         </div>
 
         <div class="auth-card" id="card-register" style="display:none">
-            <h1 style="font-weight: 800; letter-spacing: -1px;">NOVO CADASTRO</h1>
-            <p style="opacity:0.5; margin-bottom:20px; font-size: 11px;">7 DIAS DE TESTE GRÁTIS</p>
-            <input type="text" id="r-name" placeholder="Nome Completo / Empresa">
-            <input type="text" id="r-user" placeholder="Nome de Usuário">
+            <h1>CADASTRO</h1>
+            <p style="opacity:0.6; margin-bottom:20px; font-size: 12px;">7 dias de avaliação gratuita</p>
+            <input type="text" id="r-name" placeholder="Nome Completo">
+            <input type="text" id="r-user" placeholder="Usuário">
             <input type="password" id="r-pass" placeholder="Senha">
-            <button class="btn-main btn-s" onclick="registerAccount()">Começar Teste Grátis</button>
-            <button class="btn-main btn-ghost" onclick="toggleAuthMode(false)">Voltar ao Login</button>
+            <button class="btn-main btn-s" onclick="registerAccount()">Criar Conta</button>
+            <button class="btn-main btn-ghost" onclick="toggleAuthMode(false)">Voltar</button>
         </div>
     </div>
 
-    <!-- EXPIRATION SCREEN -->
+    <!-- EXPIRATION -->
     <div id="expiration-screen" style="display:none; text-align: center; padding: 50px;">
-        <div class="card" style="max-width: 500px; margin: auto;">
-            <h1 style="font-size: 40px;">⚠️</h1>
-            <h2 style="color: var(--d);">Acesso Expirado</h2>
-            <p>Seu período de teste acabou. Assine para continuar.</p>
-            <button class="btn-main btn-p" style="margin-top:20px" onclick="alert('Contate o ADM: natanjkl')">Assinar Plano Mensal</button>
-            <button class="btn-main btn-ghost" style="color:var(--dark)" onclick="logout()">Sair</button>
+        <div class="card" style="max-width: 450px; margin: 80px auto;">
+            <h2 style="color: var(--d); justify-content: center;">Licença Expirada</h2>
+            <p>Seu período de teste acabou. Entre em contato para renovar.</p>
+            <br>
+            <button class="btn-main btn-p" onclick="alert('Suporte: natanjkl')">Falar com Suporte</button>
+            <button class="btn-main btn-ghost" style="color:black" onclick="location.reload()">Sair</button>
         </div>
     </div>
 
-    <!-- NAV BAR -->
+    <!-- NAV -->
     <nav id="main-nav">
         <div onclick="go('dash')" id="n-dash" class="active"><i>📊</i>Dash</div>
         <div onclick="go('os')" id="n-os"><i>📝</i>OS</div>
         <div onclick="go('age')" id="n-age"><i>📅</i>Agenda</div>
-        <div onclick="go('fin')" id="n-fin"><i>💰</i>Financ.</div>
+        <div onclick="go('fin')" id="n-fin"><i>💰</i>Caixa</div>
         <div onclick="go('cli')" id="n-cli"><i>👥</i>Clientes</div>
         <div onclick="go('chat')" id="n-chat"><i>💬</i>Chat</div>
-        <div onclick="go('adm-users')" class="admin-only" id="n-adm-users" style="color:var(--w)"><i>👑</i>Usuários</div>
-        <div onclick="go('adm-billing')" class="admin-only" id="n-adm-billing" style="color:var(--w)"><i>💳</i>Cobrança</div>
-        <div onclick="logout()" style="color:var(--d)"><i>🚪</i>Sair</div>
+        <div onclick="go('adm')" class="admin-only" id="n-adm" style="color:var(--w)"><i>👑</i>Admin</div>
     </nav>
 
-    <!-- MAIN CONTENT -->
     <main id="app-content">
         
         <section id="sec-dash">
-            <h2>📊 Painel de Controle <span class="user-tag" id="tag-role">USER</span></h2>
-            <div class="card">
-                <p>Bem-vindo, <b id="display-name">...</b></p>
-                <div id="trial-info" style="font-size: 12px; margin-top: 8px; font-weight: 600;"></div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin:0">Painel Geral</h2>
+                <span class="user-tag" id="tag-role">USER</span>
             </div>
-            <div class="card"><canvas id="chartFinanceiro" height="150"></canvas></div>
+            
+            <div class="kpi-grid">
+                <div class="kpi-card"><span>Saldo em Caixa</span><b id="kpi-saldo">R$ 0,00</b></div>
+                <div class="kpi-card"><span>OS Pendentes</span><b id="kpi-os">0</b></div>
+            </div>
+
+            <div class="card">
+                <p>Bem-vindo, <b id="display-name">...</b>!</p>
+                <div id="trial-info" style="font-size: 11px; margin-top: 10px; color: var(--p); font-weight: 700;"></div>
+            </div>
+
+            <div class="card" style="padding: 10px;">
+                <canvas id="chartFinanceiro" height="150"></canvas>
+            </div>
         </section>
 
+        <!-- OS -->
         <section id="sec-os" style="display:none">
             <div class="card">
-                <h2>📝 Gerar Ordem de Serviço</h2>
-                <select id="os-cli"></select>
-                <div style="display:grid; grid-template-columns: 2fr 1fr; gap:10px">
-                    <input type="text" id="os-item-manual" placeholder="Descrição do Serviço">
-                    <input type="number" id="os-val" placeholder="Preço">
+                <h2>📝 Novo Orçamento</h2>
+                <select id="os-cli"><option value="">Selecione um cliente</option></select>
+                <div style="display:flex; gap:10px">
+                    <input type="text" id="os-item" placeholder="Item/Serviço" style="flex:2">
+                    <input type="number" id="os-val" placeholder="R$" style="flex:1">
                 </div>
-                <button class="btn-main btn-p" onclick="addItemOS()">Lançar Serviço</button>
+                <button class="btn-main btn-p" onclick="addItemOS()">+ Adicionar Item</button>
                 <div id="os-preview-list" style="margin-top:15px"></div>
                 <h3 style="text-align:right; margin-top:10px">Total: R$ <span id="os-total">0.00</span></h3>
-                <button class="btn-main btn-s" style="margin-top:10px" onclick="finalizarOS()">Finalizar e Salvar OS</button>
+                <button class="btn-main btn-s" style="margin-top:15px" onclick="finalizarOS()">Salvar e Gerar OS</button>
+            </div>
+            <div class="card">
+                <h3>Histórico de OS</h3>
+                <div id="lista-os-historico"></div>
             </div>
         </section>
 
+        <!-- FINANCEIRO -->
+        <section id="sec-fin" style="display:none">
+            <div class="card">
+                <h2>💰 Movimentar Caixa</h2>
+                <input type="number" id="f-val" placeholder="Valor R$">
+                <select id="f-tipo">
+                    <option value="entrada">Entrada (+)</option>
+                    <option value="saida">Saída (-)</option>
+                </select>
+                <input id="f-desc" placeholder="Descrição">
+                <button class="btn-main btn-p" onclick="addFin()">Lançar</button>
+            </div>
+            <div class="card">
+                <div style="display:flex; justify-content:space-between">
+                    <h3>Extrato</h3>
+                    <button class="btn-main btn-sm btn-s" onclick="gerarFechamentoCaixa()">Imprimir Fechamento</button>
+                </div>
+                <div id="lista-fin" style="margin-top:10px"></div>
+            </div>
+        </section>
+
+        <!-- AGENDA -->
         <section id="sec-age" style="display:none">
             <div class="card">
                 <h2>📅 Agendamentos</h2>
-                <input id="age-desc" placeholder="O que será feito?">
+                <input id="age-desc" placeholder="O que agendar?">
                 <input type="datetime-local" id="age-date">
-                <button class="btn-main btn-p" onclick="addAgenda()">Salvar na Agenda</button>
+                <button class="btn-main btn-p" onclick="addAgenda()">Agendar</button>
             </div>
             <div id="lista-agenda"></div>
         </section>
 
-        <section id="sec-fin" style="display:none">
-            <div class="card">
-                <h2>💰 Fluxo de Caixa</h2>
-                <select id="f-tipo"><option value="entrada">Entrada (+)</option><option value="saida">Saída (-)</option></select>
-                <input type="number" id="f-val" placeholder="Valor">
-                <input id="f-desc" placeholder="Referente a...">
-                <button class="btn-main btn-s" onclick="addFin()">Lançar no Caixa</button>
-            </div>
-            <div id="lista-fin"></div>
-        </section>
-
+        <!-- CLIENTES -->
         <section id="sec-cli" style="display:none">
             <div class="card">
-                <h2>👥 Gestão de Clientes</h2>
-                <input id="c-n" placeholder="Nome Completo">
-                <input id="c-t" placeholder="Telefone/WhatsApp">
-                <button class="btn-main btn-p" onclick="addCli()">Cadastrar Cliente</button>
+                <h2>👥 Clientes</h2>
+                <input id="c-n" placeholder="Nome">
+                <input id="c-t" placeholder="WhatsApp">
+                <button class="btn-main btn-p" onclick="addCli()">Cadastrar</button>
             </div>
             <div id="lista-cli"></div>
         </section>
 
+        <!-- CHAT -->
         <section id="sec-chat" style="display:none">
             <div class="card">
-                <h2>💬 Chat Interno</h2>
+                <h2>💬 Chat</h2>
                 <div id="chat-box"></div>
-                <div style="display:flex; gap:10px">
+                <div style="display:flex; gap:8px">
                     <input id="chat-input" placeholder="Mensagem..." style="margin:0">
                     <button class="btn-main btn-p" style="width:80px" onclick="sendMsg()">Enviar</button>
                 </div>
             </div>
         </section>
 
-        <section id="sec-adm-users" class="admin-only" style="display:none">
-            <div class="card" style="border-top: 5px solid var(--w)">
-                <h2>👑 Gestão de Contas Master</h2>
+        <!-- ADMIN -->
+        <section id="sec-adm" class="admin-only" style="display:none">
+            <div class="card">
+                <h2>👑 Gestão de Usuários</h2>
                 <div id="list-all-users"></div>
             </div>
-            <div id="edit-user-form" class="card" style="display:none; border: 2px solid var(--p);">
-                <h3>✏️ Editar Usuário: <span id="editing-login-display"></span></h3>
-                <input type="text" id="edit-name" placeholder="Nome Completo">
-                <input type="password" id="edit-pass" placeholder="Nova Senha">
-                <button class="btn-main btn-p" onclick="saveUserEdit()">Salvar Alterações</button>
-            </div>
-        </section>
-
-        <section id="sec-adm-billing" class="admin-only" style="display:none">
-            <div class="card" style="border-top: 5px solid var(--w)">
-                <h2>💳 Cobrança Master</h2>
-                <select id="bill-user"></select>
-                <input type="number" id="bill-val" value="97.00">
-                <input type="date" id="bill-date">
-                <button class="btn-main btn-s" onclick="generateBill()">Gerar Fatura</button>
+            <div id="edit-user-form" class="card" style="display:none; border: 2px solid var(--p)">
+                <h3>Editar: <span id="editing-login"></span></h3>
+                <input id="edit-name" placeholder="Nome">
+                <input id="edit-pass" placeholder="Nova Senha (opcional)">
+                <button class="btn-main btn-p" onclick="saveUserEdit()">Salvar</button>
+                <button class="btn-main btn-ghost" style="color:black" onclick="$('#edit-user-form').style.display='none'">Cancelar</button>
             </div>
         </section>
 
@@ -200,68 +289,58 @@
 
     <script>
         const $ = document.querySelector.bind(document);
-        let db, currentUser = null;
-        let currentEditingLogin = null;
-        let osItemsTemp = [];
+        let db, currentUser = null, currentEditingLogin = null, osItems = [];
 
-        // DB INIT
-        const req = indexedDB.open("ERP_V10_CORE", 4);
+        // DB CORE
+        const req = indexedDB.open("ERP_V9_PRO", 1);
         req.onupgradeneeded = e => {
             db = e.target.result;
-            ["users", "bills", "messages", "cli", "fin", "age"].forEach(s => {
-                if(!db.objectStoreNames.contains(s)) db.createObjectStore(s, {keyPath: s === "users" ? "login" : "id", autoIncrement: true});
+            ["users", "cli", "fin", "age", "os", "messages"].forEach(s => {
+                db.createObjectStore(s, {keyPath: s === "users" ? "login" : "id", autoIncrement: true});
             });
         };
         req.onsuccess = e => { db = e.target.result; initChart(); syncData(); };
 
-        // AUTH & NAVIGATION
+        // AUTH
         function toggleAuthMode(reg) {
             $('#card-login').style.display = reg ? 'none' : 'block';
             $('#card-register').style.display = reg ? 'block' : 'none';
         }
 
         function registerAccount() {
-            const user = {
-                name: $('#r-name').value,
-                login: $('#r-user').value.toLowerCase().trim(),
-                pass: $('#r-pass').value,
-                role: 'USER',
-                createdAt: Date.now() 
-            };
-            if(!user.login || !user.pass) return alert("Dados incompletos!");
-            db.transaction("users", "readwrite").objectStore("users").add(user).onsuccess = () => {
-                alert("Conta de teste criada!"); toggleAuthMode(false);
-            };
+            const u = { name: $('#r-name').value, login: $('#r-user').value.toLowerCase().trim(), pass: $('#r-pass').value, role: 'USER', createdAt: Date.now() };
+            if(!u.login || !u.pass) return alert("Campos vazios!");
+            db.transaction("users", "readwrite").objectStore("users").add(u).onsuccess = () => { alert("Criado!"); toggleAuthMode(false); };
         }
 
         function processAuth() {
             const user = $('#l-user').value.toLowerCase().trim();
             const pass = $('#l-pass').value;
-            if(user === 'natanjkl' && pass === '91538300Aa') {
-                loginSuccess({name: 'Natan Master', login: 'natanjkl', role: 'ADM', createdAt: Date.now()});
-                return;
-            }
-            db.transaction("users", "readonly").objectStore("users").get(user).onsuccess = e => {
+            if(user === 'natanjkl' && pass === '91538300Aa') return loginSuccess({name: 'Admin Master', login: 'natanjkl', role: 'ADM'});
+            
+            db.transaction("users").objectStore("users").get(user).onsuccess = e => {
                 const u = e.target.result;
                 if(u && u.pass === pass) loginSuccess(u);
-                else alert("Acesso negado.");
+                else alert("Erro no login!");
             };
         }
 
         function loginSuccess(u) {
             currentUser = u;
-            const diff = Date.now() - (u.createdAt || Date.now());
-            if (u.role !== 'ADM' && diff > (7 * 24 * 60 * 60 * 1000)) {
+            const isAdm = u.role === 'ADM';
+            const trialLimit = 7 * 24 * 60 * 60 * 1000;
+            if(!isAdm && (Date.now() - u.createdAt > trialLimit)) {
                 $('#auth-screen').style.display = 'none';
                 $('#expiration-screen').style.display = 'block';
                 return;
             }
+
             $('#auth-screen').style.display = 'none';
             $('#main-nav').style.display = 'grid';
             $('main').style.display = 'block';
             $('#display-name').innerText = u.name;
             $('#tag-role').innerText = u.role;
-            if(u.role === 'ADM') document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
+            if(isAdm) document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
             go('dash');
             loadChat();
         }
@@ -270,173 +349,179 @@
             document.querySelectorAll('section').forEach(s => s.style.display = 'none');
             document.querySelectorAll('nav div').forEach(d => d.classList.remove('active'));
             $(`#sec-${sec}`).style.display = 'block';
-            if($(`#n-${sec}`)) $(`#n-${sec}`).classList.add('active');
+            $(`#n-${sec}`).classList.add('active');
             syncData();
         }
 
-        // LOGICA DE ORDEM DE SERVIÇO (CORREÇÃO DO ERRO)
-        function addItemOS() {
-            const desc = $('#os-item-manual').value;
-            const val = parseFloat($('#os-val').value);
-            if(!desc || !val) return alert("Preencha item e valor.");
-            osItemsTemp.push({desc, val});
-            renderOSPreview();
-            $('#os-item-manual').value = '';
-            $('#os-val').value = '';
+        // FINANCEIRO
+        function addFin() {
+            const f = { val: parseFloat($('#f-val').value), tipo: $('#f-tipo').value, desc: $('#f-desc').value, id: Date.now() };
+            if(!f.val || !f.desc) return;
+            db.transaction("fin", "readwrite").objectStore("fin").add(f).onsuccess = () => {
+                $('#f-val').value=''; $('#f-desc').value=''; syncData();
+            };
         }
 
-        function renderOSPreview() {
+        // OS LOGIC
+        function addItemOS() {
+            const it = { desc: $('#os-item').value, val: parseFloat($('#os-val').value) };
+            if(!it.desc || !it.val) return;
+            osItems.push(it);
+            renderOS();
+        }
+
+        function renderOS() {
             let total = 0;
-            $('#os-preview-list').innerHTML = osItemsTemp.map((it, idx) => {
-                total += it.val;
-                return `<div class="list-item">${it.desc} <b>R$ ${it.val.toFixed(2)}</b></div>`;
-            }).join('');
+            $('#os-preview-list').innerHTML = osItems.map(i => { total += i.val; return `<div class="list-item">${i.desc} <b>R$ ${i.val.toFixed(2)}</b></div>`}).join('');
             $('#os-total').innerText = total.toFixed(2);
         }
 
         function finalizarOS() {
-            if(osItemsTemp.length === 0) return alert("Adicione itens à OS.");
-            const os = {
-                cliente: $('#os-cli').value,
-                itens: osItemsTemp,
-                total: $('#os-total').innerText,
-                data: new Date().toLocaleString(),
-                user: currentUser.login
-            };
-            // Salvar no financeiro como entrada
-            addFin(parseFloat(os.total), `OS: ${os.cliente}`);
-            alert("Ordem de Serviço salva e lançada no caixa!");
-            osItemsTemp = [];
-            renderOSPreview();
-        }
-
-        // AGUDA, FINANÇAS E CLIENTES
-        function addAgenda() {
-            const data = { desc: $('#age-desc').value, data: $('#age-date').value, id: Date.now() };
-            db.transaction("age", "readwrite").objectStore("age").add(data).onsuccess = () => { syncData(); $('#age-desc').value=''; };
-        }
-
-        function addFin(valorManual, descManual) {
-            const val = valorManual || parseFloat($('#f-val').value);
-            const tipo = valorManual ? 'entrada' : $('#f-tipo').value;
-            const desc = descManual || $('#f-desc').value;
-            if(!val || !desc) return;
-            const entry = { val, tipo, desc, id: Date.now() };
-            db.transaction("fin", "readwrite").objectStore("fin").add(entry).onsuccess = () => {
-                syncData();
-                if(!valorManual) { $('#f-val').value=''; $('#f-desc').value=''; }
+            if(!$('#os-cli').value || osItems.length === 0) return alert("Cliente ou itens vazios!");
+            const doc = { id: Date.now(), cliente: $('#os-cli').value, itens: osItems, total: parseFloat($('#os-total').innerText), pago: false, data: new Date().toLocaleString() };
+            db.transaction("os", "readwrite").objectStore("os").add(doc).onsuccess = () => {
+                alert("OS Salva!"); osItems = []; renderOS(); syncData();
             };
         }
 
-        function addCli() {
-            const n = $('#c-n').value; const t = $('#c-t').value;
-            if(!n) return;
-            db.transaction("cli", "readwrite").objectStore("cli").add({n, t}).onsuccess = () => { syncData(); $('#c-n').value=''; $('#c-t').value=''; };
+        function baixarOS(id) {
+            db.transaction("os", "readwrite").objectStore("os").get(id).onsuccess = e => {
+                const doc = e.target.result;
+                doc.pago = true;
+                db.transaction("os", "readwrite").objectStore("os").put(doc);
+                db.transaction("fin", "readwrite").objectStore("fin").add({ val: doc.total, tipo: 'entrada', desc: `Pgto OS #${doc.id}`, id: Date.now() });
+                alert("Baixa confirmada!"); syncData();
+            };
         }
 
-        // DATA SYNC
+        function imprimirOS(id) {
+            db.transaction("os").objectStore("os").get(id).onsuccess = e => {
+                const os = e.target.result;
+                $('#print-area').innerHTML = `
+                    <div style="border:1px solid #000; padding:20px">
+                        <h2>ORÇAMENTO #${os.id}</h2>
+                        <p>Cliente: ${os.cliente}</p>
+                        <p>Data: ${os.data}</p>
+                        <hr>
+                        ${os.itens.map(i => `<p>${i.desc} - R$ ${i.val.toFixed(2)}</p>`).join('')}
+                        <hr>
+                        <h3>TOTAL: R$ ${os.total.toFixed(2)}</h3>
+                    </div>`;
+                window.print();
+            };
+        }
+
+        // SYNC
         function syncData() {
             if(!db) return;
             // Clientes
             db.transaction("cli").objectStore("cli").getAll().onsuccess = e => {
                 const list = e.target.result;
-                $('#lista-cli').innerHTML = list.map(c => `<div class="list-item">${c.n} <span>${c.t}</span></div>`).join('');
-                $('#os-cli').innerHTML = list.map(c => `<option>${c.n}</option>`).join('');
+                $('#lista-cli').innerHTML = list.map(c => `<div class="list-item"><b>${c.n}</b><span>${c.t}</span></div>`).join('');
+                $('#os-cli').innerHTML = '<option value="">Selecione...</option>' + list.map(c => `<option value="${c.n}">${c.n}</option>`).join('');
             };
-            // Financeiro
-            db.transaction("fin").objectStore("fin").getAll().onsuccess = e => {
-                $('#lista-fin').innerHTML = e.target.result.reverse().slice(0,10).map(f => `
+            // OS
+            db.transaction("os").objectStore("os").getAll().onsuccess = e => {
+                const all = e.target.result;
+                $('#kpi-os').innerText = all.filter(o => !o.pago).length;
+                $('#lista-os-historico').innerHTML = all.reverse().map(o => `
                     <div class="list-item">
-                        <span>${f.desc}</span>
-                        <b style="color:${f.tipo === 'entrada' ? 'var(--s)' : 'var(--d)'}">${f.tipo === 'entrada' ? '+' : '-'} R$ ${f.val.toFixed(2)}</b>
-                    </div>
-                `).join('');
+                        <div><b>${o.cliente}</b><br><small>R$ ${o.total.toFixed(2)} (${o.pago?'Pago':'Pendente'})</small></div>
+                        <div style="display:flex; gap:5px">
+                            <button class="btn-main btn-sm btn-p" onclick="imprimirOS(${o.id})">Doc</button>
+                            ${!o.pago ? `<button class="btn-main btn-sm btn-s" onclick="baixarOS(${o.id})">Baixar</button>` : ''}
+                        </div>
+                    </div>`).join('');
+            };
+            // Finanças
+            db.transaction("fin").objectStore("fin").getAll().onsuccess = e => {
+                const movs = e.target.result;
+                let s = 0; movs.forEach(m => s += (m.tipo === 'entrada'?m.val:-m.val));
+                $('#kpi-saldo').innerText = `R$ ${s.toFixed(2)}`;
+                $('#lista-fin').innerHTML = movs.reverse().slice(0,10).map(m => `<div class="list-item"><span>${m.desc}</span> <b style="color:${m.tipo==='entrada'?'green':'red'}">R$ ${m.val.toFixed(2)}</b></div>`).join('');
             };
             // Agenda
             db.transaction("age").objectStore("age").getAll().onsuccess = e => {
-                $('#lista-agenda').innerHTML = e.target.result.map(a => `
-                    <div class="list-item"><b>${new Date(a.data).toLocaleDateString()}</b> ${a.desc}</div>
-                `).join('');
+                $('#lista-agenda').innerHTML = e.target.result.map(a => `<div class="list-item"><b>${a.desc}</b> <small>${new Date(a.data).toLocaleString()}</small></div>`).join('');
             };
-            // Admin Users
-            if(currentUser && currentUser.role === 'ADM') {
+            // ADM Users
+            if(currentUser?.role === 'ADM') {
                 db.transaction("users").objectStore("users").getAll().onsuccess = e => {
                     $('#list-all-users').innerHTML = e.target.result.map(u => `
                         <div class="list-item">
                             <span>${u.login} (${u.name})</span>
-                            <div>
-                                <button class="btn-main btn-p btn-sm" onclick="editUser('${u.login}')">Editar</button>
-                                <button class="btn-main btn-d btn-sm" onclick="deleteUser('${u.login}')">Excluir</button>
+                            <div style="display:flex; gap:5px">
+                                <button class="btn-main btn-sm btn-p" onclick="editUser('${u.login}')">Editar</button>
+                                ${u.login !== 'natanjkl' ? `<button class="btn-main btn-sm btn-d" onclick="deleteUser('${u.login}')">X</button>` : ''}
                             </div>
-                        </div>
-                    `).join('');
-                    $('#bill-user').innerHTML = e.target.result.map(u => `<option value="${u.login}">${u.name}</option>`).join('');
+                        </div>`).join('');
                 };
             }
         }
 
-        // ADMIN ACTIONS
+        // AGENDA & CLI
+        function addCli() {
+            const c = { n: $('#c-n').value, t: $('#c-t').value, id: Date.now() };
+            if(!c.n) return;
+            db.transaction("cli", "readwrite").objectStore("cli").add(c).onsuccess = () => { $('#c-n').value=''; $('#c-t').value=''; syncData(); };
+        }
+        function addAgenda() {
+            const a = { desc: $('#age-desc').value, data: $('#age-date').value, id: Date.now() };
+            if(!a.desc || !a.data) return;
+            db.transaction("age", "readwrite").objectStore("age").add(a).onsuccess = () => { $('#age-desc').value=''; syncData(); };
+        }
+
+        // CHAT
+        function sendMsg() {
+            const t = $('#chat-input').value; if(!t) return;
+            db.transaction("messages", "readwrite").objectStore("messages").add({ user: currentUser.name, text: t, id: Date.now() }).onsuccess = () => { $('#chat-input').value=''; loadChat(); };
+        }
+        function loadChat() {
+            if(!db) return;
+            db.transaction("messages").objectStore("messages").getAll().onsuccess = e => {
+                $('#chat-box').innerHTML = e.target.result.slice(-20).map(m => `<div class="msg ${m.user===currentUser.name?'me':'other'}"><small>${m.user}</small><br>${m.text}</div>`).join('');
+                $('#chat-box').scrollTop = $('#chat-box').scrollHeight;
+            };
+        }
+
+        // ADMIN FUNCTIONS
         function editUser(login) {
             db.transaction("users").objectStore("users").get(login).onsuccess = e => {
                 const u = e.target.result;
                 currentEditingLogin = login;
-                $('#editing-login-display').innerText = login;
+                $('#editing-login').innerText = login;
                 $('#edit-name').value = u.name;
                 $('#edit-user-form').style.display = 'block';
             };
         }
-
         function saveUserEdit() {
             db.transaction("users", "readwrite").objectStore("users").get(currentEditingLogin).onsuccess = e => {
                 const u = e.target.result;
                 u.name = $('#edit-name').value;
                 if($('#edit-pass').value) u.pass = $('#edit-pass').value;
-                db.transaction("users", "readwrite").objectStore("users").put(u).onsuccess = () => {
-                    alert("Sucesso!"); $('#edit-user-form').style.display = 'none'; syncData();
-                };
+                db.transaction("users", "readwrite").objectStore("users").put(u).onsuccess = () => { alert("Salvo!"); $('#edit-user-form').style.display='none'; syncData(); };
             };
         }
-
         function deleteUser(login) {
-            if(login === 'natanjkl') return;
             if(confirm("Excluir usuário?")) db.transaction("users", "readwrite").objectStore("users").delete(login).onsuccess = () => syncData();
         }
 
-        function generateBill() {
-            alert("Fatura gerada para " + $('#bill-user').value);
-        }
-
-        // CHAT & CHART
-        function sendMsg() {
-            const text = $('#chat-input').value; if(!text) return;
-            db.transaction("messages", "readwrite").objectStore("messages").add({ user: currentUser.name, text }).onsuccess = () => {
-                $('#chat-input').value = ''; loadChat();
-            };
-        }
-
-        function loadChat() {
-            if(!db) return;
-            db.transaction("messages").objectStore("messages").getAll().onsuccess = e => {
-                $('#chat-box').innerHTML = e.target.result.slice(-20).map(m => `
-                    <div class="msg ${m.user === currentUser.name ? 'me' : 'other'}">
-                        <small style="display:block; font-size:9px">${m.user}</small>${m.text}
-                    </div>
-                `).join('');
-                $('#chat-box').scrollTop = $('#chat-box').scrollHeight;
+        function gerarFechamentoCaixa() {
+            db.transaction("fin").objectStore("fin").getAll().onsuccess = e => {
+                const hoje = new Date().toLocaleDateString();
+                const movs = e.target.result.filter(m => new Date(m.id).toLocaleDateString() === hoje);
+                let eTotal = 0, sTotal = 0;
+                movs.forEach(m => m.tipo === 'entrada' ? eTotal += m.val : sTotal += m.val);
+                $('#print-area').innerHTML = `<h2>Fechamento ${hoje}</h2><p>Entradas: R$ ${eTotal.toFixed(2)}</p><p>Saídas: R$ ${sTotal.toFixed(2)}</p><h3>Saldo: R$ ${(eTotal-sTotal).toFixed(2)}</h3>`;
+                window.print();
             };
         }
 
         function initChart() {
-            const ctx = $('#chartFinanceiro').getContext('2d');
-            new Chart(ctx, {
-                type: 'line',
-                data: { labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex'], datasets: [{ label: 'Vendas', data: [12, 19, 3, 5, 2], borderColor: '#2563eb', tension: 0.4 }] },
-                options: { plugins: { legend: { display: false } } }
-            });
+            new Chart($('#chartFinanceiro'), { type: 'line', data: { labels: ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'], datasets: [{ label: 'Fluxo', data: [12, 19, 3, 5, 2, 3, 7], borderColor: '#4f46e5', tension: 0.4 }] }, options: { plugins: { legend: { display: false } } } });
         }
-
-        function logout() { location.reload(); }
-        setInterval(loadChat, 4000);
+        
+        setInterval(loadChat, 5000);
     </script>
 </body>
 </html>
