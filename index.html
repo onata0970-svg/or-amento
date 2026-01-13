@@ -3,285 +3,222 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ERP ENTERPRISE V9.0 | Professional Edition</title>
+    <title>ERP ENTERPRISE V9.0 | Ultimate Edition</title>
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Bibliotecas Necessárias -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --p: #4f46e5; 
-            --p-dark: #3730a3; 
-            --s: #10b981; 
-            --d: #ef4444; 
-            --w: #f59e0b; 
-            --dark: #0f172a; 
-            --slate-50: #f8fafc;
-            --slate-100: #f1f5f9;
-            --slate-200: #e2e8f0;
-            --slate-400: #94a3b8;
-            --slate-600: #475569;
-            --card: #ffffff; 
-            --border: #e2e8f0;
-            --radius: 12px;
-            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --p: #4f46e5; --p-dark: #3730a3; --s: #10b981; --d: #ef4444; 
+            --w: #f59e0b; --dark: #0f172a; --slate-50: #f8fafc;
+            --slate-100: #f1f5f9; --slate-200: #e2e8f0; --slate-400: #94a3b8;
+            --slate-600: #475569; --card: #ffffff; --border: #e2e8f0;
+            --radius: 14px; --shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
-        
-        body { background: var(--slate-50); color: var(--dark); padding-bottom: 90px; overflow-x: hidden; }
+        body { background: var(--slate-50); color: var(--dark); padding-bottom: 110px; overflow-x: hidden; }
 
-        /* AUTH SCREEN */
-        #auth-screen { 
-            position: fixed; inset: 0; z-index: 9999; 
-            background: radial-gradient(circle at top right, #1e293b, #0f172a); 
-            display: flex; align-items: center; justify-content: center; 
-        }
-        .auth-card { 
-            background: rgba(255,255,255,0.03); 
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255,255,255,0.1); 
-            padding: 48px 32px; 
-            border-radius: 32px; 
-            width: 90%; max-width: 400px; 
-            text-align: center; color: white;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
-        }
+        /* Estilo da Autenticação */
+        #auth-screen { position: fixed; inset: 0; z-index: 9999; background: #0f172a; display: flex; align-items: center; justify-content: center; }
+        .auth-card { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); padding: 40px; border-radius: 32px; width: 90%; max-width: 400px; text-align: center; color: white; }
         
-        /* NAVIGATION */
-        nav { 
-            position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
-            width: calc(100% - 32px); max-width: 600px;
-            background: rgba(15, 23, 42, 0.95); 
-            backdrop-filter: blur(10px);
-            display: none; grid-template-columns: repeat(auto-fit, minmax(40px, 1fr)); 
-            padding: 8px; z-index: 1000; 
-            border-radius: 24px;
-            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3);
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        nav div { color: var(--slate-400); font-size: 10px; text-align: center; cursor: pointer; transition: 0.2s; padding: 10px 4px; border-radius: 16px; }
-        nav div.active { color: white; background: rgba(255,255,255,0.1); }
-        nav div i { display: block; font-size: 20px; margin-bottom: 4px; font-style: normal; }
+        /* Navegação Mobile Premium */
+        nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 500px; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px); display: none; grid-template-columns: repeat(6, 1fr); padding: 10px; z-index: 1000; border-radius: 25px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); }
+        nav div { color: var(--slate-400); font-size: 9px; text-align: center; cursor: pointer; transition: 0.3s; padding: 8px 0; border-radius: 18px; }
+        nav div.active { color: white; background: rgba(255,255,255,0.15); font-weight: 700; }
+        nav div i { display: block; font-size: 22px; margin-bottom: 3px; font-style: normal; }
 
-        /* UI COMPONENTS */
-        main { padding: 24px 16px; max-width: 1000px; margin: auto; display: none; }
-        .card { 
-            background: var(--card); border-radius: var(--radius); padding: 24px; 
-            border: 1px solid var(--border); box-shadow: var(--shadow); 
-            margin-bottom: 24px; 
-        }
-        h2 { font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; font-size: 1.25rem; }
+        /* Layout Principal */
+        main { padding: 20px 16px; max-width: 1000px; margin: auto; display: none; }
+        .card { background: var(--card); border-radius: var(--radius); padding: 20px; border: 1px solid var(--border); box-shadow: var(--shadow); margin-bottom: 20px; }
+        h2 { font-size: 1.2rem; font-weight: 800; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; color: var(--dark); }
         
-        input, select, textarea { 
-            width: 100%; padding: 14px 16px; border-radius: 10px; 
-            border: 1px solid var(--slate-200); background: white; 
-            font-size: 14px; outline: none; margin-bottom: 12px; 
-        }
-        input:focus { border-color: var(--p); box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1); }
-
-        .btn-main { 
-            padding: 14px; border-radius: 10px; border: none; font-weight: 600; 
-            cursor: pointer; width: 100%; display: flex; justify-content: center; 
-            align-items: center; gap: 8px; font-size: 14px; transition: 0.2s;
-        }
-        .btn-main:active { transform: scale(0.98); }
+        input, select, textarea { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--slate-200); margin-bottom: 12px; outline: none; font-size: 14px; background: var(--slate-50); }
+        input:focus { border-color: var(--p); background: white; }
+        
+        .btn-main { padding: 14px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; width: 100%; transition: 0.2s; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-p { background: var(--p); color: white; }
         .btn-s { background: var(--s); color: white; }
         .btn-d { background: var(--d); color: white; }
-        .btn-ghost { background: transparent; color: white; border: 1px solid rgba(255,255,255,0.2); margin-top: 12px; }
-        
-        .list-item { 
-            display: flex; justify-content: space-between; align-items: center; 
-            padding: 16px; border-bottom: 1px solid var(--slate-100); font-size: 14px;
-        }
-        
-        .user-tag { background: var(--p); color: white; padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 700; }
+        .btn-ghost { background: transparent; color: white; border: 1px solid rgba(255,255,255,0.3); }
+        .btn-sm { padding: 8px 12px; font-size: 11px; width: auto; }
 
-        /* CHAT */
-        #chat-box { 
-            height: 300px; overflow-y: auto; background: var(--slate-50); 
-            padding: 15px; border-radius: 12px; margin-bottom: 12px; 
-            display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--border); 
-        }
-        .msg { padding: 10px 14px; border-radius: 15px; max-width: 80%; font-size: 13px; }
+        /* Calendário Customizado */
+        .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: var(--slate-100); padding: 10px; border-radius: 10px; }
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+        .cal-day-name { font-size: 10px; font-weight: 800; color: var(--slate-400); text-align: center; padding-bottom: 8px; text-transform: uppercase; }
+        .cal-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 12px; font-size: 14px; cursor: pointer; position: relative; transition: 0.2s; }
+        .cal-day:hover { background: var(--slate-100); }
+        .cal-day.today { background: var(--slate-200); color: var(--p); font-weight: 800; }
+        .cal-day.active { background: var(--p) !important; color: white !important; transform: scale(1.1); z-index: 2; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4); }
+        .cal-dot { width: 5px; height: 5px; background: var(--s); border-radius: 50%; position: absolute; bottom: 5px; }
+        
+        /* Listas e Itens */
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid var(--slate-100); }
+        .list-item:last-child { border: none; }
+        .badge { padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+        .badge-p { background: rgba(79, 70, 229, 0.1); color: var(--p); }
+        .badge-s { background: rgba(16, 185, 129, 0.1); color: var(--s); }
+
+        /* Chat */
+        #chat-box { height: 300px; overflow-y: auto; background: var(--slate-50); padding: 15px; border-radius: 15px; display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--border); }
+        .msg { padding: 10px 14px; border-radius: 18px; max-width: 85%; font-size: 13px; line-height: 1.4; }
         .msg.me { align-self: flex-end; background: var(--p); color: white; border-bottom-right-radius: 4px; }
-        .msg.other { align-self: flex-start; background: white; color: var(--dark); border-bottom-left-radius: 4px; border: 1px solid var(--border); }
+        .msg.other { align-self: flex-start; background: white; border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+        .msg small { display: block; font-size: 9px; opacity: 0.7; margin-bottom: 2px; }
 
         .admin-only { display: none; }
-        .btn-sm { padding: 6px 10px; font-size: 11px; width: auto; }
 
-        .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
-        .kpi-card { background: white; padding: 16px; border-radius: 16px; border: 1px solid var(--border); }
-        .kpi-card span { font-size: 11px; color: var(--slate-600); display: block; }
-        .kpi-card b { font-size: 18px; color: var(--dark); }
-
+        /* Impressão */
         @media print {
             body * { visibility: hidden; }
             #print-area, #print-area * { visibility: visible; }
-            #print-area { position: absolute; left: 0; top: 0; width: 100%; display: block !important; }
+            #print-area { position: absolute; left: 0; top: 0; width: 100%; display: block !important; padding: 40px; }
         }
     </style>
 </head>
 <body>
 
-    <div id="print-area" style="display:none; padding: 40px; background: white;"></div>
+    <!-- Área de Impressão Oculta -->
+    <div id="print-area" style="display:none;"></div>
 
-    <!-- AUTH -->
+    <!-- TELA DE LOGIN -->
     <div id="auth-screen">
-        <div class="auth-card" id="card-login">
-            <h1 style="font-weight: 800; letter-spacing: -1px; font-size: 2rem;">ENTERPRISE</h1>
-            <p style="color: var(--p); font-weight: 700; font-size: 10px; letter-spacing: 2px; margin-bottom: 30px;">NEXUS CORE V9.0</p>
-            <input type="text" id="l-user" placeholder="Usuário">
-            <input type="password" id="l-pass" placeholder="Senha">
-            <button class="btn-main btn-p" onclick="processAuth()">Entrar</button>
-            <button class="btn-main btn-ghost" onclick="toggleAuthMode(true)">Novo Cadastro (Trial)</button>
-        </div>
-
-        <div class="auth-card" id="card-register" style="display:none">
-            <h1>CADASTRO</h1>
-            <p style="opacity:0.6; margin-bottom:20px; font-size: 12px;">7 dias de avaliação gratuita</p>
-            <input type="text" id="r-name" placeholder="Nome Completo">
-            <input type="text" id="r-user" placeholder="Usuário">
-            <input type="password" id="r-pass" placeholder="Senha">
-            <button class="btn-main btn-s" onclick="registerAccount()">Criar Conta</button>
-            <button class="btn-main btn-ghost" onclick="toggleAuthMode(false)">Voltar</button>
+        <div class="auth-card" id="login-container">
+            <h1 style="font-weight: 900; letter-spacing: -2px; font-size: 2.5rem;">NEXUS</h1>
+            <p style="color: var(--p); font-weight: 800; font-size: 11px; letter-spacing: 3px; margin-bottom: 30px; opacity: 0.8;">CORE ERP V9.0</p>
+            <input type="text" id="l-user" placeholder="Nome de Utilizador">
+            <input type="password" id="l-pass" placeholder="Palavra-passe">
+            <button class="btn-main btn-p" onclick="processAuth()">Entrar no Sistema</button>
+            <button class="btn-main btn-ghost" style="margin-top:10px" onclick="alert('Contacte o administrador para registar a sua conta Trial.')">Solicitar Acesso</button>
         </div>
     </div>
 
-    <!-- EXPIRATION -->
-    <div id="expiration-screen" style="display:none; text-align: center; padding: 50px;">
-        <div class="card" style="max-width: 450px; margin: 80px auto;">
-            <h2 style="color: var(--d); justify-content: center;">Licença Expirada</h2>
-            <p>Seu período de teste acabou. Entre em contato para renovar.</p>
-            <br>
-            <button class="btn-main btn-p" onclick="alert('Suporte: natanjkl')">Falar com Suporte</button>
-            <button class="btn-main btn-ghost" style="color:black" onclick="location.reload()">Sair</button>
-        </div>
-    </div>
-
-    <!-- NAV -->
+    <!-- MENU DE NAVEGAÇÃO -->
     <nav id="main-nav">
-        <div onclick="go('dash')" id="n-dash" class="active"><i>📊</i>Dash</div>
-        <div onclick="go('os')" id="n-os"><i>📝</i>OS</div>
+        <div onclick="go('dash')" id="n-dash" class="active"><i>📊</i>Painel</div>
+        <div onclick="go('os')" id="n-os"><i>📝</i>O.S</div>
         <div onclick="go('age')" id="n-age"><i>📅</i>Agenda</div>
         <div onclick="go('fin')" id="n-fin"><i>💰</i>Caixa</div>
-        <div onclick="go('cli')" id="n-cli"><i>👥</i>Clientes</div>
+        <div onclick="go('cli')" id="n-cli"><i>👥</i>Cli</div>
         <div onclick="go('chat')" id="n-chat"><i>💬</i>Chat</div>
-        <div onclick="go('adm')" class="admin-only" id="n-adm" style="color:var(--w)"><i>👑</i>Admin</div>
+        <div onclick="go('adm')" class="admin-only" id="n-adm" style="color:var(--w)"><i>👑</i>Adm</div>
     </nav>
 
+    <!-- CONTEÚDO PRINCIPAL -->
     <main id="app-content">
         
+        <!-- DASHBOARD -->
         <section id="sec-dash">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="margin:0">Painel Geral</h2>
-                <span class="user-tag" id="tag-role">USER</span>
+                <h2 style="margin:0">Bem-vindo, <span id="user-name-display">...</span></h2>
+                <button class="btn-main btn-sm btn-d" onclick="logout()" style="width: auto;">Sair</button>
             </div>
             
-            <div class="kpi-grid">
-                <div class="kpi-card"><span>Saldo em Caixa</span><b id="kpi-saldo">R$ 0,00</b></div>
-                <div class="kpi-card"><span>OS Pendentes</span><b id="kpi-os">0</b></div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                <div class="card" style="margin:0; padding: 15px;">
+                    <span style="font-size: 11px; color: var(--slate-600);">Saldo Total</span>
+                    <h3 id="kpi-saldo" style="font-size: 1.4rem;">R$ 0,00</h3>
+                </div>
+                <div class="card" style="margin:0; padding: 15px;">
+                    <span style="font-size: 11px; color: var(--slate-600);">O.S Ativas</span>
+                    <h3 id="kpi-os" style="font-size: 1.4rem;">0</h3>
+                </div>
             </div>
 
             <div class="card">
-                <p>Bem-vindo, <b id="display-name">...</b>!</p>
-                <div id="trial-info" style="font-size: 11px; margin-top: 10px; color: var(--p); font-weight: 700;"></div>
-            </div>
-
-            <div class="card" style="padding: 10px;">
-                <canvas id="chartFinanceiro" height="150"></canvas>
+                <h2>📈 Fluxo de Caixa</h2>
+                <canvas id="chartFinanceiro" height="180"></canvas>
             </div>
         </section>
 
-        <!-- OS -->
+        <!-- ORDENS DE SERVIÇO -->
         <section id="sec-os" style="display:none">
             <div class="card">
-                <h2>📝 Novo Orçamento</h2>
-                <select id="os-cli"><option value="">Selecione um cliente</option></select>
-                <div style="display:flex; gap:10px">
-                    <input type="text" id="os-item" placeholder="Item/Serviço" style="flex:2">
-                    <input type="number" id="os-val" placeholder="R$" style="flex:1">
-                </div>
-                <button class="btn-main btn-p" onclick="addItemOS()">+ Adicionar Item</button>
-                <div id="os-preview-list" style="margin-top:15px"></div>
-                <h3 style="text-align:right; margin-top:10px">Total: R$ <span id="os-total">0.00</span></h3>
-                <button class="btn-main btn-s" style="margin-top:15px" onclick="finalizarOS()">Salvar e Gerar OS</button>
+                <h2>📝 Nova Ordem de Serviço</h2>
+                <select id="os-cli"><option value="">Seleccionar Cliente</option></select>
+                <input id="os-item" placeholder="Descrição do Serviço/Produto">
+                <input type="number" id="os-val" placeholder="Valor (R$)">
+                <button class="btn-main btn-p" onclick="addOS()">Gerar Ordem de Serviço</button>
             </div>
             <div class="card">
-                <h3>Histórico de OS</h3>
+                <h3>Histórico Recente</h3>
                 <div id="lista-os-historico"></div>
             </div>
+        </section>
+
+        <!-- AGENDA INTERATIVA -->
+        <section id="sec-age" style="display:none">
+            <div class="card">
+                <div class="cal-header">
+                    <button onclick="changeMonth(-1)" class="btn-main btn-sm" style="background:white; color:var(--dark)">◀</button>
+                    <b id="cal-month-year">...</b>
+                    <button onclick="changeMonth(1)" class="btn-main btn-sm" style="background:white; color:var(--dark)">▶</button>
+                </div>
+                <div class="cal-grid" id="calendar-grid"></div>
+            </div>
+
+            <div class="card" id="form-agenda">
+                <h3>Agendar para: <span id="selected-date-label" style="color:var(--p)">--/--/----</span></h3>
+                <input id="age-desc" placeholder="O que vai acontecer?">
+                <div style="display: flex; gap: 10px;">
+                    <input type="time" id="age-time" value="09:00">
+                    <button class="btn-main btn-p" onclick="addAgenda()">Agendar</button>
+                </div>
+            </div>
+
+            <div id="day-events-list"></div>
         </section>
 
         <!-- FINANCEIRO -->
         <section id="sec-fin" style="display:none">
             <div class="card">
-                <h2>💰 Movimentar Caixa</h2>
+                <h2>💰 Movimentação de Caixa</h2>
                 <input type="number" id="f-val" placeholder="Valor R$">
                 <select id="f-tipo">
                     <option value="entrada">Entrada (+)</option>
                     <option value="saida">Saída (-)</option>
                 </select>
-                <input id="f-desc" placeholder="Descrição">
-                <button class="btn-main btn-p" onclick="addFin()">Lançar</button>
+                <input id="f-desc" placeholder="Motivo/Descrição">
+                <button class="btn-main btn-p" onclick="addFin()">Registar Lançamento</button>
             </div>
             <div class="card">
-                <div style="display:flex; justify-content:space-between">
-                    <h3>Extrato</h3>
-                    <button class="btn-main btn-sm btn-s" onclick="gerarFechamentoCaixa()">Imprimir Fechamento</button>
-                </div>
-                <div id="lista-fin" style="margin-top:10px"></div>
+                <h3>Últimos Lançamentos</h3>
+                <div id="lista-fin"></div>
             </div>
-        </section>
-
-        <!-- AGENDA -->
-        <section id="sec-age" style="display:none">
-            <div class="card">
-                <h2>📅 Agendamentos</h2>
-                <input id="age-desc" placeholder="O que agendar?">
-                <input type="datetime-local" id="age-date">
-                <button class="btn-main btn-p" onclick="addAgenda()">Agendar</button>
-            </div>
-            <div id="lista-agenda"></div>
         </section>
 
         <!-- CLIENTES -->
         <section id="sec-cli" style="display:none">
             <div class="card">
-                <h2>👥 Clientes</h2>
-                <input id="c-n" placeholder="Nome">
-                <input id="c-t" placeholder="WhatsApp">
-                <button class="btn-main btn-p" onclick="addCli()">Cadastrar</button>
+                <h2>👥 Gestão de Clientes</h2>
+                <input id="c-n" placeholder="Nome Completo">
+                <input id="c-t" placeholder="Telemóvel / WhatsApp">
+                <button class="btn-main btn-p" onclick="addCli()">Registar Cliente</button>
             </div>
             <div id="lista-cli"></div>
         </section>
 
-        <!-- CHAT -->
+        <!-- CHAT INTERNO -->
         <section id="sec-chat" style="display:none">
             <div class="card">
-                <h2>💬 Chat</h2>
+                <h2>💬 Chat da Equipa</h2>
                 <div id="chat-box"></div>
-                <div style="display:flex; gap:8px">
-                    <input id="chat-input" placeholder="Mensagem..." style="margin:0">
-                    <button class="btn-main btn-p" style="width:80px" onclick="sendMsg()">Enviar</button>
+                <div style="display:flex; gap:10px; margin-top:15px">
+                    <input id="chat-input" placeholder="Escreva aqui..." style="margin:0">
+                    <button class="btn-main btn-p" style="width:70px" onclick="sendMsg()">➤</button>
                 </div>
             </div>
         </section>
 
-        <!-- ADMIN -->
+        <!-- ADMINISTRAÇÃO -->
         <section id="sec-adm" class="admin-only" style="display:none">
             <div class="card">
-                <h2>👑 Gestão de Usuários</h2>
+                <h2>👑 Gestão de Utilizadores</h2>
                 <div id="list-all-users"></div>
-            </div>
-            <div id="edit-user-form" class="card" style="display:none; border: 2px solid var(--p)">
-                <h3>Editar: <span id="editing-login"></span></h3>
-                <input id="edit-name" placeholder="Nome">
-                <input id="edit-pass" placeholder="Nova Senha (opcional)">
-                <button class="btn-main btn-p" onclick="saveUserEdit()">Salvar</button>
-                <button class="btn-main btn-ghost" style="color:black" onclick="$('#edit-user-form').style.display='none'">Cancelar</button>
             </div>
         </section>
 
@@ -289,60 +226,75 @@
 
     <script>
         const $ = document.querySelector.bind(document);
-        let db, currentUser = null, currentEditingLogin = null, osItems = [];
+        let db;
+        let currentUser = null;
+        let currentViewDate = new Date();
+        let selectedDate = new Date().toLocaleDateString('pt-BR');
+        let myChart = null;
 
-        // DB CORE
-        const req = indexedDB.open("ERP_V9_PRO", 1);
-        req.onupgradeneeded = e => {
-            db = e.target.result;
+        // INICIALIZAÇÃO DO BANCO DE DADOS
+        const request = indexedDB.open("ERP_NEXUS_V9", 1);
+        request.onupgradeneeded = e => {
+            const d = e.target.result;
             ["users", "cli", "fin", "age", "os", "messages"].forEach(s => {
-                db.createObjectStore(s, {keyPath: s === "users" ? "login" : "id", autoIncrement: true});
+                d.createObjectStore(s, {keyPath: s === "users" ? "login" : "id", autoIncrement: true});
             });
         };
-        req.onsuccess = e => { db = e.target.result; initChart(); syncData(); };
+        request.onsuccess = e => { 
+            db = e.target.result; 
+            checkSession(); 
+        };
 
-        // AUTH
-        function toggleAuthMode(reg) {
-            $('#card-login').style.display = reg ? 'none' : 'block';
-            $('#card-register').style.display = reg ? 'block' : 'none';
+        // CONTROLO DE SESSÃO
+        function checkSession() {
+            const saved = sessionStorage.getItem('nexus_user');
+            if(saved) {
+                currentUser = JSON.parse(saved);
+                loginSuccess(currentUser);
+            }
         }
 
-        function registerAccount() {
-            const u = { name: $('#r-name').value, login: $('#r-user').value.toLowerCase().trim(), pass: $('#r-pass').value, role: 'USER', createdAt: Date.now() };
-            if(!u.login || !u.pass) return alert("Campos vazios!");
-            db.transaction("users", "readwrite").objectStore("users").add(u).onsuccess = () => { alert("Criado!"); toggleAuthMode(false); };
+        function logout() {
+            sessionStorage.removeItem('nexus_user');
+            location.reload();
         }
 
+        // AUTENTICAÇÃO
         function processAuth() {
             const user = $('#l-user').value.toLowerCase().trim();
             const pass = $('#l-pass').value;
-            if(user === 'natanjkl' && pass === '91538300Aa') return loginSuccess({name: 'Admin Master', login: 'natanjkl', role: 'ADM'});
+            
+            // Login Mestre
+            if(user === 'natanjkl' && pass === '91538300Aa') {
+                const admin = {name: 'Natan (Admin)', login: 'natanjkl', role: 'ADM'};
+                sessionStorage.setItem('nexus_user', JSON.stringify(admin));
+                return loginSuccess(admin);
+            }
             
             db.transaction("users").objectStore("users").get(user).onsuccess = e => {
                 const u = e.target.result;
-                if(u && u.pass === pass) loginSuccess(u);
-                else alert("Erro no login!");
+                if(u && u.pass === pass) {
+                    sessionStorage.setItem('nexus_user', JSON.stringify(u));
+                    loginSuccess(u);
+                } else {
+                    alert("Dados inválidos. Tente novamente.");
+                }
             };
         }
 
         function loginSuccess(u) {
             currentUser = u;
-            const isAdm = u.role === 'ADM';
-            const trialLimit = 7 * 24 * 60 * 60 * 1000;
-            if(!isAdm && (Date.now() - u.createdAt > trialLimit)) {
-                $('#auth-screen').style.display = 'none';
-                $('#expiration-screen').style.display = 'block';
-                return;
-            }
-
             $('#auth-screen').style.display = 'none';
             $('#main-nav').style.display = 'grid';
             $('main').style.display = 'block';
-            $('#display-name').innerText = u.name;
-            $('#tag-role').innerText = u.role;
-            if(isAdm) document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
+            $('#user-name-display').innerText = u.name;
+            
+            if(u.role === 'ADM') {
+                document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
+            }
+            
             go('dash');
-            loadChat();
+            setInterval(loadChat, 4000);
         }
 
         function go(sec) {
@@ -350,178 +302,247 @@
             document.querySelectorAll('nav div').forEach(d => d.classList.remove('active'));
             $(`#sec-${sec}`).style.display = 'block';
             $(`#n-${sec}`).classList.add('active');
+            
             syncData();
+            if(sec === 'age') renderCalendar();
+            if(sec === 'dash') updateChart();
         }
 
-        // FINANCEIRO
-        function addFin() {
-            const f = { val: parseFloat($('#f-val').value), tipo: $('#f-tipo').value, desc: $('#f-desc').value, id: Date.now() };
-            if(!f.val || !f.desc) return;
-            db.transaction("fin", "readwrite").objectStore("fin").add(f).onsuccess = () => {
-                $('#f-val').value=''; $('#f-desc').value=''; syncData();
+        // MÓDULO: AGENDA
+        function renderCalendar() {
+            const grid = $('#calendar-grid');
+            const monthLabel = $('#cal-month-year');
+            grid.innerHTML = '';
+            
+            const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+            monthLabel.innerText = `${monthNames[currentViewDate.getMonth()]} ${currentViewDate.getFullYear()}`;
+
+            const daysWeek = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+            daysWeek.forEach(d => grid.innerHTML += `<div class="cal-day-name">${d}</div>`);
+
+            const firstDay = new Date(currentViewDate.getFullYear(), currentViewDate.getMonth(), 1).getDay();
+            const totalDays = new Date(currentViewDate.getFullYear(), currentViewDate.getMonth() + 1, 0).getDate();
+
+            for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div></div>`;
+
+            db.transaction("age").objectStore("age").getAll().onsuccess = e => {
+                const events = e.target.result;
+                for (let d = 1; d <= totalDays; d++) {
+                    const dateStr = new Date(currentViewDate.getFullYear(), currentViewDate.getMonth(), d).toLocaleDateString('pt-BR');
+                    const hasEv = events.some(ev => ev.data === dateStr);
+                    const isToday = dateStr === new Date().toLocaleDateString('pt-BR');
+                    
+                    const dayEl = document.createElement('div');
+                    dayEl.className = `cal-day ${isToday?'today':''} ${dateStr === selectedDate ? 'active':''}`;
+                    dayEl.innerHTML = `${d} ${hasEv ? '<div class="cal-dot"></div>' : ''}`;
+                    dayEl.onclick = () => {
+                        selectedDate = dateStr;
+                        $('#selected-date-label').innerText = dateStr;
+                        renderCalendar();
+                    };
+                    grid.appendChild(dayEl);
+                }
+                updateEventList(events);
             };
         }
 
-        // OS LOGIC
-        function addItemOS() {
-            const it = { desc: $('#os-item').value, val: parseFloat($('#os-val').value) };
-            if(!it.desc || !it.val) return;
-            osItems.push(it);
-            renderOS();
+        function changeMonth(dir) {
+            currentViewDate.setMonth(currentViewDate.getMonth() + dir);
+            renderCalendar();
         }
 
-        function renderOS() {
-            let total = 0;
-            $('#os-preview-list').innerHTML = osItems.map(i => { total += i.val; return `<div class="list-item">${i.desc} <b>R$ ${i.val.toFixed(2)}</b></div>`}).join('');
-            $('#os-total').innerText = total.toFixed(2);
+        function addAgenda() {
+            const desc = $('#age-desc').value;
+            const time = $('#age-time').value;
+            if(!desc) return alert("Insira uma descrição.");
+
+            const ev = { id: Date.now(), desc, time, data: selectedDate, user: currentUser.name };
+            db.transaction("age", "readwrite").objectStore("age").add(ev).onsuccess = () => {
+                $('#age-desc').value = '';
+                renderCalendar();
+            };
         }
 
-        function finalizarOS() {
-            if(!$('#os-cli').value || osItems.length === 0) return alert("Cliente ou itens vazios!");
-            const doc = { id: Date.now(), cliente: $('#os-cli').value, itens: osItems, total: parseFloat($('#os-total').innerText), pago: false, data: new Date().toLocaleString() };
-            db.transaction("os", "readwrite").objectStore("os").add(doc).onsuccess = () => {
-                alert("OS Salva!"); osItems = []; renderOS(); syncData();
+        function updateEventList(events) {
+            const filtered = events.filter(e => e.data === selectedDate).sort((a,b) => a.time.localeCompare(b.time));
+            $('#day-events-list').innerHTML = `<h3 style="margin-bottom:10px">Compromissos</h3>` + 
+                (filtered.length ? filtered.map(e => `
+                    <div class="list-item card" style="margin-bottom:8px; padding:12px">
+                        <div><b>${e.desc}</b><br><small>🕒 ${e.time} - Por: ${e.user}</small></div>
+                        <button class="btn-main btn-sm btn-d" onclick="deleteEvent(${e.id})">Apagar</button>
+                    </div>`).join('') : '<p style="opacity:0.5; font-size:12px">Livre para este dia.</p>');
+        }
+
+        function deleteEvent(id) {
+            if(confirm("Remover este compromisso?")) {
+                db.transaction("age", "readwrite").objectStore("age").delete(id).onsuccess = renderCalendar;
+            }
+        }
+
+        // MÓDULO: ORDENS DE SERVIÇO
+        function addOS() {
+            const cli = $('#os-cli').value;
+            const item = $('#os-item').value;
+            const val = parseFloat($('#os-val').value);
+            
+            if(!cli || !item || isNaN(val)) return alert("Preencha todos os campos.");
+
+            const os = { id: Math.floor(1000 + Math.random() * 9000), cliente: cli, servico: item, valor: val, status: 'Pendente', data: new Date().toLocaleDateString('pt-BR') };
+            db.transaction("os", "readwrite").objectStore("os").add(os).onsuccess = () => {
+                $('#os-item').value = ''; $('#os-val').value = '';
+                syncData();
+                alert("O.S Gerada com sucesso!");
             };
         }
 
         function baixarOS(id) {
-            db.transaction("os", "readwrite").objectStore("os").get(id).onsuccess = e => {
-                const doc = e.target.result;
-                doc.pago = true;
-                db.transaction("os", "readwrite").objectStore("os").put(doc);
-                db.transaction("fin", "readwrite").objectStore("fin").add({ val: doc.total, tipo: 'entrada', desc: `Pgto OS #${doc.id}`, id: Date.now() });
-                alert("Baixa confirmada!"); syncData();
+            const tx = db.transaction(["os", "fin"], "readwrite");
+            tx.objectStore("os").get(id).onsuccess = e => {
+                const os = e.target.result;
+                os.status = 'Pago';
+                tx.objectStore("os").put(os);
+                tx.objectStore("fin").add({ id: Date.now(), val: os.valor, tipo: 'entrada', desc: `Recebimento O.S #${os.id}` });
             };
+            tx.oncomplete = () => { syncData(); alert("Pagamento registado!"); };
         }
 
         function imprimirOS(id) {
             db.transaction("os").objectStore("os").get(id).onsuccess = e => {
-                const os = e.target.result;
+                const o = e.target.result;
                 $('#print-area').innerHTML = `
-                    <div style="border:1px solid #000; padding:20px">
-                        <h2>ORÇAMENTO #${os.id}</h2>
-                        <p>Cliente: ${os.cliente}</p>
-                        <p>Data: ${os.data}</p>
-                        <hr>
-                        ${os.itens.map(i => `<p>${i.desc} - R$ ${i.val.toFixed(2)}</p>`).join('')}
-                        <hr>
-                        <h3>TOTAL: R$ ${os.total.toFixed(2)}</h3>
-                    </div>`;
+                    <div style="border: 2px solid #000; padding: 30px; border-radius: 10px;">
+                        <h1 style="text-align:center">ORDEM DE SERVIÇO #${o.id}</h1>
+                        <hr style="margin: 20px 0">
+                        <p><b>Cliente:</b> ${o.cliente}</p>
+                        <p><b>Data de Emissão:</b> ${o.data}</p>
+                        <p><b>Serviço/Produto:</b> ${o.servico}</p>
+                        <p><b>Status Atual:</b> ${o.status}</p>
+                        <br>
+                        <h2 style="text-align:right">Valor Total: R$ ${o.valor.toFixed(2)}</h2>
+                        <br><br><br>
+                        <div style="display:flex; justify-content: space-around;">
+                            <div style="border-top: 1px solid #000; width: 200px; text-align: center;">Assinatura Empresa</div>
+                            <div style="border-top: 1px solid #000; width: 200px; text-align: center;">Assinatura Cliente</div>
+                        </div>
+                    </div>
+                `;
                 window.print();
             };
         }
 
-        // SYNC
+        // MÓDULO: FINANCEIRO
+        function addFin() {
+            const v = parseFloat($('#f-val').value);
+            const t = $('#f-tipo').value;
+            const d = $('#f-desc').value;
+            if(isNaN(v) || !d) return;
+
+            db.transaction("fin", "readwrite").objectStore("fin").add({ id: Date.now(), val: v, tipo: t, desc: d }).onsuccess = () => {
+                $('#f-val').value = ''; $('#f-desc').value = '';
+                syncData();
+            };
+        }
+
+        // SINCRONIZAÇÃO E UI
         function syncData() {
             if(!db) return;
-            // Clientes
+
+            // Listar Clientes
             db.transaction("cli").objectStore("cli").getAll().onsuccess = e => {
                 const list = e.target.result;
-                $('#lista-cli').innerHTML = list.map(c => `<div class="list-item"><b>${c.n}</b><span>${c.t}</span></div>`).join('');
-                $('#os-cli').innerHTML = '<option value="">Selecione...</option>' + list.map(c => `<option value="${c.n}">${c.n}</option>`).join('');
+                $('#lista-cli').innerHTML = list.reverse().map(c => `<div class="list-item card"><b>${c.n}</b><span>${c.t}</span></div>`).join('');
+                $('#os-cli').innerHTML = '<option value="">Seleccionar...</option>' + list.map(c => `<option value="${c.n}">${c.n}</option>`).join('');
             };
-            // OS
+
+            // Listar OS
             db.transaction("os").objectStore("os").getAll().onsuccess = e => {
                 const all = e.target.result;
-                $('#kpi-os').innerText = all.filter(o => !o.pago).length;
-                $('#lista-os-historico').innerHTML = all.reverse().map(o => `
+                $('#kpi-os').innerText = all.filter(o => o.status === 'Pendente').length;
+                $('#lista-os-historico').innerHTML = all.reverse().slice(0,10).map(o => `
                     <div class="list-item">
-                        <div><b>${o.cliente}</b><br><small>R$ ${o.total.toFixed(2)} (${o.pago?'Pago':'Pendente'})</small></div>
+                        <div><b>#${o.id} - ${o.cliente}</b><br><small>${o.servico}</small></div>
                         <div style="display:flex; gap:5px">
                             <button class="btn-main btn-sm btn-p" onclick="imprimirOS(${o.id})">Doc</button>
-                            ${!o.pago ? `<button class="btn-main btn-sm btn-s" onclick="baixarOS(${o.id})">Baixar</button>` : ''}
+                            ${o.status === 'Pendente' ? `<button class="btn-main btn-sm btn-s" onclick="baixarOS(${o.id})">Pagar</button>` : `<span class="badge badge-s">Pago</span>`}
                         </div>
                     </div>`).join('');
             };
-            // Finanças
+
+            // Listar Financeiro
             db.transaction("fin").objectStore("fin").getAll().onsuccess = e => {
-                const movs = e.target.result;
-                let s = 0; movs.forEach(m => s += (m.tipo === 'entrada'?m.val:-m.val));
+                let s = 0;
+                e.target.result.forEach(m => s += (m.tipo === 'entrada' ? m.val : -m.val));
                 $('#kpi-saldo').innerText = `R$ ${s.toFixed(2)}`;
-                $('#lista-fin').innerHTML = movs.reverse().slice(0,10).map(m => `<div class="list-item"><span>${m.desc}</span> <b style="color:${m.tipo==='entrada'?'green':'red'}">R$ ${m.val.toFixed(2)}</b></div>`).join('');
-            };
-            // Agenda
-            db.transaction("age").objectStore("age").getAll().onsuccess = e => {
-                $('#lista-agenda').innerHTML = e.target.result.map(a => `<div class="list-item"><b>${a.desc}</b> <small>${new Date(a.data).toLocaleString()}</small></div>`).join('');
-            };
-            // ADM Users
-            if(currentUser?.role === 'ADM') {
-                db.transaction("users").objectStore("users").getAll().onsuccess = e => {
-                    $('#list-all-users').innerHTML = e.target.result.map(u => `
-                        <div class="list-item">
-                            <span>${u.login} (${u.name})</span>
-                            <div style="display:flex; gap:5px">
-                                <button class="btn-main btn-sm btn-p" onclick="editUser('${u.login}')">Editar</button>
-                                ${u.login !== 'natanjkl' ? `<button class="btn-main btn-sm btn-d" onclick="deleteUser('${u.login}')">X</button>` : ''}
-                            </div>
-                        </div>`).join('');
-                };
+                $('#lista-fin').innerHTML = e.target.result.reverse().slice(0,8).map(m => `
+                    <div class="list-item">
+                        <span>${m.desc}</span>
+                        <b style="color:${m.tipo==='entrada'?'var(--s)':'var(--d)'}">${m.tipo==='entrada'?'+':'-'} R$ ${m.val.toFixed(2)}</b>
+                    </div>`).join('');
             }
         }
 
-        // AGENDA & CLI
+        // MÓDULO: CLIENTES
         function addCli() {
-            const c = { n: $('#c-n').value, t: $('#c-t').value, id: Date.now() };
-            if(!c.n) return;
-            db.transaction("cli", "readwrite").objectStore("cli").add(c).onsuccess = () => { $('#c-n').value=''; $('#c-t').value=''; syncData(); };
-        }
-        function addAgenda() {
-            const a = { desc: $('#age-desc').value, data: $('#age-date').value, id: Date.now() };
-            if(!a.desc || !a.data) return;
-            db.transaction("age", "readwrite").objectStore("age").add(a).onsuccess = () => { $('#age-desc').value=''; syncData(); };
+            const n = $('#c-n').value;
+            const t = $('#c-t').value;
+            if(!n) return;
+            db.transaction("cli", "readwrite").objectStore("cli").add({ id: Date.now(), n, t }).onsuccess = () => {
+                $('#c-n').value = ''; $('#c-t').value = '';
+                syncData();
+            };
         }
 
         // CHAT
         function sendMsg() {
-            const t = $('#chat-input').value; if(!t) return;
-            db.transaction("messages", "readwrite").objectStore("messages").add({ user: currentUser.name, text: t, id: Date.now() }).onsuccess = () => { $('#chat-input').value=''; loadChat(); };
+            const text = $('#chat-input').value;
+            if(!text) return;
+            db.transaction("messages", "readwrite").objectStore("messages").add({ id: Date.now(), user: currentUser.name, text }).onsuccess = () => {
+                $('#chat-input').value = '';
+                loadChat();
+            };
         }
+
         function loadChat() {
-            if(!db) return;
+            if(!db || !currentUser) return;
             db.transaction("messages").objectStore("messages").getAll().onsuccess = e => {
-                $('#chat-box').innerHTML = e.target.result.slice(-20).map(m => `<div class="msg ${m.user===currentUser.name?'me':'other'}"><small>${m.user}</small><br>${m.text}</div>`).join('');
+                const msgs = e.target.result.slice(-30);
+                $('#chat-box').innerHTML = msgs.map(m => `
+                    <div class="msg ${m.user === currentUser.name ? 'me' : 'other'}">
+                        <small>${m.user}</small>${m.text}
+                    </div>`).join('');
                 $('#chat-box').scrollTop = $('#chat-box').scrollHeight;
             };
         }
 
-        // ADMIN FUNCTIONS
-        function editUser(login) {
-            db.transaction("users").objectStore("users").get(login).onsuccess = e => {
-                const u = e.target.result;
-                currentEditingLogin = login;
-                $('#editing-login').innerText = login;
-                $('#edit-name').value = u.name;
-                $('#edit-user-form').style.display = 'block';
-            };
-        }
-        function saveUserEdit() {
-            db.transaction("users", "readwrite").objectStore("users").get(currentEditingLogin).onsuccess = e => {
-                const u = e.target.result;
-                u.name = $('#edit-name').value;
-                if($('#edit-pass').value) u.pass = $('#edit-pass').value;
-                db.transaction("users", "readwrite").objectStore("users").put(u).onsuccess = () => { alert("Salvo!"); $('#edit-user-form').style.display='none'; syncData(); };
-            };
-        }
-        function deleteUser(login) {
-            if(confirm("Excluir usuário?")) db.transaction("users", "readwrite").objectStore("users").delete(login).onsuccess = () => syncData();
-        }
-
-        function gerarFechamentoCaixa() {
+        // GRÁFICOS
+        function updateChart() {
+            if(!db) return;
             db.transaction("fin").objectStore("fin").getAll().onsuccess = e => {
-                const hoje = new Date().toLocaleDateString();
-                const movs = e.target.result.filter(m => new Date(m.id).toLocaleDateString() === hoje);
-                let eTotal = 0, sTotal = 0;
-                movs.forEach(m => m.tipo === 'entrada' ? eTotal += m.val : sTotal += m.val);
-                $('#print-area').innerHTML = `<h2>Fechamento ${hoje}</h2><p>Entradas: R$ ${eTotal.toFixed(2)}</p><p>Saídas: R$ ${sTotal.toFixed(2)}</p><h3>Saldo: R$ ${(eTotal-sTotal).toFixed(2)}</h3>`;
-                window.print();
+                const movs = e.target.result.slice(-7);
+                const values = movs.map(m => m.tipo === 'entrada' ? m.val : -m.val);
+                const labels = movs.map((m, i) => `Lanç. ${i+1}`);
+
+                if(myChart) myChart.destroy();
+                
+                const ctx = $('#chartFinanceiro').getContext('2d');
+                myChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels.length ? labels : ['Sem dados'],
+                        datasets: [{
+                            label: 'Valor',
+                            data: values.length ? values : [0],
+                            backgroundColor: values.map(v => v >= 0 ? '#10b981' : '#ef4444'),
+                            borderRadius: 8
+                        }]
+                    },
+                    options: { 
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
             };
         }
-
-        function initChart() {
-            new Chart($('#chartFinanceiro'), { type: 'line', data: { labels: ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'], datasets: [{ label: 'Fluxo', data: [12, 19, 3, 5, 2, 3, 7], borderColor: '#4f46e5', tension: 0.4 }] }, options: { plugins: { legend: { display: false } } } });
-        }
-        
-        setInterval(loadChat, 5000);
     </script>
 </body>
 </html>
