@@ -1,548 +1,635 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ERP ENTERPRISE V9.0 | Ultimate Edition</title>
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { initializeApp } from 'firebase/app';
+import { 
+  getFirestore, collection, doc, setDoc, onSnapshot, addDoc, 
+  deleteDoc, query, orderBy, serverTimestamp, updateDoc 
+} from 'firebase/firestore';
+import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'firebase/auth';
+import { 
+  Home, FileText, Wallet, Package, Settings, Plus, 
+  Trash2, Printer, Save, Search, Bell, Menu, 
+  MoreHorizontal, Share2, DollarSign, TrendingUp,
+  Users, History, ChevronRight, X, MessageCircle, Send,
+  Layout, ClipboardList, Calendar, CheckCircle, AlertTriangle, 
+  Lock, Key, ShieldCheck, UserPlus, LogOut
+} from 'lucide-react';
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
+import { Line, Doughnut } from 'react-chartjs-2';
+
+// Registrar componentes do ChartJS
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement);
+
+// --- Configuração Firebase ---
+const firebaseConfig = JSON.parse(__firebase_config);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'erp-enterprise-v10-final';
+
+const App = () => {
+  const [firebaseUser, setFirebaseUser] = useState(null);
+  const [appUser, setAppUser] = useState(null); // Utilizador lógico do ERP
+  const [activeTab, setActiveTab] = useState('dash');
+  const [authMode, setAuthMode] = useState('login'); // login, register, admin
+  const [loading, setLoading] = useState(true);
+  
+  // --- Estados do Sistema ---
+  const [profile, setProfile] = useState({ 
+    nome: "Minha Empresa", 
+    cnpj: "00.000.000/0001-00",
+    tel: "(11) 99999-9999",
+    endereco: "Rua Principal, 100",
+    email: "contato@empresa.com"
+  });
+  
+  const [catalogo, setCatalogo] = useState([]);
+  const [transacoes, setTransacoes] = useState([]);
+  const [clientes, setClientes] = useState([]);
+  const [mensagens, setMensagens] = useState([]);
+  const [posts, setPosts] = useState([]);
+  const [orcamentosHistory, setOrcamentosHistory] = useState([]);
+  const [usersList, setUsersList] = useState([]); // Lista de utilizadores para o ADM
+  
+  // --- Estados de Formulários ---
+  const [loginForm, setLoginForm] = useState({ user: '', pass: '', name: '' });
+  const [orcamentoItems, setOrcamentoItems] = useState([]);
+  const [orcamentoCliente, setOrcamentoCliente] = useState(null);
+  const [chatSelecionado, setChatSelecionado] = useState(null);
+  const [inputMsg, setInputMsg] = useState("");
+  
+  // --- Autenticação Firebase (Infraestrutura) ---
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+          await signInAnonymously(auth);
+        }
+      } catch (err) { console.error("Erro Auth:", err); }
+    };
+    initAuth();
+    onAuthStateChanged(auth, (u) => setFirebaseUser(u));
+  }, []);
+
+  // --- Sincronização de Dados (Lógica de Negócio) ---
+  useEffect(() => {
+    if (!firebaseUser) return;
     
-    <!-- Bibliotecas Necessárias -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    // Referências Globais
+    const profRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'perfil_v1');
+    const catCol = collection(db, 'artifacts', appId, 'public', 'data', 'catalogo');
+    const finCol = collection(db, 'artifacts', appId, 'public', 'data', 'financeiro');
+    const cliCol = collection(db, 'artifacts', appId, 'public', 'data', 'clientes');
+    const feedCol = collection(db, 'artifacts', appId, 'public', 'data', 'feed');
+    const msgCol = collection(db, 'artifacts', appId, 'public', 'data', 'mensagens');
+    const orcCol = collection(db, 'artifacts', appId, 'public', 'data', 'orcamentos');
+    const usersCol = collection(db, 'artifacts', appId, 'public', 'data', 'app_users'); // Utilizadores do ERP
 
-    <style>
-        :root {
-            --p: #4f46e5; --p-dark: #3730a3; --s: #10b981; --d: #ef4444; 
-            --w: #f59e0b; --dark: #0f172a; --slate-50: #f8fafc;
-            --slate-100: #f1f5f9; --slate-200: #e2e8f0; --slate-400: #94a3b8;
-            --slate-600: #475569; --card: #ffffff; --border: #e2e8f0;
-            --radius: 14px; --shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    // Listeners
+    const unsubP = onSnapshot(profRef, (d) => d.exists() && setProfile(prev => ({...prev, ...d.data()})));
+    const unsubC = onSnapshot(catCol, (s) => setCatalogo(s.docs.map(d => ({ id: d.id, ...d.data() }))));
+    const unsubF = onSnapshot(finCol, (s) => setTransacoes(s.docs.map(d => ({ id: d.id, ...d.data() }))));
+    const unsubCli = onSnapshot(cliCol, (s) => setClientes(s.docs.map(d => ({ id: d.id, ...d.data() }))));
+    const unsubFeed = onSnapshot(feedCol, (s) => setPosts(s.docs.map(d => ({ id: d.id, ...d.data() }))));
+    const unsubMsg = onSnapshot(msgCol, (s) => setMensagens(s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b) => a.createdAt - b.createdAt)));
+    const unsubOrc = onSnapshot(orcCol, (s) => setOrcamentosHistory(s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b) => b.createdAt - a.createdAt)));
+    
+    // Lista de Utilizadores (Carregada para validar login e para o ADM gerir)
+    const unsubUsers = onSnapshot(usersCol, (s) => {
+        const list = s.docs.map(d => ({ id: d.id, ...d.data() }));
+        setUsersList(list);
+        setLoading(false);
+    });
+    
+    return () => { 
+      unsubP(); unsubC(); unsubF(); unsubCli(); unsubFeed(); unsubMsg(); unsubOrc(); unsubUsers();
+    };
+  }, [firebaseUser]);
+
+  // --- Lógica de Login e Registro do ERP ---
+
+  const handleRegister = async () => {
+    const { user, pass, name } = loginForm;
+    if (!user || !pass || !name) return alert("Preencha todos os campos.");
+    
+    const exists = usersList.find(u => u.username === user);
+    if (exists) return alert("Utilizador já existe. Escolha outro nome de utilizador.");
+
+    try {
+        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'app_users'), {
+            username: user.toLowerCase(),
+            password: pass,
+            name: name,
+            role: 'user',
+            createdAt: Date.now(),
+            status: 'trial', // trial, active, expired
+            validUntil: Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 dias
+        });
+        alert("Conta criada com sucesso! Aproveite seus 7 dias de teste.");
+        setAuthMode('login');
+    } catch (e) {
+        console.error(e);
+        alert("Erro ao criar conta.");
+    }
+  };
+
+  const handleLogin = () => {
+    const { user, pass } = loginForm;
+    
+    // Login Mestre (Hardcoded para segurança do dono)
+    if (user === 'natanjkl' && pass === '91538300Aa') {
+        setAppUser({
+            username: 'natanjkl',
+            name: 'Administrador Master',
+            role: 'admin',
+            status: 'active'
+        });
+        return;
+    }
+
+    // Login Utilizador Comum
+    const found = usersList.find(u => u.username === user.toLowerCase() && u.password === pass);
+    
+    if (found) {
+        // Verifica validade
+        const now = Date.now();
+        if (found.validUntil < now && found.role !== 'admin') {
+             alert("O seu período de teste ou mensalidade expirou. Contacte o administrador para renovar.");
+             // Não faz setAppUser, bloqueia o acesso
+             return;
         }
+        setAppUser(found);
+    } else {
+        alert("Utilizador ou palavra-passe incorretos.");
+    }
+  };
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--slate-50); color: var(--dark); padding-bottom: 110px; overflow-x: hidden; }
+  // --- Funções de Admin (Controlo de Utilizadores) ---
+  const ativarUsuario = async (uId, dias) => {
+    if (appUser?.role !== 'admin') return;
+    const novosDias = dias * 24 * 60 * 60 * 1000;
+    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'app_users', uId), {
+        status: 'active',
+        validUntil: Date.now() + novosDias
+    });
+    alert(`Acesso renovado por ${dias} dias!`);
+  };
 
-        /* Estilo da Autenticação */
-        #auth-screen { position: fixed; inset: 0; z-index: 9999; background: #0f172a; display: flex; align-items: center; justify-content: center; }
-        .auth-card { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); padding: 40px; border-radius: 32px; width: 90%; max-width: 400px; text-align: center; color: white; }
-        
-        /* Navegação Mobile Premium */
-        nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 500px; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px); display: none; grid-template-columns: repeat(6, 1fr); padding: 10px; z-index: 1000; border-radius: 25px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); }
-        nav div { color: var(--slate-400); font-size: 9px; text-align: center; cursor: pointer; transition: 0.3s; padding: 8px 0; border-radius: 18px; }
-        nav div.active { color: white; background: rgba(255,255,255,0.15); font-weight: 700; }
-        nav div i { display: block; font-size: 22px; margin-bottom: 3px; font-style: normal; }
+  const excluirUsuario = async (uId) => {
+    if (appUser?.role !== 'admin') return;
+    if (confirm("Tem a certeza que deseja excluir este utilizador?")) {
+        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'app_users', uId));
+    }
+  };
 
-        /* Layout Principal */
-        main { padding: 20px 16px; max-width: 1000px; margin: auto; display: none; }
-        .card { background: var(--card); border-radius: var(--radius); padding: 20px; border: 1px solid var(--border); box-shadow: var(--shadow); margin-bottom: 20px; }
-        h2 { font-size: 1.2rem; font-weight: 800; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; color: var(--dark); }
-        
-        input, select, textarea { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--slate-200); margin-bottom: 12px; outline: none; font-size: 14px; background: var(--slate-50); }
-        input:focus { border-color: var(--p); background: white; }
-        
-        .btn-main { padding: 14px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; width: 100%; transition: 0.2s; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-p { background: var(--p); color: white; }
-        .btn-s { background: var(--s); color: white; }
-        .btn-d { background: var(--d); color: white; }
-        .btn-ghost { background: transparent; color: white; border: 1px solid rgba(255,255,255,0.3); }
-        .btn-sm { padding: 8px 12px; font-size: 11px; width: auto; }
-
-        /* Calendário Customizado */
-        .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; background: var(--slate-100); padding: 10px; border-radius: 10px; }
-        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
-        .cal-day-name { font-size: 10px; font-weight: 800; color: var(--slate-400); text-align: center; padding-bottom: 8px; text-transform: uppercase; }
-        .cal-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 12px; font-size: 14px; cursor: pointer; position: relative; transition: 0.2s; }
-        .cal-day:hover { background: var(--slate-100); }
-        .cal-day.today { background: var(--slate-200); color: var(--p); font-weight: 800; }
-        .cal-day.active { background: var(--p) !important; color: white !important; transform: scale(1.1); z-index: 2; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4); }
-        .cal-dot { width: 5px; height: 5px; background: var(--s); border-radius: 50%; position: absolute; bottom: 5px; }
-        
-        /* Listas e Itens */
-        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid var(--slate-100); }
-        .list-item:last-child { border: none; }
-        .badge { padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
-        .badge-p { background: rgba(79, 70, 229, 0.1); color: var(--p); }
-        .badge-s { background: rgba(16, 185, 129, 0.1); color: var(--s); }
-
-        /* Chat */
-        #chat-box { height: 300px; overflow-y: auto; background: var(--slate-50); padding: 15px; border-radius: 15px; display: flex; flex-direction: column; gap: 10px; border: 1px solid var(--border); }
-        .msg { padding: 10px 14px; border-radius: 18px; max-width: 85%; font-size: 13px; line-height: 1.4; }
-        .msg.me { align-self: flex-end; background: var(--p); color: white; border-bottom-right-radius: 4px; }
-        .msg.other { align-self: flex-start; background: white; border: 1px solid var(--border); border-bottom-left-radius: 4px; }
-        .msg small { display: block; font-size: 9px; opacity: 0.7; margin-bottom: 2px; }
-
-        .admin-only { display: none; }
-
-        /* Impressão */
-        @media print {
-            body * { visibility: hidden; }
-            #print-area, #print-area * { visibility: visible; }
-            #print-area { position: absolute; left: 0; top: 0; width: 100%; display: block !important; padding: 40px; }
-        }
-    </style>
-</head>
-<body>
-
-    <!-- Área de Impressão Oculta -->
-    <div id="print-area" style="display:none;"></div>
-
-    <!-- TELA DE LOGIN -->
-    <div id="auth-screen">
-        <div class="auth-card" id="login-container">
-            <h1 style="font-weight: 900; letter-spacing: -2px; font-size: 2.5rem;">NEXUS</h1>
-            <p style="color: var(--p); font-weight: 800; font-size: 11px; letter-spacing: 3px; margin-bottom: 30px; opacity: 0.8;">CORE ERP V9.0</p>
-            <input type="text" id="l-user" placeholder="Nome de Utilizador">
-            <input type="password" id="l-pass" placeholder="Palavra-passe">
-            <button class="btn-main btn-p" onclick="processAuth()">Entrar no Sistema</button>
-            <button class="btn-main btn-ghost" style="margin-top:10px" onclick="alert('Contacte o administrador para registar a sua conta Trial.')">Solicitar Acesso</button>
-        </div>
-    </div>
-
-    <!-- MENU DE NAVEGAÇÃO -->
-    <nav id="main-nav">
-        <div onclick="go('dash')" id="n-dash" class="active"><i>📊</i>Painel</div>
-        <div onclick="go('os')" id="n-os"><i>📝</i>O.S</div>
-        <div onclick="go('age')" id="n-age"><i>📅</i>Agenda</div>
-        <div onclick="go('fin')" id="n-fin"><i>💰</i>Caixa</div>
-        <div onclick="go('cli')" id="n-cli"><i>👥</i>Cli</div>
-        <div onclick="go('chat')" id="n-chat"><i>💬</i>Chat</div>
-        <div onclick="go('adm')" class="admin-only" id="n-adm" style="color:var(--w)"><i>👑</i>Adm</div>
-    </nav>
-
-    <!-- CONTEÚDO PRINCIPAL -->
-    <main id="app-content">
-        
-        <!-- DASHBOARD -->
-        <section id="sec-dash">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="margin:0">Bem-vindo, <span id="user-name-display">...</span></h2>
-                <button class="btn-main btn-sm btn-d" onclick="logout()" style="width: auto;">Sair</button>
+  // --- Funções do Sistema (Orçamentos, etc) ---
+  const gerarPDF = (orcamentoData) => {
+    const win = window.open('', '_blank');
+    win.document.write(`
+      <html>
+        <head>
+          <title>Orçamento #${orcamentoData.id.slice(-4)}</title>
+          <style>
+            body { font-family: 'Helvetica', sans-serif; padding: 40px; color: #333; }
+            .header { border-bottom: 2px solid #2563eb; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; }
+            h1 { color: #2563eb; margin: 0; font-size: 24px; }
+            .info { font-size: 12px; color: #666; line-height: 1.5; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th { text-align: left; padding: 10px; background: #f8fafc; border-bottom: 1px solid #ddd; font-size: 12px; uppercase; }
+            td { padding: 10px; border-bottom: 1px solid #eee; font-size: 13px; }
+            .total { text-align: right; font-size: 20px; font-weight: bold; color: #2563eb; margin-top: 20px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div>
+              <h1>${profile.nome}</h1>
+              <div class="info">${profile.endereco}<br>${profile.cnpj} | ${profile.tel}<br>${profile.email}</div>
             </div>
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
-                <div class="card" style="margin:0; padding: 15px;">
-                    <span style="font-size: 11px; color: var(--slate-600);">Saldo Total</span>
-                    <h3 id="kpi-saldo" style="font-size: 1.4rem;">R$ 0,00</h3>
+            <div style="text-align: right;">
+              <h2>ORÇAMENTO</h2>
+              <p>Data: ${orcamentoData.data}</p>
+            </div>
+          </div>
+          <div style="margin-bottom: 30px;">
+            <strong>Cliente:</strong> ${orcamentoData.clienteNome}
+          </div>
+          <table>
+            <thead><tr><th>Descrição</th><th style="text-align: right;">Valor</th></tr></thead>
+            <tbody>
+              ${orcamentoData.items.map(i => `<tr><td>${i.nome}</td><td style="text-align: right;">R$ ${Number(i.preco).toFixed(2)}</td></tr>`).join('')}
+            </tbody>
+          </table>
+          <div class="total">Total: R$ ${orcamentoData.total.toFixed(2)}</div>
+          <script>window.onload = () => window.print();</script>
+        </body>
+      </html>
+    `);
+    win.document.close();
+  };
+
+  const salvarNovoOrcamento = async () => {
+    if (!orcamentoCliente || orcamentoItems.length === 0) return alert("Selecione cliente e itens.");
+    const total = orcamentoItems.reduce((acc, i) => acc + Number(i.preco), 0);
+    const novoOrcamento = {
+      clienteNome: orcamentoCliente.nome,
+      clienteId: orcamentoCliente.id,
+      items: orcamentoItems,
+      total: total,
+      data: new Date().toLocaleDateString('pt-BR'),
+      pago: false,
+      createdAt: Date.now()
+    };
+    const docRef = await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'orcamentos'), novoOrcamento);
+    setOrcamentoItems([]);
+    setOrcamentoCliente(null);
+    if(confirm("Orçamento salvo! Deseja imprimir agora?")) {
+        gerarPDF({...novoOrcamento, id: docRef.id});
+    }
+  };
+
+  const ChartComponent = () => {
+      const canvasRef = useRef(null);
+      useEffect(() => {
+          if(!canvasRef.current) return;
+          const ctx = canvasRef.current.getContext('2d');
+          const ent = transacoes.filter(t=>t.tipo==='entrada').reduce((a,b)=>a+b.valor,0);
+          const sai = transacoes.filter(t=>t.tipo==='saida').reduce((a,b)=>a+b.valor,0);
+          
+          new window.Chart(ctx, {
+             type: 'doughnut',
+             data: {
+                 labels: ['Entradas', 'Saídas'],
+                 datasets: [{
+                     data: [ent, sai],
+                     backgroundColor: ['#10b981', '#ef4444'],
+                     borderWidth: 0
+                 }]
+             },
+             options: { responsive: true, maintainAspectRatio: false, cutout: '70%' }
+          });
+      }, [transacoes]);
+      return <canvas ref={canvasRef} height="180"></canvas>;
+  }
+
+
+  // --- VISTAS ---
+
+  if (loading) return <div className="flex h-screen items-center justify-center font-bold text-blue-600">Carregando Enterprise ERP...</div>;
+
+  // TELA DE LOGIN / REGISTRO
+  if (!appUser) {
+    return (
+        <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
+            <div className="bg-white/10 backdrop-blur-lg border border-white/10 p-8 rounded-3xl w-full max-w-sm text-white shadow-2xl">
+                <div className="text-center mb-8">
+                    <div className="w-16 h-16 bg-blue-600 rounded-2xl mx-auto flex items-center justify-center text-3xl font-black mb-4">E</div>
+                    <h1 className="text-2xl font-bold">Enterprise ERP</h1>
+                    <p className="text-xs opacity-60 uppercase tracking-widest mt-1">Gestão Profissional V10</p>
                 </div>
-                <div class="card" style="margin:0; padding: 15px;">
-                    <span style="font-size: 11px; color: var(--slate-600);">O.S Ativas</span>
-                    <h3 id="kpi-os" style="font-size: 1.4rem;">0</h3>
-                </div>
-            </div>
 
-            <div class="card">
-                <h2>📈 Fluxo de Caixa</h2>
-                <canvas id="chartFinanceiro" height="180"></canvas>
-            </div>
-        </section>
-
-        <!-- ORDENS DE SERVIÇO -->
-        <section id="sec-os" style="display:none">
-            <div class="card">
-                <h2>📝 Nova Ordem de Serviço</h2>
-                <select id="os-cli"><option value="">Seleccionar Cliente</option></select>
-                <input id="os-item" placeholder="Descrição do Serviço/Produto">
-                <input type="number" id="os-val" placeholder="Valor (R$)">
-                <button class="btn-main btn-p" onclick="addOS()">Gerar Ordem de Serviço</button>
-            </div>
-            <div class="card">
-                <h3>Histórico Recente</h3>
-                <div id="lista-os-historico"></div>
-            </div>
-        </section>
-
-        <!-- AGENDA INTERATIVA -->
-        <section id="sec-age" style="display:none">
-            <div class="card">
-                <div class="cal-header">
-                    <button onclick="changeMonth(-1)" class="btn-main btn-sm" style="background:white; color:var(--dark)">◀</button>
-                    <b id="cal-month-year">...</b>
-                    <button onclick="changeMonth(1)" class="btn-main btn-sm" style="background:white; color:var(--dark)">▶</button>
-                </div>
-                <div class="cal-grid" id="calendar-grid"></div>
-            </div>
-
-            <div class="card" id="form-agenda">
-                <h3>Agendar para: <span id="selected-date-label" style="color:var(--p)">--/--/----</span></h3>
-                <input id="age-desc" placeholder="O que vai acontecer?">
-                <div style="display: flex; gap: 10px;">
-                    <input type="time" id="age-time" value="09:00">
-                    <button class="btn-main btn-p" onclick="addAgenda()">Agendar</button>
-                </div>
-            </div>
-
-            <div id="day-events-list"></div>
-        </section>
-
-        <!-- FINANCEIRO -->
-        <section id="sec-fin" style="display:none">
-            <div class="card">
-                <h2>💰 Movimentação de Caixa</h2>
-                <input type="number" id="f-val" placeholder="Valor R$">
-                <select id="f-tipo">
-                    <option value="entrada">Entrada (+)</option>
-                    <option value="saida">Saída (-)</option>
-                </select>
-                <input id="f-desc" placeholder="Motivo/Descrição">
-                <button class="btn-main btn-p" onclick="addFin()">Registar Lançamento</button>
-            </div>
-            <div class="card">
-                <h3>Últimos Lançamentos</h3>
-                <div id="lista-fin"></div>
-            </div>
-        </section>
-
-        <!-- CLIENTES -->
-        <section id="sec-cli" style="display:none">
-            <div class="card">
-                <h2>👥 Gestão de Clientes</h2>
-                <input id="c-n" placeholder="Nome Completo">
-                <input id="c-t" placeholder="Telemóvel / WhatsApp">
-                <button class="btn-main btn-p" onclick="addCli()">Registar Cliente</button>
-            </div>
-            <div id="lista-cli"></div>
-        </section>
-
-        <!-- CHAT INTERNO -->
-        <section id="sec-chat" style="display:none">
-            <div class="card">
-                <h2>💬 Chat da Equipa</h2>
-                <div id="chat-box"></div>
-                <div style="display:flex; gap:10px; margin-top:15px">
-                    <input id="chat-input" placeholder="Escreva aqui..." style="margin:0">
-                    <button class="btn-main btn-p" style="width:70px" onclick="sendMsg()">➤</button>
-                </div>
-            </div>
-        </section>
-
-        <!-- ADMINISTRAÇÃO -->
-        <section id="sec-adm" class="admin-only" style="display:none">
-            <div class="card">
-                <h2>👑 Gestão de Utilizadores</h2>
-                <div id="list-all-users"></div>
-            </div>
-        </section>
-
-    </main>
-
-    <script>
-        const $ = document.querySelector.bind(document);
-        let db;
-        let currentUser = null;
-        let currentViewDate = new Date();
-        let selectedDate = new Date().toLocaleDateString('pt-BR');
-        let myChart = null;
-
-        // INICIALIZAÇÃO DO BANCO DE DADOS
-        const request = indexedDB.open("ERP_NEXUS_V9", 1);
-        request.onupgradeneeded = e => {
-            const d = e.target.result;
-            ["users", "cli", "fin", "age", "os", "messages"].forEach(s => {
-                d.createObjectStore(s, {keyPath: s === "users" ? "login" : "id", autoIncrement: true});
-            });
-        };
-        request.onsuccess = e => { 
-            db = e.target.result; 
-            checkSession(); 
-        };
-
-        // CONTROLO DE SESSÃO
-        function checkSession() {
-            const saved = sessionStorage.getItem('nexus_user');
-            if(saved) {
-                currentUser = JSON.parse(saved);
-                loginSuccess(currentUser);
-            }
-        }
-
-        function logout() {
-            sessionStorage.removeItem('nexus_user');
-            location.reload();
-        }
-
-        // AUTENTICAÇÃO
-        function processAuth() {
-            const user = $('#l-user').value.toLowerCase().trim();
-            const pass = $('#l-pass').value;
-            
-            // Login Mestre
-            if(user === 'natanjkl' && pass === '91538300Aa') {
-                const admin = {name: 'Natan (Admin)', login: 'natanjkl', role: 'ADM'};
-                sessionStorage.setItem('nexus_user', JSON.stringify(admin));
-                return loginSuccess(admin);
-            }
-            
-            db.transaction("users").objectStore("users").get(user).onsuccess = e => {
-                const u = e.target.result;
-                if(u && u.pass === pass) {
-                    sessionStorage.setItem('nexus_user', JSON.stringify(u));
-                    loginSuccess(u);
-                } else {
-                    alert("Dados inválidos. Tente novamente.");
-                }
-            };
-        }
-
-        function loginSuccess(u) {
-            currentUser = u;
-            $('#auth-screen').style.display = 'none';
-            $('#main-nav').style.display = 'grid';
-            $('main').style.display = 'block';
-            $('#user-name-display').innerText = u.name;
-            
-            if(u.role === 'ADM') {
-                document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'block');
-            }
-            
-            go('dash');
-            setInterval(loadChat, 4000);
-        }
-
-        function go(sec) {
-            document.querySelectorAll('section').forEach(s => s.style.display = 'none');
-            document.querySelectorAll('nav div').forEach(d => d.classList.remove('active'));
-            $(`#sec-${sec}`).style.display = 'block';
-            $(`#n-${sec}`).classList.add('active');
-            
-            syncData();
-            if(sec === 'age') renderCalendar();
-            if(sec === 'dash') updateChart();
-        }
-
-        // MÓDULO: AGENDA
-        function renderCalendar() {
-            const grid = $('#calendar-grid');
-            const monthLabel = $('#cal-month-year');
-            grid.innerHTML = '';
-            
-            const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-            monthLabel.innerText = `${monthNames[currentViewDate.getMonth()]} ${currentViewDate.getFullYear()}`;
-
-            const daysWeek = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-            daysWeek.forEach(d => grid.innerHTML += `<div class="cal-day-name">${d}</div>`);
-
-            const firstDay = new Date(currentViewDate.getFullYear(), currentViewDate.getMonth(), 1).getDay();
-            const totalDays = new Date(currentViewDate.getFullYear(), currentViewDate.getMonth() + 1, 0).getDate();
-
-            for (let i = 0; i < firstDay; i++) grid.innerHTML += `<div></div>`;
-
-            db.transaction("age").objectStore("age").getAll().onsuccess = e => {
-                const events = e.target.result;
-                for (let d = 1; d <= totalDays; d++) {
-                    const dateStr = new Date(currentViewDate.getFullYear(), currentViewDate.getMonth(), d).toLocaleDateString('pt-BR');
-                    const hasEv = events.some(ev => ev.data === dateStr);
-                    const isToday = dateStr === new Date().toLocaleDateString('pt-BR');
-                    
-                    const dayEl = document.createElement('div');
-                    dayEl.className = `cal-day ${isToday?'today':''} ${dateStr === selectedDate ? 'active':''}`;
-                    dayEl.innerHTML = `${d} ${hasEv ? '<div class="cal-dot"></div>' : ''}`;
-                    dayEl.onclick = () => {
-                        selectedDate = dateStr;
-                        $('#selected-date-label').innerText = dateStr;
-                        renderCalendar();
-                    };
-                    grid.appendChild(dayEl);
-                }
-                updateEventList(events);
-            };
-        }
-
-        function changeMonth(dir) {
-            currentViewDate.setMonth(currentViewDate.getMonth() + dir);
-            renderCalendar();
-        }
-
-        function addAgenda() {
-            const desc = $('#age-desc').value;
-            const time = $('#age-time').value;
-            if(!desc) return alert("Insira uma descrição.");
-
-            const ev = { id: Date.now(), desc, time, data: selectedDate, user: currentUser.name };
-            db.transaction("age", "readwrite").objectStore("age").add(ev).onsuccess = () => {
-                $('#age-desc').value = '';
-                renderCalendar();
-            };
-        }
-
-        function updateEventList(events) {
-            const filtered = events.filter(e => e.data === selectedDate).sort((a,b) => a.time.localeCompare(b.time));
-            $('#day-events-list').innerHTML = `<h3 style="margin-bottom:10px">Compromissos</h3>` + 
-                (filtered.length ? filtered.map(e => `
-                    <div class="list-item card" style="margin-bottom:8px; padding:12px">
-                        <div><b>${e.desc}</b><br><small>🕒 ${e.time} - Por: ${e.user}</small></div>
-                        <button class="btn-main btn-sm btn-d" onclick="deleteEvent(${e.id})">Apagar</button>
-                    </div>`).join('') : '<p style="opacity:0.5; font-size:12px">Livre para este dia.</p>');
-        }
-
-        function deleteEvent(id) {
-            if(confirm("Remover este compromisso?")) {
-                db.transaction("age", "readwrite").objectStore("age").delete(id).onsuccess = renderCalendar;
-            }
-        }
-
-        // MÓDULO: ORDENS DE SERVIÇO
-        function addOS() {
-            const cli = $('#os-cli').value;
-            const item = $('#os-item').value;
-            const val = parseFloat($('#os-val').value);
-            
-            if(!cli || !item || isNaN(val)) return alert("Preencha todos os campos.");
-
-            const os = { id: Math.floor(1000 + Math.random() * 9000), cliente: cli, servico: item, valor: val, status: 'Pendente', data: new Date().toLocaleDateString('pt-BR') };
-            db.transaction("os", "readwrite").objectStore("os").add(os).onsuccess = () => {
-                $('#os-item').value = ''; $('#os-val').value = '';
-                syncData();
-                alert("O.S Gerada com sucesso!");
-            };
-        }
-
-        function baixarOS(id) {
-            const tx = db.transaction(["os", "fin"], "readwrite");
-            tx.objectStore("os").get(id).onsuccess = e => {
-                const os = e.target.result;
-                os.status = 'Pago';
-                tx.objectStore("os").put(os);
-                tx.objectStore("fin").add({ id: Date.now(), val: os.valor, tipo: 'entrada', desc: `Recebimento O.S #${os.id}` });
-            };
-            tx.oncomplete = () => { syncData(); alert("Pagamento registado!"); };
-        }
-
-        function imprimirOS(id) {
-            db.transaction("os").objectStore("os").get(id).onsuccess = e => {
-                const o = e.target.result;
-                $('#print-area').innerHTML = `
-                    <div style="border: 2px solid #000; padding: 30px; border-radius: 10px;">
-                        <h1 style="text-align:center">ORDEM DE SERVIÇO #${o.id}</h1>
-                        <hr style="margin: 20px 0">
-                        <p><b>Cliente:</b> ${o.cliente}</p>
-                        <p><b>Data de Emissão:</b> ${o.data}</p>
-                        <p><b>Serviço/Produto:</b> ${o.servico}</p>
-                        <p><b>Status Atual:</b> ${o.status}</p>
-                        <br>
-                        <h2 style="text-align:right">Valor Total: R$ ${o.valor.toFixed(2)}</h2>
-                        <br><br><br>
-                        <div style="display:flex; justify-content: space-around;">
-                            <div style="border-top: 1px solid #000; width: 200px; text-align: center;">Assinatura Empresa</div>
-                            <div style="border-top: 1px solid #000; width: 200px; text-align: center;">Assinatura Cliente</div>
+                {authMode === 'login' ? (
+                    <div className="space-y-4 animate-in fade-in">
+                        <input 
+                            className="w-full p-4 bg-black/20 border border-white/10 rounded-xl outline-none focus:border-blue-500 transition-colors" 
+                            placeholder="Utilizador" 
+                            value={loginForm.user}
+                            onChange={e => setLoginForm({...loginForm, user: e.target.value})}
+                        />
+                        <input 
+                            className="w-full p-4 bg-black/20 border border-white/10 rounded-xl outline-none focus:border-blue-500 transition-colors" 
+                            type="password" 
+                            placeholder="Palavra-passe" 
+                            value={loginForm.pass}
+                            onChange={e => setLoginForm({...loginForm, pass: e.target.value})}
+                        />
+                        <button onClick={handleLogin} className="w-full py-4 bg-blue-600 hover:bg-blue-700 rounded-xl font-bold transition-all shadow-lg shadow-blue-900/50">
+                            ENTRAR
+                        </button>
+                        
+                        <div className="flex justify-between items-center mt-6 pt-6 border-t border-white/10">
+                            <span className="text-xs opacity-50">Não tem conta?</span>
+                            <button onClick={() => setAuthMode('register')} className="text-xs font-bold text-blue-400 hover:text-white">CRIAR CONTA</button>
                         </div>
                     </div>
-                `;
-                window.print();
-            };
-        }
+                ) : (
+                    <div className="space-y-4 animate-in fade-in">
+                        <input 
+                            className="w-full p-4 bg-black/20 border border-white/10 rounded-xl outline-none" 
+                            placeholder="Nome Completo / Empresa" 
+                            value={loginForm.name}
+                            onChange={e => setLoginForm({...loginForm, name: e.target.value})}
+                        />
+                        <input 
+                            className="w-full p-4 bg-black/20 border border-white/10 rounded-xl outline-none" 
+                            placeholder="Criar Utilizador" 
+                            value={loginForm.user}
+                            onChange={e => setLoginForm({...loginForm, user: e.target.value})}
+                        />
+                        <input 
+                            className="w-full p-4 bg-black/20 border border-white/10 rounded-xl outline-none" 
+                            type="password" 
+                            placeholder="Criar Palavra-passe" 
+                            value={loginForm.pass}
+                            onChange={e => setLoginForm({...loginForm, pass: e.target.value})}
+                        />
+                        <button onClick={handleRegister} className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 rounded-xl font-bold transition-all">
+                            REGISTAR (7 DIAS GRÁTIS)
+                        </button>
+                        <button onClick={() => setAuthMode('login')} className="w-full py-2 text-xs text-white/50 hover:text-white">
+                            Voltar ao Login
+                        </button>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+  }
 
-        // MÓDULO: FINANCEIRO
-        function addFin() {
-            const v = parseFloat($('#f-val').value);
-            const t = $('#f-tipo').value;
-            const d = $('#f-desc').value;
-            if(isNaN(v) || !d) return;
+  // APP PRINCIPAL
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-24 md:pb-0 md:pl-64">
+      
+      {/* Sidebar Desktop */}
+      <aside className="hidden md:flex fixed top-0 left-0 h-screen w-64 bg-slate-900 text-white flex-col p-4 z-50">
+        <div className="p-4 mb-6">
+            <h1 className="text-xl font-black tracking-tighter flex items-center gap-2"><div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">E</div> Enterprise</h1>
+            <p className="text-[10px] text-slate-500 mt-1 uppercase tracking-widest">{appUser.role === 'admin' ? 'Master Admin' : 'Standard License'}</p>
+        </div>
+        
+        <nav className="space-y-1 flex-1">
+            <button onClick={() => setActiveTab('feed')} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'feed' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-white/5'}`}><Home size={18}/> Dashboard</button>
+            <button onClick={() => setActiveTab('orcamentos')} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'orcamentos' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-white/5'}`}><ClipboardList size={18}/> Orçamentos</button>
+            <button onClick={() => setActiveTab('financeiro')} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'financeiro' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-white/5'}`}><Wallet size={18}/> Financeiro</button>
+            <button onClick={() => setActiveTab('clientes')} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'clientes' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-white/5'}`}><Users size={18}/> Clientes</button>
+            <button onClick={() => setActiveTab('chat')} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'chat' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-white/5'}`}><MessageCircle size={18}/> Chat</button>
+            
+            {appUser.role === 'admin' && (
+                <div className="pt-4 mt-4 border-t border-white/10">
+                    <p className="px-3 text-[10px] font-bold text-slate-500 uppercase mb-2">Administração</p>
+                    <button onClick={() => setActiveTab('admin_users')} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'admin_users' ? 'bg-amber-500 text-black' : 'text-amber-500 hover:bg-white/5'}`}><ShieldCheck size={18}/> Gerir Utilizadores</button>
+                </div>
+            )}
+        </nav>
 
-            db.transaction("fin", "readwrite").objectStore("fin").add({ id: Date.now(), val: v, tipo: t, desc: d }).onsuccess = () => {
-                $('#f-val').value = ''; $('#f-desc').value = '';
-                syncData();
-            };
-        }
+        <button onClick={() => setAppUser(null)} className="flex items-center gap-3 p-3 text-rose-400 hover:text-white hover:bg-rose-500/20 rounded-lg text-sm font-medium transition-colors mt-auto">
+            <LogOut size={18}/> Sair do Sistema
+        </button>
+      </aside>
 
-        // SINCRONIZAÇÃO E UI
-        function syncData() {
-            if(!db) return;
+      {/* Mobile Header & Nav */}
+      <header className="md:hidden fixed top-0 w-full h-16 bg-white border-b border-slate-200 z-50 flex items-center justify-between px-4">
+        <span className="font-black text-blue-600 text-lg">Enterprise</span>
+        <button onClick={() => setAppUser(null)}><LogOut size={20} className="text-slate-400"/></button>
+      </header>
+      <nav className="md:hidden fixed bottom-0 w-full h-16 bg-white border-t border-slate-200 z-50 flex justify-around items-center">
+        <button onClick={() => setActiveTab('feed')} className={`p-2 rounded-xl ${activeTab === 'feed' ? 'text-blue-600 bg-blue-50' : 'text-slate-400'}`}><Home size={24}/></button>
+        <button onClick={() => setActiveTab('orcamentos')} className={`p-2 rounded-xl ${activeTab === 'orcamentos' ? 'text-blue-600 bg-blue-50' : 'text-slate-400'}`}><FileText size={24}/></button>
+        <button onClick={() => setActiveTab('financeiro')} className={`p-2 rounded-xl ${activeTab === 'financeiro' ? 'text-blue-600 bg-blue-50' : 'text-slate-400'}`}><Wallet size={24}/></button>
+        {appUser.role === 'admin' ? (
+             <button onClick={() => setActiveTab('admin_users')} className={`p-2 rounded-xl ${activeTab === 'admin_users' ? 'text-amber-600 bg-amber-50' : 'text-slate-400'}`}><ShieldCheck size={24}/></button>
+        ) : (
+             <button onClick={() => setActiveTab('chat')} className={`p-2 rounded-xl ${activeTab === 'chat' ? 'text-blue-600 bg-blue-50' : 'text-slate-400'}`}><MessageCircle size={24}/></button>
+        )}
+      </nav>
 
-            // Listar Clientes
-            db.transaction("cli").objectStore("cli").getAll().onsuccess = e => {
-                const list = e.target.result;
-                $('#lista-cli').innerHTML = list.reverse().map(c => `<div class="list-item card"><b>${c.n}</b><span>${c.t}</span></div>`).join('');
-                $('#os-cli').innerHTML = '<option value="">Seleccionar...</option>' + list.map(c => `<option value="${c.n}">${c.n}</option>`).join('');
-            };
-
-            // Listar OS
-            db.transaction("os").objectStore("os").getAll().onsuccess = e => {
-                const all = e.target.result;
-                $('#kpi-os').innerText = all.filter(o => o.status === 'Pendente').length;
-                $('#lista-os-historico').innerHTML = all.reverse().slice(0,10).map(o => `
-                    <div class="list-item">
-                        <div><b>#${o.id} - ${o.cliente}</b><br><small>${o.servico}</small></div>
-                        <div style="display:flex; gap:5px">
-                            <button class="btn-main btn-sm btn-p" onclick="imprimirOS(${o.id})">Doc</button>
-                            ${o.status === 'Pendente' ? `<button class="btn-main btn-sm btn-s" onclick="baixarOS(${o.id})">Pagar</button>` : `<span class="badge badge-s">Pago</span>`}
+      {/* Conteúdo Principal */}
+      <main className="pt-20 md:pt-8 p-4 md:p-8 max-w-5xl mx-auto">
+        
+        {/* DASHBOARD */}
+        {activeTab === 'feed' && (
+            <div className="space-y-6 animate-in fade-in">
+                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-6 items-center">
+                    <div className="flex-1">
+                        <h2 className="text-2xl font-bold text-slate-800">Olá, {appUser.name}</h2>
+                        <p className="text-slate-500">Aqui está o resumo do seu negócio hoje.</p>
+                    </div>
+                    <div className="flex gap-4">
+                        <div className="text-right">
+                            <p className="text-xs font-bold text-slate-400 uppercase">Validade do Acesso</p>
+                            <p className={`font-bold ${appUser.role === 'admin' ? 'text-amber-500' : 'text-blue-600'}`}>
+                                {appUser.role === 'admin' ? 'VITALÍCIO' : new Date(appUser.validUntil).toLocaleDateString()}
+                            </p>
                         </div>
-                    </div>`).join('');
-            };
+                    </div>
+                </div>
 
-            // Listar Financeiro
-            db.transaction("fin").objectStore("fin").getAll().onsuccess = e => {
-                let s = 0;
-                e.target.result.forEach(m => s += (m.tipo === 'entrada' ? m.val : -m.val));
-                $('#kpi-saldo').innerText = `R$ ${s.toFixed(2)}`;
-                $('#lista-fin').innerHTML = e.target.result.reverse().slice(0,8).map(m => `
-                    <div class="list-item">
-                        <span>${m.desc}</span>
-                        <b style="color:${m.tipo==='entrada'?'var(--s)':'var(--d)'}">${m.tipo==='entrada'?'+':'-'} R$ ${m.val.toFixed(2)}</b>
-                    </div>`).join('');
-            }
-        }
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="bg-blue-600 p-6 rounded-2xl text-white shadow-lg shadow-blue-200">
+                        <Wallet className="opacity-80 mb-4"/>
+                        <p className="text-xs font-bold opacity-70 uppercase">Saldo em Caixa</p>
+                        <p className="text-3xl font-black mt-1">R$ {
+                            (transacoes.reduce((a,b) => b.tipo === 'entrada' ? a+b.valor : a-b.valor, 0)).toFixed(2)
+                        }</p>
+                    </div>
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-center items-center">
+                         <ChartComponent />
+                         <p className="text-xs font-bold text-slate-400 mt-4 uppercase">Receitas vs Despesas</p>
+                    </div>
+                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                        <h3 className="font-bold text-slate-700 mb-4 flex items-center gap-2"><History size={16}/> Recentes</h3>
+                        <div className="space-y-3">
+                            {transacoes.slice(0, 3).map(t => (
+                                <div key={t.id} className="flex justify-between text-sm">
+                                    <span className="text-slate-600">{t.descricao}</span>
+                                    <span className={t.tipo === 'entrada' ? 'text-emerald-600 font-bold' : 'text-rose-600 font-bold'}>
+                                        {t.tipo === 'entrada' ? '+' : '-'} {t.valor}
+                                    </span>
+                                </div>
+                            ))}
+                            {transacoes.length === 0 && <p className="text-slate-400 text-xs text-center">Sem dados.</p>}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )}
 
-        // MÓDULO: CLIENTES
-        function addCli() {
-            const n = $('#c-n').value;
-            const t = $('#c-t').value;
-            if(!n) return;
-            db.transaction("cli", "readwrite").objectStore("cli").add({ id: Date.now(), n, t }).onsuccess = () => {
-                $('#c-n').value = ''; $('#c-t').value = '';
-                syncData();
-            };
-        }
+        {/* ORÇAMENTOS */}
+        {activeTab === 'orcamentos' && (
+            <div className="grid md:grid-cols-2 gap-6 animate-in fade-in">
+                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <h2 className="text-lg font-bold flex items-center gap-2 text-blue-600"><FileText/> Gerar Orçamento</h2>
+                    
+                    <select className="w-full p-3 bg-slate-50 border rounded-xl" onChange={e => {
+                        const c = clientes.find(cli => cli.id === e.target.value);
+                        setOrcamentoCliente(c);
+                    }}>
+                        <option value="">Selecione o Cliente</option>
+                        {clientes.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
+                    </select>
 
-        // CHAT
-        function sendMsg() {
-            const text = $('#chat-input').value;
-            if(!text) return;
-            db.transaction("messages", "readwrite").objectStore("messages").add({ id: Date.now(), user: currentUser.name, text }).onsuccess = () => {
-                $('#chat-input').value = '';
-                loadChat();
-            };
-        }
+                    <div className="bg-slate-50 p-4 rounded-xl space-y-3">
+                        <p className="text-xs font-bold text-slate-400 uppercase">Adicionar Item</p>
+                        <select className="w-full p-2 border rounded-lg text-sm" onChange={e => {
+                            if(e.target.value) {
+                                const item = JSON.parse(e.target.value);
+                                setOrcamentoItems([...orcamentoItems, item]);
+                            }
+                        }}>
+                            <option value="">Do Catálogo...</option>
+                            {catalogo.map(i => <option key={i.id} value={JSON.stringify(i)}>{i.nome} - R$ {i.preco}</option>)}
+                        </select>
+                        
+                        <div className="max-h-32 overflow-y-auto space-y-2 pt-2">
+                            {orcamentoItems.map((it, idx) => (
+                                <div key={idx} className="flex justify-between items-center bg-white p-2 rounded border text-sm">
+                                    <span>{it.nome}</span>
+                                    <div className="flex items-center gap-2">
+                                        <b>R$ {it.preco}</b>
+                                        <X size={14} className="text-red-400 cursor-pointer" onClick={() => setOrcamentoItems(orcamentoItems.filter((_, i) => i !== idx))}/>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    
+                    <div className="flex justify-between items-center pt-2">
+                        <span className="font-bold text-slate-500">TOTAL</span>
+                        <span className="text-2xl font-black text-blue-600">R$ {orcamentoItems.reduce((a,b)=>a+Number(b.preco),0).toFixed(2)}</span>
+                    </div>
 
-        function loadChat() {
-            if(!db || !currentUser) return;
-            db.transaction("messages").objectStore("messages").getAll().onsuccess = e => {
-                const msgs = e.target.result.slice(-30);
-                $('#chat-box').innerHTML = msgs.map(m => `
-                    <div class="msg ${m.user === currentUser.name ? 'me' : 'other'}">
-                        <small>${m.user}</small>${m.text}
-                    </div>`).join('');
-                $('#chat-box').scrollTop = $('#chat-box').scrollHeight;
-            };
-        }
+                    <button onClick={salvarNovoOrcamento} className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold shadow-lg hover:bg-blue-700 transition-all flex items-center justify-center gap-2">
+                        <Printer size={18}/> Salvar e Imprimir
+                    </button>
+                </div>
 
-        // GRÁFICOS
-        function updateChart() {
-            if(!db) return;
-            db.transaction("fin").objectStore("fin").getAll().onsuccess = e => {
-                const movs = e.target.result.slice(-7);
-                const values = movs.map(m => m.tipo === 'entrada' ? m.val : -m.val);
-                const labels = movs.map((m, i) => `Lanç. ${i+1}`);
+                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <h3 className="font-bold mb-4 text-slate-700">Histórico de Orçamentos</h3>
+                    <div className="space-y-3 overflow-y-auto max-h-[500px]">
+                        {orcamentosHistory.map(orc => (
+                            <div key={orc.id} className="p-3 border rounded-xl hover:bg-slate-50 transition-colors flex justify-between items-center">
+                                <div>
+                                    <p className="font-bold text-sm">{orc.clienteNome}</p>
+                                    <p className="text-xs text-slate-400">{orc.data} • {orc.items.length} itens</p>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <span className="font-bold text-blue-600 text-sm">R$ {orc.total.toFixed(2)}</span>
+                                    <button onClick={() => gerarPDF(orc)} className="p-2 text-slate-400 hover:text-blue-600"><Printer size={16}/></button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        )}
 
-                if(myChart) myChart.destroy();
+        {/* --- FINANCEIRO --- */}
+        {activeTab === 'financeiro' && (
+            <div className="max-w-2xl mx-auto space-y-6 animate-in fade-in">
+                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <h2 className="text-lg font-bold mb-4 flex items-center gap-2"><DollarSign/> Lançamento de Caixa</h2>
+                    <form onSubmit={async (e) => {
+                        e.preventDefault();
+                        const f = e.target;
+                        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'financeiro'), {
+                            descricao: f.desc.value, valor: Number(f.valor.value), tipo: f.tipo.value,
+                            data: new Date().toLocaleDateString('pt-BR'), createdAt: Date.now()
+                        });
+                        f.reset();
+                    }} className="space-y-3">
+                        <input name="desc" placeholder="Descrição" required className="w-full p-3 bg-slate-50 border rounded-xl outline-none" />
+                        <div className="flex gap-2">
+                            <input name="valor" type="number" step="0.01" placeholder="Valor" required className="flex-1 p-3 bg-slate-50 border rounded-xl outline-none" />
+                            <select name="tipo" className="p-3 bg-slate-50 border rounded-xl outline-none font-bold">
+                                <option value="entrada">Entrada (+)</option>
+                                <option value="saida">Saída (-)</option>
+                            </select>
+                        </div>
+                        <button className="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-700">Registrar</button>
+                    </form>
+                </div>
                 
-                const ctx = $('#chartFinanceiro').getContext('2d');
-                myChart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: labels.length ? labels : ['Sem dados'],
-                        datasets: [{
-                            label: 'Valor',
-                            data: values.length ? values : [0],
-                            backgroundColor: values.map(v => v >= 0 ? '#10b981' : '#ef4444'),
-                            borderRadius: 8
-                        }]
-                    },
-                    options: { 
-                        plugins: { legend: { display: false } },
-                        scales: { y: { beginAtZero: true } }
-                    }
-                });
-            };
-        }
-    </script>
-</body>
-</html>
+                <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+                    {transacoes.sort((a,b)=>b.createdAt - a.createdAt).map(t => (
+                        <div key={t.id} className="p-4 border-b last:border-0 flex justify-between items-center">
+                            <div>
+                                <p className="font-bold text-sm">{t.descricao}</p>
+                                <p className="text-xs text-slate-400">{t.data}</p>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <span className={`font-bold ${t.tipo==='entrada'?'text-emerald-600':'text-rose-600'}`}>
+                                    {t.tipo==='entrada'?'+':'-'} R$ {t.valor.toFixed(2)}
+                                </span>
+                                <button onClick={() => deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'financeiro', t.id))} className="text-slate-300 hover:text-rose-500"><Trash2 size={16}/></button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        )}
+
+        {/* --- CLIENTES --- */}
+        {activeTab === 'clientes' && (
+            <div className="max-w-2xl mx-auto space-y-6 animate-in fade-in">
+                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <h2 className="text-lg font-bold mb-4 flex items-center gap-2"><Users/> Novo Cliente</h2>
+                    <form onSubmit={async (e) => {
+                        e.preventDefault();
+                        const f = e.target;
+                        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'clientes'), {
+                            nome: f.nome.value, tel: f.tel.value, createdAt: Date.now()
+                        });
+                        f.reset();
+                    }} className="space-y-3">
+                        <input name="nome" placeholder="Nome Completo" required className="w-full p-3 bg-slate-50 border rounded-xl outline-none" />
+                        <input name="tel" placeholder="WhatsApp / Telefone" required className="w-full p-3 bg-slate-50 border rounded-xl outline-none" />
+                        <button className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700">Cadastrar</button>
+                    </form>
+                </div>
+
+                <div className="space-y-2">
+                    {clientes.map(c => (
+                        <div key={c.id} className="bg-white p-4 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center font-bold text-slate-500">{c.nome.charAt(0)}</div>
+                                <div><p className="font-bold text-sm">{c.nome}</p><p className="text-xs text-slate-400">{c.tel}</p></div>
+                            </div>
+                            <button onClick={() => deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'clientes', c.id))} className="text-slate-300 hover:text-rose-500"><Trash2 size={18}/></button>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        )}
+
+        {/* --- ADMIN MASTER --- */}
+        {activeTab === 'admin_users' && appUser?.role === 'admin' && (
+            <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in">
+                <div className="bg-amber-50 border border-amber-200 p-6 rounded-2xl">
+                    <h2 className="text-2xl font-black text-amber-800 flex items-center gap-2"><ShieldCheck/> Painel Master</h2>
+                    <p className="text-amber-700 text-sm mt-2">Gerencie os acessos e validade das licenças dos utilizadores.</p>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                    {usersList.filter(u => u.username !== 'natanjkl').map(u => {
+                        const isExpired = Date.now() > u.validUntil;
+                        const daysLeft = Math.ceil((u.validUntil - Date.now()) / (1000 * 60 * 60 * 24));
+                        
+                        return (
+                            <div key={u.id} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div>
+                                        <p className="font-bold text-lg">{u.name}</p>
+                                        <p className="text-xs text-slate-400 font-mono">@{u.username}</p>
+                                    </div>
+                                    <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${isExpired ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
+                                        {isExpired ? 'Expirado' : `${daysLeft} dias`}
+                                    </span>
+                                </div>
+                                <div className="flex gap-2">
+                                    <button onClick={() => ativarUsuario(u.id, 30)} className="flex-1 py-2 bg-blue-50 text-blue-600 text-xs font-bold rounded-lg hover:bg-blue-100">Renovar 30d</button>
+                                    <button onClick={() => excluirUsuario(u.id)} className="px-3 py-2 bg-rose-50 text-rose-600 text-xs font-bold rounded-lg hover:bg-rose-100">Excluir</button>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        )}
+
+      </main>
+    </div>
+  );
+};
+
+export default App;
