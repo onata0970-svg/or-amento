@@ -1,635 +1,219 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { initializeApp } from 'firebase/app';
-import { 
-  getFirestore, collection, doc, setDoc, onSnapshot, addDoc, 
-  deleteDoc, query, orderBy, serverTimestamp, updateDoc 
-} from 'firebase/firestore';
-import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'firebase/auth';
-import { 
-  Home, FileText, Wallet, Package, Settings, Plus, 
-  Trash2, Printer, Save, Search, Bell, Menu, 
-  MoreHorizontal, Share2, DollarSign, TrendingUp,
-  Users, History, ChevronRight, X, MessageCircle, Send,
-  Layout, ClipboardList, Calendar, CheckCircle, AlertTriangle, 
-  Lock, Key, ShieldCheck, UserPlus, LogOut
-} from 'lucide-react';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement } from 'chart.js';
-import { Line, Doughnut } from 'react-chartjs-2';
+<!DOCTYPE html>
+<html lang="pt-pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultra ERP - Sistema de Gestão</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .auth-toggle.active { color: #4f46e5; border-bottom: 2px solid #4f46e5; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900">
 
-// Registrar componentes do ChartJS
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ArcElement);
-
-// --- Configuração Firebase ---
-const firebaseConfig = JSON.parse(__firebase_config);
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'erp-enterprise-v10-final';
-
-const App = () => {
-  const [firebaseUser, setFirebaseUser] = useState(null);
-  const [appUser, setAppUser] = useState(null); // Utilizador lógico do ERP
-  const [activeTab, setActiveTab] = useState('dash');
-  const [authMode, setAuthMode] = useState('login'); // login, register, admin
-  const [loading, setLoading] = useState(true);
-  
-  // --- Estados do Sistema ---
-  const [profile, setProfile] = useState({ 
-    nome: "Minha Empresa", 
-    cnpj: "00.000.000/0001-00",
-    tel: "(11) 99999-9999",
-    endereco: "Rua Principal, 100",
-    email: "contato@empresa.com"
-  });
-  
-  const [catalogo, setCatalogo] = useState([]);
-  const [transacoes, setTransacoes] = useState([]);
-  const [clientes, setClientes] = useState([]);
-  const [mensagens, setMensagens] = useState([]);
-  const [posts, setPosts] = useState([]);
-  const [orcamentosHistory, setOrcamentosHistory] = useState([]);
-  const [usersList, setUsersList] = useState([]); // Lista de utilizadores para o ADM
-  
-  // --- Estados de Formulários ---
-  const [loginForm, setLoginForm] = useState({ user: '', pass: '', name: '' });
-  const [orcamentoItems, setOrcamentoItems] = useState([]);
-  const [orcamentoCliente, setOrcamentoCliente] = useState(null);
-  const [chatSelecionado, setChatSelecionado] = useState(null);
-  const [inputMsg, setInputMsg] = useState("");
-  
-  // --- Autenticação Firebase (Infraestrutura) ---
-  useEffect(() => {
-    const initAuth = async () => {
-      try {
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-          await signInWithCustomToken(auth, __initial_auth_token);
-        } else {
-          await signInAnonymously(auth);
-        }
-      } catch (err) { console.error("Erro Auth:", err); }
-    };
-    initAuth();
-    onAuthStateChanged(auth, (u) => setFirebaseUser(u));
-  }, []);
-
-  // --- Sincronização de Dados (Lógica de Negócio) ---
-  useEffect(() => {
-    if (!firebaseUser) return;
-    
-    // Referências Globais
-    const profRef = doc(db, 'artifacts', appId, 'public', 'data', 'config', 'perfil_v1');
-    const catCol = collection(db, 'artifacts', appId, 'public', 'data', 'catalogo');
-    const finCol = collection(db, 'artifacts', appId, 'public', 'data', 'financeiro');
-    const cliCol = collection(db, 'artifacts', appId, 'public', 'data', 'clientes');
-    const feedCol = collection(db, 'artifacts', appId, 'public', 'data', 'feed');
-    const msgCol = collection(db, 'artifacts', appId, 'public', 'data', 'mensagens');
-    const orcCol = collection(db, 'artifacts', appId, 'public', 'data', 'orcamentos');
-    const usersCol = collection(db, 'artifacts', appId, 'public', 'data', 'app_users'); // Utilizadores do ERP
-
-    // Listeners
-    const unsubP = onSnapshot(profRef, (d) => d.exists() && setProfile(prev => ({...prev, ...d.data()})));
-    const unsubC = onSnapshot(catCol, (s) => setCatalogo(s.docs.map(d => ({ id: d.id, ...d.data() }))));
-    const unsubF = onSnapshot(finCol, (s) => setTransacoes(s.docs.map(d => ({ id: d.id, ...d.data() }))));
-    const unsubCli = onSnapshot(cliCol, (s) => setClientes(s.docs.map(d => ({ id: d.id, ...d.data() }))));
-    const unsubFeed = onSnapshot(feedCol, (s) => setPosts(s.docs.map(d => ({ id: d.id, ...d.data() }))));
-    const unsubMsg = onSnapshot(msgCol, (s) => setMensagens(s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b) => a.createdAt - b.createdAt)));
-    const unsubOrc = onSnapshot(orcCol, (s) => setOrcamentosHistory(s.docs.map(d => ({ id: d.id, ...d.data() })).sort((a,b) => b.createdAt - a.createdAt)));
-    
-    // Lista de Utilizadores (Carregada para validar login e para o ADM gerir)
-    const unsubUsers = onSnapshot(usersCol, (s) => {
-        const list = s.docs.map(d => ({ id: d.id, ...d.data() }));
-        setUsersList(list);
-        setLoading(false);
-    });
-    
-    return () => { 
-      unsubP(); unsubC(); unsubF(); unsubCli(); unsubFeed(); unsubMsg(); unsubOrc(); unsubUsers();
-    };
-  }, [firebaseUser]);
-
-  // --- Lógica de Login e Registro do ERP ---
-
-  const handleRegister = async () => {
-    const { user, pass, name } = loginForm;
-    if (!user || !pass || !name) return alert("Preencha todos os campos.");
-    
-    const exists = usersList.find(u => u.username === user);
-    if (exists) return alert("Utilizador já existe. Escolha outro nome de utilizador.");
-
-    try {
-        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'app_users'), {
-            username: user.toLowerCase(),
-            password: pass,
-            name: name,
-            role: 'user',
-            createdAt: Date.now(),
-            status: 'trial', // trial, active, expired
-            validUntil: Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 dias
-        });
-        alert("Conta criada com sucesso! Aproveite seus 7 dias de teste.");
-        setAuthMode('login');
-    } catch (e) {
-        console.error(e);
-        alert("Erro ao criar conta.");
-    }
-  };
-
-  const handleLogin = () => {
-    const { user, pass } = loginForm;
-    
-    // Login Mestre (Hardcoded para segurança do dono)
-    if (user === 'natanjkl' && pass === '91538300Aa') {
-        setAppUser({
-            username: 'natanjkl',
-            name: 'Administrador Master',
-            role: 'admin',
-            status: 'active'
-        });
-        return;
-    }
-
-    // Login Utilizador Comum
-    const found = usersList.find(u => u.username === user.toLowerCase() && u.password === pass);
-    
-    if (found) {
-        // Verifica validade
-        const now = Date.now();
-        if (found.validUntil < now && found.role !== 'admin') {
-             alert("O seu período de teste ou mensalidade expirou. Contacte o administrador para renovar.");
-             // Não faz setAppUser, bloqueia o acesso
-             return;
-        }
-        setAppUser(found);
-    } else {
-        alert("Utilizador ou palavra-passe incorretos.");
-    }
-  };
-
-  // --- Funções de Admin (Controlo de Utilizadores) ---
-  const ativarUsuario = async (uId, dias) => {
-    if (appUser?.role !== 'admin') return;
-    const novosDias = dias * 24 * 60 * 60 * 1000;
-    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'app_users', uId), {
-        status: 'active',
-        validUntil: Date.now() + novosDias
-    });
-    alert(`Acesso renovado por ${dias} dias!`);
-  };
-
-  const excluirUsuario = async (uId) => {
-    if (appUser?.role !== 'admin') return;
-    if (confirm("Tem a certeza que deseja excluir este utilizador?")) {
-        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'app_users', uId));
-    }
-  };
-
-  // --- Funções do Sistema (Orçamentos, etc) ---
-  const gerarPDF = (orcamentoData) => {
-    const win = window.open('', '_blank');
-    win.document.write(`
-      <html>
-        <head>
-          <title>Orçamento #${orcamentoData.id.slice(-4)}</title>
-          <style>
-            body { font-family: 'Helvetica', sans-serif; padding: 40px; color: #333; }
-            .header { border-bottom: 2px solid #2563eb; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; }
-            h1 { color: #2563eb; margin: 0; font-size: 24px; }
-            .info { font-size: 12px; color: #666; line-height: 1.5; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th { text-align: left; padding: 10px; background: #f8fafc; border-bottom: 1px solid #ddd; font-size: 12px; uppercase; }
-            td { padding: 10px; border-bottom: 1px solid #eee; font-size: 13px; }
-            .total { text-align: right; font-size: 20px; font-weight: bold; color: #2563eb; margin-top: 20px; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <div>
-              <h1>${profile.nome}</h1>
-              <div class="info">${profile.endereco}<br>${profile.cnpj} | ${profile.tel}<br>${profile.email}</div>
-            </div>
-            <div style="text-align: right;">
-              <h2>ORÇAMENTO</h2>
-              <p>Data: ${orcamentoData.data}</p>
-            </div>
-          </div>
-          <div style="margin-bottom: 30px;">
-            <strong>Cliente:</strong> ${orcamentoData.clienteNome}
-          </div>
-          <table>
-            <thead><tr><th>Descrição</th><th style="text-align: right;">Valor</th></tr></thead>
-            <tbody>
-              ${orcamentoData.items.map(i => `<tr><td>${i.nome}</td><td style="text-align: right;">R$ ${Number(i.preco).toFixed(2)}</td></tr>`).join('')}
-            </tbody>
-          </table>
-          <div class="total">Total: R$ ${orcamentoData.total.toFixed(2)}</div>
-          <script>window.onload = () => window.print();</script>
-        </body>
-      </html>
-    `);
-    win.document.close();
-  };
-
-  const salvarNovoOrcamento = async () => {
-    if (!orcamentoCliente || orcamentoItems.length === 0) return alert("Selecione cliente e itens.");
-    const total = orcamentoItems.reduce((acc, i) => acc + Number(i.preco), 0);
-    const novoOrcamento = {
-      clienteNome: orcamentoCliente.nome,
-      clienteId: orcamentoCliente.id,
-      items: orcamentoItems,
-      total: total,
-      data: new Date().toLocaleDateString('pt-BR'),
-      pago: false,
-      createdAt: Date.now()
-    };
-    const docRef = await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'orcamentos'), novoOrcamento);
-    setOrcamentoItems([]);
-    setOrcamentoCliente(null);
-    if(confirm("Orçamento salvo! Deseja imprimir agora?")) {
-        gerarPDF({...novoOrcamento, id: docRef.id});
-    }
-  };
-
-  const ChartComponent = () => {
-      const canvasRef = useRef(null);
-      useEffect(() => {
-          if(!canvasRef.current) return;
-          const ctx = canvasRef.current.getContext('2d');
-          const ent = transacoes.filter(t=>t.tipo==='entrada').reduce((a,b)=>a+b.valor,0);
-          const sai = transacoes.filter(t=>t.tipo==='saida').reduce((a,b)=>a+b.valor,0);
-          
-          new window.Chart(ctx, {
-             type: 'doughnut',
-             data: {
-                 labels: ['Entradas', 'Saídas'],
-                 datasets: [{
-                     data: [ent, sai],
-                     backgroundColor: ['#10b981', '#ef4444'],
-                     borderWidth: 0
-                 }]
-             },
-             options: { responsive: true, maintainAspectRatio: false, cutout: '70%' }
-          });
-      }, [transacoes]);
-      return <canvas ref={canvasRef} height="180"></canvas>;
-  }
-
-
-  // --- VISTAS ---
-
-  if (loading) return <div className="flex h-screen items-center justify-center font-bold text-blue-600">Carregando Enterprise ERP...</div>;
-
-  // TELA DE LOGIN / REGISTRO
-  if (!appUser) {
-    return (
-        <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
-            <div className="bg-white/10 backdrop-blur-lg border border-white/10 p-8 rounded-3xl w-full max-w-sm text-white shadow-2xl">
-                <div className="text-center mb-8">
-                    <div className="w-16 h-16 bg-blue-600 rounded-2xl mx-auto flex items-center justify-center text-3xl font-black mb-4">E</div>
-                    <h1 className="text-2xl font-bold">Enterprise ERP</h1>
-                    <p className="text-xs opacity-60 uppercase tracking-widest mt-1">Gestão Profissional V10</p>
+    <!-- Ecrã de Autenticação -->
+    <div id="auth-screen" class="fixed inset-0 bg-slate-900 z-[100] flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-indigo-600 rounded-2xl mx-auto flex items-center justify-center mb-4 text-white">
+                    <i data-lucide="layers" class="w-10 h-10"></i>
                 </div>
-
-                {authMode === 'login' ? (
-                    <div className="space-y-4 animate-in fade-in">
-                        <input 
-                            className="w-full p-4 bg-black/20 border border-white/10 rounded-xl outline-none focus:border-blue-500 transition-colors" 
-                            placeholder="Utilizador" 
-                            value={loginForm.user}
-                            onChange={e => setLoginForm({...loginForm, user: e.target.value})}
-                        />
-                        <input 
-                            className="w-full p-4 bg-black/20 border border-white/10 rounded-xl outline-none focus:border-blue-500 transition-colors" 
-                            type="password" 
-                            placeholder="Palavra-passe" 
-                            value={loginForm.pass}
-                            onChange={e => setLoginForm({...loginForm, pass: e.target.value})}
-                        />
-                        <button onClick={handleLogin} className="w-full py-4 bg-blue-600 hover:bg-blue-700 rounded-xl font-bold transition-all shadow-lg shadow-blue-900/50">
-                            ENTRAR
-                        </button>
-                        
-                        <div className="flex justify-between items-center mt-6 pt-6 border-t border-white/10">
-                            <span className="text-xs opacity-50">Não tem conta?</span>
-                            <button onClick={() => setAuthMode('register')} className="text-xs font-bold text-blue-400 hover:text-white">CRIAR CONTA</button>
-                        </div>
-                    </div>
-                ) : (
-                    <div className="space-y-4 animate-in fade-in">
-                        <input 
-                            className="w-full p-4 bg-black/20 border border-white/10 rounded-xl outline-none" 
-                            placeholder="Nome Completo / Empresa" 
-                            value={loginForm.name}
-                            onChange={e => setLoginForm({...loginForm, name: e.target.value})}
-                        />
-                        <input 
-                            className="w-full p-4 bg-black/20 border border-white/10 rounded-xl outline-none" 
-                            placeholder="Criar Utilizador" 
-                            value={loginForm.user}
-                            onChange={e => setLoginForm({...loginForm, user: e.target.value})}
-                        />
-                        <input 
-                            className="w-full p-4 bg-black/20 border border-white/10 rounded-xl outline-none" 
-                            type="password" 
-                            placeholder="Criar Palavra-passe" 
-                            value={loginForm.pass}
-                            onChange={e => setLoginForm({...loginForm, pass: e.target.value})}
-                        />
-                        <button onClick={handleRegister} className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 rounded-xl font-bold transition-all">
-                            REGISTAR (7 DIAS GRÁTIS)
-                        </button>
-                        <button onClick={() => setAuthMode('login')} className="w-full py-2 text-xs text-white/50 hover:text-white">
-                            Voltar ao Login
-                        </button>
-                    </div>
-                )}
+                <h1 class="text-2xl font-black text-slate-800">Ultra ERP</h1>
             </div>
-        </div>
-    );
-  }
 
-  // APP PRINCIPAL
-  return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-24 md:pb-0 md:pl-64">
-      
-      {/* Sidebar Desktop */}
-      <aside className="hidden md:flex fixed top-0 left-0 h-screen w-64 bg-slate-900 text-white flex-col p-4 z-50">
-        <div className="p-4 mb-6">
-            <h1 className="text-xl font-black tracking-tighter flex items-center gap-2"><div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">E</div> Enterprise</h1>
-            <p className="text-[10px] text-slate-500 mt-1 uppercase tracking-widest">{appUser.role === 'admin' ? 'Master Admin' : 'Standard License'}</p>
+            <!-- Alternador Login/Registo -->
+            <div class="flex border-b mb-6">
+                <button onclick="toggleAuthMode('login')" id="btn-mode-login" class="auth-toggle active flex-1 py-2 font-bold text-sm transition">Entrar</button>
+                <button onclick="toggleAuthMode('register')" id="btn-mode-register" class="auth-toggle flex-1 py-2 font-bold text-sm text-slate-400 transition">Criar Conta</button>
+            </div>
+
+            <!-- Formulário de Login -->
+            <div id="form-login" class="space-y-4">
+                <input type="text" id="login-user" placeholder="Utilizador ou Email" class="w-full p-3 bg-slate-100 rounded-xl outline-none border focus:border-indigo-500 transition">
+                <input type="password" id="login-pass" placeholder="Palavra-passe" class="w-full p-3 bg-slate-100 rounded-xl outline-none border focus:border-indigo-500 transition">
+                <button onclick="handleLogin()" class="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-200">
+                    Aceder ao Painel
+                </button>
+            </div>
+
+            <!-- Formulário de Registo -->
+            <div id="form-register" class="hidden space-y-4">
+                <input type="text" id="reg-name" placeholder="Nome da Empresa" class="w-full p-3 bg-slate-100 rounded-xl outline-none border focus:border-indigo-500 transition">
+                <input type="email" id="reg-email" placeholder="Email Empresarial" class="w-full p-3 bg-slate-100 rounded-xl outline-none border focus:border-indigo-500 transition">
+                <input type="password" id="reg-pass" placeholder="Definir Palavra-passe" class="w-full p-3 bg-slate-100 rounded-xl outline-none border focus:border-indigo-500 transition">
+                <button onclick="handleRegister()" class="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition shadow-lg shadow-emerald-200">
+                    Começar Trial Grátis
+                </button>
+            </div>
+
+            <p class="mt-6 text-center text-[10px] text-slate-400 uppercase tracking-widest font-bold">Segurança Encriptada Enterprise</p>
         </div>
-        
-        <nav className="space-y-1 flex-1">
-            <button onClick={() => setActiveTab('feed')} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'feed' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-white/5'}`}><Home size={18}/> Dashboard</button>
-            <button onClick={() => setActiveTab('orcamentos')} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'orcamentos' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-white/5'}`}><ClipboardList size={18}/> Orçamentos</button>
-            <button onClick={() => setActiveTab('financeiro')} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'financeiro' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-white/5'}`}><Wallet size={18}/> Financeiro</button>
-            <button onClick={() => setActiveTab('clientes')} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'clientes' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-white/5'}`}><Users size={18}/> Clientes</button>
-            <button onClick={() => setActiveTab('chat')} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'chat' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-white/5'}`}><MessageCircle size={18}/> Chat</button>
-            
-            {appUser.role === 'admin' && (
-                <div className="pt-4 mt-4 border-t border-white/10">
-                    <p className="px-3 text-[10px] font-bold text-slate-500 uppercase mb-2">Administração</p>
-                    <button onClick={() => setActiveTab('admin_users')} className={`w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition-colors ${activeTab === 'admin_users' ? 'bg-amber-500 text-black' : 'text-amber-500 hover:bg-white/5'}`}><ShieldCheck size={18}/> Gerir Utilizadores</button>
-                </div>
-            )}
+    </div>
+
+    <!-- Interface Principal (Oculta por defeito) -->
+    <div id="app-interface" class="hidden">
+        <nav class="fixed bottom-0 w-full h-16 bg-white border-t flex justify-around items-center z-50 md:top-0 md:left-0 md:h-screen md:w-20 md:flex-col md:justify-start md:pt-6 md:border-r md:border-t-0">
+            <div class="hidden md:flex w-10 h-10 bg-indigo-600 rounded-xl items-center justify-center text-white mb-8">
+                <i data-lucide="zap" class="w-6 h-6"></i>
+            </div>
+            <button onclick="showTab('dash')" class="nav-btn p-3 rounded-xl text-indigo-600 bg-indigo-50" data-tab="dash"><i data-lucide="layout-dashboard"></i></button>
+            <button onclick="showTab('orc')" class="nav-btn p-3 rounded-xl text-slate-400 hover:bg-slate-50" data-tab="orc"><i data-lucide="file-text"></i></button>
+            <button onclick="showTab('fin')" class="nav-btn p-3 rounded-xl text-slate-400 hover:bg-slate-50" data-tab="fin"><i data-lucide="wallet"></i></button>
+            <button onclick="showTab('cli')" class="nav-btn p-3 rounded-xl text-slate-400 hover:bg-slate-50" data-tab="cli"><i data-lucide="users"></i></button>
+            <button onclick="showTab('cfg')" class="nav-btn p-3 rounded-xl text-slate-400 hover:bg-slate-50" data-tab="cfg"><i data-lucide="settings"></i></button>
+            <button onclick="logout()" class="md:mt-auto p-3 text-red-400 hover:bg-red-50 rounded-xl mb-4"><i data-lucide="log-out"></i></button>
         </nav>
 
-        <button onClick={() => setAppUser(null)} className="flex items-center gap-3 p-3 text-rose-400 hover:text-white hover:bg-rose-500/20 rounded-lg text-sm font-medium transition-colors mt-auto">
-            <LogOut size={18}/> Sair do Sistema
-        </button>
-      </aside>
-
-      {/* Mobile Header & Nav */}
-      <header className="md:hidden fixed top-0 w-full h-16 bg-white border-b border-slate-200 z-50 flex items-center justify-between px-4">
-        <span className="font-black text-blue-600 text-lg">Enterprise</span>
-        <button onClick={() => setAppUser(null)}><LogOut size={20} className="text-slate-400"/></button>
-      </header>
-      <nav className="md:hidden fixed bottom-0 w-full h-16 bg-white border-t border-slate-200 z-50 flex justify-around items-center">
-        <button onClick={() => setActiveTab('feed')} className={`p-2 rounded-xl ${activeTab === 'feed' ? 'text-blue-600 bg-blue-50' : 'text-slate-400'}`}><Home size={24}/></button>
-        <button onClick={() => setActiveTab('orcamentos')} className={`p-2 rounded-xl ${activeTab === 'orcamentos' ? 'text-blue-600 bg-blue-50' : 'text-slate-400'}`}><FileText size={24}/></button>
-        <button onClick={() => setActiveTab('financeiro')} className={`p-2 rounded-xl ${activeTab === 'financeiro' ? 'text-blue-600 bg-blue-50' : 'text-slate-400'}`}><Wallet size={24}/></button>
-        {appUser.role === 'admin' ? (
-             <button onClick={() => setActiveTab('admin_users')} className={`p-2 rounded-xl ${activeTab === 'admin_users' ? 'text-amber-600 bg-amber-50' : 'text-slate-400'}`}><ShieldCheck size={24}/></button>
-        ) : (
-             <button onClick={() => setActiveTab('chat')} className={`p-2 rounded-xl ${activeTab === 'chat' ? 'text-blue-600 bg-blue-50' : 'text-slate-400'}`}><MessageCircle size={24}/></button>
-        )}
-      </nav>
-
-      {/* Conteúdo Principal */}
-      <main className="pt-20 md:pt-8 p-4 md:p-8 max-w-5xl mx-auto">
-        
-        {/* DASHBOARD */}
-        {activeTab === 'feed' && (
-            <div className="space-y-6 animate-in fade-in">
-                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-6 items-center">
-                    <div className="flex-1">
-                        <h2 className="text-2xl font-bold text-slate-800">Olá, {appUser.name}</h2>
-                        <p className="text-slate-500">Aqui está o resumo do seu negócio hoje.</p>
+        <main class="pb-20 md:pb-0 md:pl-20 min-h-screen">
+            <header class="bg-white border-b p-4 flex justify-between items-center sticky top-0 z-40">
+                <h2 id="page-title" class="text-xl font-bold text-slate-800">Dashboard</h2>
+                <div class="flex items-center gap-4">
+                    <div class="text-right hidden sm:block">
+                        <p id="user-display-name" class="text-sm font-semibold leading-none">Empresa Demo</p>
+                        <span class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Plano Enterprise</span>
                     </div>
-                    <div className="flex gap-4">
-                        <div className="text-right">
-                            <p className="text-xs font-bold text-slate-400 uppercase">Validade do Acesso</p>
-                            <p className={`font-bold ${appUser.role === 'admin' ? 'text-amber-500' : 'text-blue-600'}`}>
-                                {appUser.role === 'admin' ? 'VITALÍCIO' : new Date(appUser.validUntil).toLocaleDateString()}
-                            </p>
-                        </div>
-                    </div>
+                    <div class="w-10 h-10 rounded-full bg-slate-200 border-2 border-indigo-100"></div>
                 </div>
+            </header>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-blue-600 p-6 rounded-2xl text-white shadow-lg shadow-blue-200">
-                        <Wallet className="opacity-80 mb-4"/>
-                        <p className="text-xs font-bold opacity-70 uppercase">Saldo em Caixa</p>
-                        <p className="text-3xl font-black mt-1">R$ {
-                            (transacoes.reduce((a,b) => b.tipo === 'entrada' ? a+b.valor : a-b.valor, 0)).toFixed(2)
-                        }</p>
-                    </div>
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-center items-center">
-                         <ChartComponent />
-                         <p className="text-xs font-bold text-slate-400 mt-4 uppercase">Receitas vs Despesas</p>
-                    </div>
-                    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                        <h3 className="font-bold text-slate-700 mb-4 flex items-center gap-2"><History size={16}/> Recentes</h3>
-                        <div className="space-y-3">
-                            {transacoes.slice(0, 3).map(t => (
-                                <div key={t.id} className="flex justify-between text-sm">
-                                    <span className="text-slate-600">{t.descricao}</span>
-                                    <span className={t.tipo === 'entrada' ? 'text-emerald-600 font-bold' : 'text-rose-600 font-bold'}>
-                                        {t.tipo === 'entrada' ? '+' : '-'} {t.valor}
-                                    </span>
-                                </div>
-                            ))}
-                            {transacoes.length === 0 && <p className="text-slate-400 text-xs text-center">Sem dados.</p>}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        )}
-
-        {/* ORÇAMENTOS */}
-        {activeTab === 'orcamentos' && (
-            <div className="grid md:grid-cols-2 gap-6 animate-in fade-in">
-                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                    <h2 className="text-lg font-bold flex items-center gap-2 text-blue-600"><FileText/> Gerar Orçamento</h2>
-                    
-                    <select className="w-full p-3 bg-slate-50 border rounded-xl" onChange={e => {
-                        const c = clientes.find(cli => cli.id === e.target.value);
-                        setOrcamentoCliente(c);
-                    }}>
-                        <option value="">Selecione o Cliente</option>
-                        {clientes.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
-                    </select>
-
-                    <div className="bg-slate-50 p-4 rounded-xl space-y-3">
-                        <p className="text-xs font-bold text-slate-400 uppercase">Adicionar Item</p>
-                        <select className="w-full p-2 border rounded-lg text-sm" onChange={e => {
-                            if(e.target.value) {
-                                const item = JSON.parse(e.target.value);
-                                setOrcamentoItems([...orcamentoItems, item]);
-                            }
-                        }}>
-                            <option value="">Do Catálogo...</option>
-                            {catalogo.map(i => <option key={i.id} value={JSON.stringify(i)}>{i.nome} - R$ {i.preco}</option>)}
-                        </select>
-                        
-                        <div className="max-h-32 overflow-y-auto space-y-2 pt-2">
-                            {orcamentoItems.map((it, idx) => (
-                                <div key={idx} className="flex justify-between items-center bg-white p-2 rounded border text-sm">
-                                    <span>{it.nome}</span>
-                                    <div className="flex items-center gap-2">
-                                        <b>R$ {it.preco}</b>
-                                        <X size={14} className="text-red-400 cursor-pointer" onClick={() => setOrcamentoItems(orcamentoItems.filter((_, i) => i !== idx))}/>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                    
-                    <div className="flex justify-between items-center pt-2">
-                        <span className="font-bold text-slate-500">TOTAL</span>
-                        <span className="text-2xl font-black text-blue-600">R$ {orcamentoItems.reduce((a,b)=>a+Number(b.preco),0).toFixed(2)}</span>
-                    </div>
-
-                    <button onClick={salvarNovoOrcamento} className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold shadow-lg hover:bg-blue-700 transition-all flex items-center justify-center gap-2">
-                        <Printer size={18}/> Salvar e Imprimir
-                    </button>
-                </div>
-
-                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                    <h3 className="font-bold mb-4 text-slate-700">Histórico de Orçamentos</h3>
-                    <div className="space-y-3 overflow-y-auto max-h-[500px]">
-                        {orcamentosHistory.map(orc => (
-                            <div key={orc.id} className="p-3 border rounded-xl hover:bg-slate-50 transition-colors flex justify-between items-center">
-                                <div>
-                                    <p className="font-bold text-sm">{orc.clienteNome}</p>
-                                    <p className="text-xs text-slate-400">{orc.data} • {orc.items.length} itens</p>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <span className="font-bold text-blue-600 text-sm">R$ {orc.total.toFixed(2)}</span>
-                                    <button onClick={() => gerarPDF(orc)} className="p-2 text-slate-400 hover:text-blue-600"><Printer size={16}/></button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-        )}
-
-        {/* --- FINANCEIRO --- */}
-        {activeTab === 'financeiro' && (
-            <div className="max-w-2xl mx-auto space-y-6 animate-in fade-in">
-                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                    <h2 className="text-lg font-bold mb-4 flex items-center gap-2"><DollarSign/> Lançamento de Caixa</h2>
-                    <form onSubmit={async (e) => {
-                        e.preventDefault();
-                        const f = e.target;
-                        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'financeiro'), {
-                            descricao: f.desc.value, valor: Number(f.valor.value), tipo: f.tipo.value,
-                            data: new Date().toLocaleDateString('pt-BR'), createdAt: Date.now()
-                        });
-                        f.reset();
-                    }} className="space-y-3">
-                        <input name="desc" placeholder="Descrição" required className="w-full p-3 bg-slate-50 border rounded-xl outline-none" />
-                        <div className="flex gap-2">
-                            <input name="valor" type="number" step="0.01" placeholder="Valor" required className="flex-1 p-3 bg-slate-50 border rounded-xl outline-none" />
-                            <select name="tipo" className="p-3 bg-slate-50 border rounded-xl outline-none font-bold">
-                                <option value="entrada">Entrada (+)</option>
-                                <option value="saida">Saída (-)</option>
-                            </select>
-                        </div>
-                        <button className="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-700">Registrar</button>
-                    </form>
-                </div>
-                
-                <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-                    {transacoes.sort((a,b)=>b.createdAt - a.createdAt).map(t => (
-                        <div key={t.id} className="p-4 border-b last:border-0 flex justify-between items-center">
+            <div class="p-4 md:p-8 max-w-7xl mx-auto">
+                <section id="tab-dash" class="tab-content active space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-white p-6 rounded-3xl border shadow-sm flex items-center gap-4">
+                            <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center"><i data-lucide="trending-up"></i></div>
                             <div>
-                                <p className="font-bold text-sm">{t.descricao}</p>
-                                <p className="text-xs text-slate-400">{t.data}</p>
-                            </div>
-                            <div className="flex items-center gap-4">
-                                <span className={`font-bold ${t.tipo==='entrada'?'text-emerald-600':'text-rose-600'}`}>
-                                    {t.tipo==='entrada'?'+':'-'} R$ {t.valor.toFixed(2)}
-                                </span>
-                                <button onClick={() => deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'financeiro', t.id))} className="text-slate-300 hover:text-rose-500"><Trash2 size={16}/></button>
+                                <p class="text-sm text-slate-500">Receitas (Mês)</p>
+                                <h3 class="text-2xl font-bold">€ 14.250,00</h3>
                             </div>
                         </div>
-                    ))}
-                </div>
-            </div>
-        )}
-
-        {/* --- CLIENTES --- */}
-        {activeTab === 'clientes' && (
-            <div className="max-w-2xl mx-auto space-y-6 animate-in fade-in">
-                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                    <h2 className="text-lg font-bold mb-4 flex items-center gap-2"><Users/> Novo Cliente</h2>
-                    <form onSubmit={async (e) => {
-                        e.preventDefault();
-                        const f = e.target;
-                        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'clientes'), {
-                            nome: f.nome.value, tel: f.tel.value, createdAt: Date.now()
-                        });
-                        f.reset();
-                    }} className="space-y-3">
-                        <input name="nome" placeholder="Nome Completo" required className="w-full p-3 bg-slate-50 border rounded-xl outline-none" />
-                        <input name="tel" placeholder="WhatsApp / Telefone" required className="w-full p-3 bg-slate-50 border rounded-xl outline-none" />
-                        <button className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700">Cadastrar</button>
-                    </form>
-                </div>
-
-                <div className="space-y-2">
-                    {clientes.map(c => (
-                        <div key={c.id} className="bg-white p-4 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center font-bold text-slate-500">{c.nome.charAt(0)}</div>
-                                <div><p className="font-bold text-sm">{c.nome}</p><p className="text-xs text-slate-400">{c.tel}</p></div>
+                        <div class="bg-white p-6 rounded-3xl border shadow-sm flex items-center gap-4">
+                            <div class="w-12 h-12 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center"><i data-lucide="trending-down"></i></div>
+                            <div>
+                                <p class="text-sm text-slate-500">Despesas (Mês)</p>
+                                <h3 class="text-2xl font-bold">€ 5.120,00</h3>
                             </div>
-                            <button onClick={() => deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'clientes', c.id))} className="text-slate-300 hover:text-rose-500"><Trash2 size={18}/></button>
                         </div>
-                    ))}
-                </div>
-            </div>
-        )}
-
-        {/* --- ADMIN MASTER --- */}
-        {activeTab === 'admin_users' && appUser?.role === 'admin' && (
-            <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in">
-                <div className="bg-amber-50 border border-amber-200 p-6 rounded-2xl">
-                    <h2 className="text-2xl font-black text-amber-800 flex items-center gap-2"><ShieldCheck/> Painel Master</h2>
-                    <p className="text-amber-700 text-sm mt-2">Gerencie os acessos e validade das licenças dos utilizadores.</p>
-                </div>
-
-                <div className="grid md:grid-cols-2 gap-4">
-                    {usersList.filter(u => u.username !== 'natanjkl').map(u => {
-                        const isExpired = Date.now() > u.validUntil;
-                        const daysLeft = Math.ceil((u.validUntil - Date.now()) / (1000 * 60 * 60 * 24));
-                        
-                        return (
-                            <div key={u.id} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-                                <div className="flex justify-between items-start mb-4">
-                                    <div>
-                                        <p className="font-bold text-lg">{u.name}</p>
-                                        <p className="text-xs text-slate-400 font-mono">@{u.username}</p>
-                                    </div>
-                                    <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${isExpired ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
-                                        {isExpired ? 'Expirado' : `${daysLeft} dias`}
-                                    </span>
-                                </div>
-                                <div className="flex gap-2">
-                                    <button onClick={() => ativarUsuario(u.id, 30)} className="flex-1 py-2 bg-blue-50 text-blue-600 text-xs font-bold rounded-lg hover:bg-blue-100">Renovar 30d</button>
-                                    <button onClick={() => excluirUsuario(u.id)} className="px-3 py-2 bg-rose-50 text-rose-600 text-xs font-bold rounded-lg hover:bg-rose-100">Excluir</button>
-                                </div>
+                        <div class="bg-white p-6 rounded-3xl border shadow-sm flex items-center gap-4">
+                            <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center"><i data-lucide="balance-scale"></i></div>
+                            <div>
+                                <p class="text-sm text-slate-500">Saldo Atual</p>
+                                <h3 class="text-2xl font-bold">€ 9.130,00</h3>
                             </div>
-                        );
-                    })}
-                </div>
-            </div>
-        )}
+                        </div>
+                    </div>
+                </section>
+                
+                <section id="tab-orc" class="tab-content space-y-6">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-2xl font-bold">Orçamentos</h3>
+                        <button class="bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold">+ Novo</button>
+                    </div>
+                    <div class="bg-white rounded-3xl border p-12 text-center text-slate-400">
+                        Nenhum orçamento emitido hoje.
+                    </div>
+                </section>
 
-      </main>
+                <section id="tab-fin" class="tab-content"><h3 class="text-2xl font-bold">Financeiro</h3></section>
+                <section id="tab-cli" class="tab-content"><h3 class="text-2xl font-bold">Clientes</h3></section>
+                <section id="tab-cfg" class="tab-content"><h3 class="text-2xl font-bold">Definições</h3></section>
+            </div>
+        </main>
     </div>
-  );
-};
 
-export default App;
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Garantir que Lucide carrega
+        const safeCreateIcons = () => {
+            if (window.lucide) window.lucide.createIcons();
+            else setTimeout(safeCreateIcons, 100);
+        };
+
+        // UI Helpers
+        window.toggleAuthMode = (mode) => {
+            const loginForm = document.getElementById('form-login');
+            const regForm = document.getElementById('form-register');
+            const btnLogin = document.getElementById('btn-mode-login');
+            const btnReg = document.getElementById('btn-mode-register');
+
+            if (mode === 'login') {
+                loginForm.classList.remove('hidden');
+                regForm.classList.add('hidden');
+                btnLogin.classList.add('active');
+                btnReg.classList.remove('active');
+                btnReg.classList.add('text-slate-400');
+            } else {
+                loginForm.classList.add('hidden');
+                regForm.classList.remove('hidden');
+                btnLogin.classList.remove('active');
+                btnLogin.classList.add('text-slate-400');
+                btnReg.classList.add('active');
+            }
+            safeCreateIcons();
+        };
+
+        window.handleLogin = () => {
+            const user = document.getElementById('login-user').value;
+            if(user) {
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('app-interface').classList.remove('hidden');
+                initApp();
+            } else {
+                alert('Insira o seu utilizador.');
+            }
+        };
+
+        window.handleRegister = () => {
+            const name = document.getElementById('reg-name').value;
+            const email = document.getElementById('reg-email').value;
+            if(name && email) {
+                alert('Conta criada com sucesso! Aceder ao Trial...');
+                document.getElementById('auth-screen').classList.add('hidden');
+                document.getElementById('app-interface').classList.remove('hidden');
+                document.getElementById('user-display-name').innerText = name;
+                initApp();
+            } else {
+                alert('Preencha todos os campos para registar.');
+            }
+        };
+
+        window.logout = () => location.reload();
+
+        window.showTab = (tabId) => {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => {
+                b.classList.remove('text-indigo-600', 'bg-indigo-50');
+                b.classList.add('text-slate-400');
+            });
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            const btn = document.querySelector(`[data-tab="${tabId}"]`);
+            btn.classList.add('text-indigo-600', 'bg-indigo-50');
+            document.getElementById('page-title').innerText = tabId.charAt(0).toUpperCase() + tabId.slice(1);
+            safeCreateIcons();
+        };
+
+        const initApp = async () => {
+            await signInAnonymously(auth);
+            safeCreateIcons();
+        };
+
+        window.addEventListener('DOMContentLoaded', safeCreateIcons);
+    </script>
+</body>
+</html>
