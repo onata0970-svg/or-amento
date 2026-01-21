@@ -1,219 +1,465 @@
 <!DOCTYPE html>
-<html lang="pt-pt">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultra ERP - Sistema de Gestão</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <title>ERP ENTERPRISE V10.1</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .auth-toggle.active { color: #4f46e5; border-bottom: 2px solid #4f46e5; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        :root {
+            --p: #2563eb; --s: #10b981; --d: #ef4444; 
+            --dark: #0f172a; --slate: #64748b; --bg: #f1f5f9;
+            --card: #ffffff; --border: #e2e8f0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg); color: var(--dark); padding-bottom: 80px; }
+
+        /* Auth */
+        #auth-screen { position: fixed; inset: 0; z-index: 9999; background: var(--dark); display: flex; align-items: center; justify-content: center; }
+        .auth-card { background: rgba(255,255,255,0.05); padding: 40px; border-radius: 24px; width: 90%; max-width: 400px; text-align: center; color: white; border: 1px solid rgba(255,255,255,0.1); }
+
+        /* Nav */
+        nav { position: fixed; bottom: 0; width: 100%; background: var(--dark); display: none; grid-template-columns: repeat(4, 1fr); padding: 12px 0; z-index: 1000; border-top: 1px solid rgba(255,255,255,0.1); }
+        nav div { color: #94a3b8; font-size: 10px; text-align: center; cursor: pointer; transition: 0.2s; }
+        nav div i { display: block; font-size: 20px; margin-bottom: 4px; font-style: normal; }
+        nav div.active { color: white; font-weight: bold; transform: translateY(-2px); }
+
+        /* UI */
+        main { padding: 20px; max-width: 850px; margin: auto; display: none; }
+        .card { background: var(--card); border-radius: 16px; padding: 20px; border: 1px solid var(--border); margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        h2 { font-size: 18px; margin-bottom: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        
+        .field-group { margin-bottom: 15px; }
+        label { display: block; font-size: 11px; font-weight: 700; color: var(--slate); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        input, select, textarea { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: #f8fafc; font-size: 14px; outline: none; transition: border 0.2s; }
+        input:focus { border-color: var(--p); }
+        
+        .btn { padding: 14px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; width: 100%; font-size: 14px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn:active { transform: scale(0.98); }
+        .btn-p { background: var(--p); color: white; }
+        .btn-s { background: var(--s); color: white; }
+        .btn-danger { background: #fee2e2; color: var(--d); font-size: 12px; padding: 8px; }
+        
+        .item-row { display: flex; justify-content: space-between; padding: 12px; background: #f8fafc; border-radius: 8px; margin-bottom: 8px; font-size: 14px; border: 1px solid #edf2f7; }
+
+        /* MODAL PREVIEW */
+        .overlay { position: fixed; inset: 0; display: none; background: rgba(15, 23, 42, 0.9); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .modal { background: #525659; width: 95%; height: 90vh; border-radius: 16px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+        #preview-container { flex: 1; overflow-y: auto; padding: 40px 20px; display: flex; justify-content: center; background: #e2e8f0; }
+
+        /* PDF A4 STYLE */
+        .pdf-page { 
+            width: 210mm; 
+            min-height: 297mm; 
+            background: white; 
+            padding: 25mm 20mm; 
+            color: #1a202c; 
+            box-shadow: 0 0 30px rgba(0,0,0,0.15);
+            position: relative;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .pdf-header { display: flex; justify-content: space-between; border-bottom: 2px solid #2563eb; padding-bottom: 25px; margin-bottom: 30px; }
+        .empresa-info h1 { font-size: 24px; color: #2563eb; margin-bottom: 8px; font-weight: 800; text-transform: uppercase; }
+        .empresa-info p { font-size: 11px; color: #4a5568; line-height: 1.4; margin-bottom: 2px; }
+        
+        .doc-tipo { text-align: right; }
+        .doc-tipo .badge { background: #2563eb; color: white; padding: 6px 16px; font-weight: 800; font-size: 16px; border-radius: 6px; display: inline-block; margin-bottom: 10px; }
+        .doc-tipo p { font-size: 12px; color: #718096; }
+
+        .cliente-box { background: #f8fafc; padding: 20px; border-radius: 8px; margin-bottom: 30px; border: 1px solid #e2e8f0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .cliente-box div { flex: 1; }
+        .cliente-box label { font-size: 9px; color: #718096; margin-bottom: 4px; display: block; }
+        .cliente-box h3 { font-size: 15px; font-weight: 700; margin-bottom: 8px; color: #2d3748; grid-column: span 2; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; }
+        .cliente-box p { font-size: 11px; margin-bottom: 2px; }
+
+        .tabela-pdf { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .tabela-pdf th { border-bottom: 2px solid #e2e8f0; text-align: left; padding: 12px 8px; font-size: 11px; text-transform: uppercase; color: #4a5568; font-weight: 700; }
+        .tabela-pdf td { padding: 12px 8px; border-bottom: 1px solid #edf2f7; font-size: 12px; }
+
+        .total-pdf { margin-top: 40px; text-align: right; border-top: 2px solid #2563eb; padding-top: 15px; }
+        .total-pdf span { font-size: 13px; font-weight: 600; color: #718096; }
+        .total-pdf h2 { font-size: 28px; color: #2563eb; margin-top: 5px; font-weight: 800; }
+
+        .footer-pdf { position: absolute; bottom: 20mm; left: 20mm; right: 20mm; border-top: 1px solid #edf2f7; padding-top: 15px; font-size: 10px; color: #a0aec0; text-align: center; }
+
+        #toast { position: fixed; top: 25px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 12px 24px; border-radius: 50px; display: none; z-index: 5000; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); font-size: 14px; font-weight: 500; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900">
+<body>
 
-    <!-- Ecrã de Autenticação -->
-    <div id="auth-screen" class="fixed inset-0 bg-slate-900 z-[100] flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl">
-            <div class="text-center mb-6">
-                <div class="w-16 h-16 bg-indigo-600 rounded-2xl mx-auto flex items-center justify-center mb-4 text-white">
-                    <i data-lucide="layers" class="w-10 h-10"></i>
-                </div>
-                <h1 class="text-2xl font-black text-slate-800">Ultra ERP</h1>
-            </div>
+    <div id="toast"></div>
 
-            <!-- Alternador Login/Registo -->
-            <div class="flex border-b mb-6">
-                <button onclick="toggleAuthMode('login')" id="btn-mode-login" class="auth-toggle active flex-1 py-2 font-bold text-sm transition">Entrar</button>
-                <button onclick="toggleAuthMode('register')" id="btn-mode-register" class="auth-toggle flex-1 py-2 font-bold text-sm text-slate-400 transition">Criar Conta</button>
-            </div>
-
-            <!-- Formulário de Login -->
-            <div id="form-login" class="space-y-4">
-                <input type="text" id="login-user" placeholder="Utilizador ou Email" class="w-full p-3 bg-slate-100 rounded-xl outline-none border focus:border-indigo-500 transition">
-                <input type="password" id="login-pass" placeholder="Palavra-passe" class="w-full p-3 bg-slate-100 rounded-xl outline-none border focus:border-indigo-500 transition">
-                <button onclick="handleLogin()" class="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-200">
-                    Aceder ao Painel
-                </button>
-            </div>
-
-            <!-- Formulário de Registo -->
-            <div id="form-register" class="hidden space-y-4">
-                <input type="text" id="reg-name" placeholder="Nome da Empresa" class="w-full p-3 bg-slate-100 rounded-xl outline-none border focus:border-indigo-500 transition">
-                <input type="email" id="reg-email" placeholder="Email Empresarial" class="w-full p-3 bg-slate-100 rounded-xl outline-none border focus:border-indigo-500 transition">
-                <input type="password" id="reg-pass" placeholder="Definir Palavra-passe" class="w-full p-3 bg-slate-100 rounded-xl outline-none border focus:border-indigo-500 transition">
-                <button onclick="handleRegister()" class="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition shadow-lg shadow-emerald-200">
-                    Começar Trial Grátis
-                </button>
-            </div>
-
-            <p class="mt-6 text-center text-[10px] text-slate-400 uppercase tracking-widest font-bold">Segurança Encriptada Enterprise</p>
+    <!-- Login -->
+    <div id="auth-screen">
+        <div class="auth-card">
+            <h1 style="font-size: 32px; letter-spacing: -1.5px; font-weight: 800;">ENTERPRISE</h1>
+            <p style="opacity: 0.6; margin-bottom: 40px; font-size: 14px;">SISTEMA DE GESTÃO V10.1</p>
+            <button class="btn btn-p" onclick="entrar()">INICIAR SESSÃO</button>
         </div>
     </div>
 
-    <!-- Interface Principal (Oculta por defeito) -->
-    <div id="app-interface" class="hidden">
-        <nav class="fixed bottom-0 w-full h-16 bg-white border-t flex justify-around items-center z-50 md:top-0 md:left-0 md:h-screen md:w-20 md:flex-col md:justify-start md:pt-6 md:border-r md:border-t-0">
-            <div class="hidden md:flex w-10 h-10 bg-indigo-600 rounded-xl items-center justify-center text-white mb-8">
-                <i data-lucide="zap" class="w-6 h-6"></i>
-            </div>
-            <button onclick="showTab('dash')" class="nav-btn p-3 rounded-xl text-indigo-600 bg-indigo-50" data-tab="dash"><i data-lucide="layout-dashboard"></i></button>
-            <button onclick="showTab('orc')" class="nav-btn p-3 rounded-xl text-slate-400 hover:bg-slate-50" data-tab="orc"><i data-lucide="file-text"></i></button>
-            <button onclick="showTab('fin')" class="nav-btn p-3 rounded-xl text-slate-400 hover:bg-slate-50" data-tab="fin"><i data-lucide="wallet"></i></button>
-            <button onclick="showTab('cli')" class="nav-btn p-3 rounded-xl text-slate-400 hover:bg-slate-50" data-tab="cli"><i data-lucide="users"></i></button>
-            <button onclick="showTab('cfg')" class="nav-btn p-3 rounded-xl text-slate-400 hover:bg-slate-50" data-tab="cfg"><i data-lucide="settings"></i></button>
-            <button onclick="logout()" class="md:mt-auto p-3 text-red-400 hover:bg-red-50 rounded-xl mb-4"><i data-lucide="log-out"></i></button>
-        </nav>
+    <nav id="navbar">
+        <div onclick="tab('os')" id="m-os" class="active"><i>📄</i>Venda</div>
+        <div onclick="tab('cli')" id="m-cli"><i>👥</i>Clientes</div>
+        <div onclick="tab('srv')" id="m-srv"><i>📦</i>Itens</div>
+        <div onclick="tab('cfg')" id="m-cfg"><i>⚙️</i>Ajustes</div>
+    </nav>
 
-        <main class="pb-20 md:pb-0 md:pl-20 min-h-screen">
-            <header class="bg-white border-b p-4 flex justify-between items-center sticky top-0 z-40">
-                <h2 id="page-title" class="text-xl font-bold text-slate-800">Dashboard</h2>
-                <div class="flex items-center gap-4">
-                    <div class="text-right hidden sm:block">
-                        <p id="user-display-name" class="text-sm font-semibold leading-none">Empresa Demo</p>
-                        <span class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Plano Enterprise</span>
-                    </div>
-                    <div class="w-10 h-10 rounded-full bg-slate-200 border-2 border-indigo-100"></div>
+    <main id="app">
+        <!-- Vendas / Orçamentos -->
+        <section id="sec-os">
+            <div class="card">
+                <h2>Gerar Orçamento Profissional</h2>
+                <div class="field-group">
+                    <label>Cliente</label>
+                    <select id="os-cliente"></select>
                 </div>
-            </header>
-
-            <div class="p-4 md:p-8 max-w-7xl mx-auto">
-                <section id="tab-dash" class="tab-content active space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="bg-white p-6 rounded-3xl border shadow-sm flex items-center gap-4">
-                            <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center"><i data-lucide="trending-up"></i></div>
-                            <div>
-                                <p class="text-sm text-slate-500">Receitas (Mês)</p>
-                                <h3 class="text-2xl font-bold">€ 14.250,00</h3>
-                            </div>
-                        </div>
-                        <div class="bg-white p-6 rounded-3xl border shadow-sm flex items-center gap-4">
-                            <div class="w-12 h-12 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center"><i data-lucide="trending-down"></i></div>
-                            <div>
-                                <p class="text-sm text-slate-500">Despesas (Mês)</p>
-                                <h3 class="text-2xl font-bold">€ 5.120,00</h3>
-                            </div>
-                        </div>
-                        <div class="bg-white p-6 rounded-3xl border shadow-sm flex items-center gap-4">
-                            <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center"><i data-lucide="balance-scale"></i></div>
-                            <div>
-                                <p class="text-sm text-slate-500">Saldo Atual</p>
-                                <h3 class="text-2xl font-bold">€ 9.130,00</h3>
-                            </div>
-                        </div>
-                    </div>
-                </section>
                 
-                <section id="tab-orc" class="tab-content space-y-6">
-                    <div class="flex justify-between items-center">
-                        <h3 class="text-2xl font-bold">Orçamentos</h3>
-                        <button class="bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold">+ Novo</button>
+                <div style="background: #f8fafc; padding: 20px; border-radius: 12px; border: 2px dashed #cbd5e1; margin-bottom: 20px;">
+                    <label>Adicionar Itens ao Pedido</label>
+                    <div class="field-group">
+                        <select id="os-item-add" onchange="atualizaPrecoUnitario()"></select>
                     </div>
-                    <div class="bg-white rounded-3xl border p-12 text-center text-slate-400">
-                        Nenhum orçamento emitido hoje.
+                    <div style="display: flex; gap: 10px;">
+                        <input type="number" id="os-item-val" placeholder="Preço Unitário R$">
+                        <button class="btn btn-p" onclick="addItem()" style="width: 60px; height: 46px;">+</button>
                     </div>
-                </section>
+                </div>
 
-                <section id="tab-fin" class="tab-content"><h3 class="text-2xl font-bold">Financeiro</h3></section>
-                <section id="tab-cli" class="tab-content"><h3 class="text-2xl font-bold">Clientes</h3></section>
-                <section id="tab-cfg" class="tab-content"><h3 class="text-2xl font-bold">Definições</h3></section>
+                <div id="lista-carrinho" style="margin-bottom: 20px;"></div>
+
+                <div style="text-align: right; border-top: 1px solid #e2e8f0; padding-top: 20px;">
+                    <p style="font-size: 13px; color: var(--slate); font-weight: 600;">Subtotal</p>
+                    <h1 id="total-venda" style="color: var(--p); font-size: 32px; font-weight: 800;">R$ 0,00</h1>
+                    <button class="btn btn-s" onclick="visualizarPDF()" style="margin-top: 20px; padding: 18px;">VISUALIZAR DOCUMENTO A4</button>
+                </div>
             </div>
-        </main>
+        </section>
+
+        <!-- Ajustes da Empresa -->
+        <section id="sec-cfg" style="display:none">
+            <div class="card">
+                <h2>Dados da Sua Empresa</h2>
+                <div class="field-group"><label>Nome Fantasia</label><input id="cfg-nome"></div>
+                <div class="field-group"><label>CNPJ / CPF</label><input id="cfg-doc"></div>
+                <div class="field-group"><label>Endereço Completo</label><input id="cfg-end"></div>
+                <div class="field-group"><label>WhatsApp / Contato</label><input id="cfg-tel"></div>
+                <button class="btn btn-p" onclick="salvarConfig()">SALVAR CONFIGURAÇÕES</button>
+            </div>
+        </section>
+
+        <!-- Clientes -->
+        <section id="sec-cli" style="display:none">
+            <div class="card">
+                <h2>Cadastro de Cliente</h2>
+                <div class="field-group"><label>Nome / Razão Social</label><input id="cli-nome"></div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div class="field-group"><label>CNPJ / CPF</label><input id="cli-doc"></div>
+                    <div class="field-group"><label>Telefone</label><input id="cli-tel"></div>
+                </div>
+                <div class="field-group"><label>Endereço</label><input id="cli-end"></div>
+                <button class="btn btn-p" onclick="salvarCliente()">CADASTRAR CLIENTE</button>
+            </div>
+            <div id="lista-clientes"></div>
+        </section>
+
+        <!-- Produtos -->
+        <section id="sec-srv" style="display:none">
+            <div class="card">
+                <h2>Cadastro de Item</h2>
+                <div class="field-group"><label>Descrição</label><input id="srv-nome"></div>
+                <div class="field-group"><label>Preço Sugerido R$</label><input id="srv-preco" type="number"></div>
+                <button class="btn btn-p" onclick="salvarProduto()">CADASTRAR ITEM</button>
+            </div>
+            <div id="lista-produtos"></div>
+        </section>
+    </main>
+
+    <!-- Modal PDF -->
+    <div id="modal-pdf" class="overlay">
+        <div class="modal">
+            <div id="preview-container"></div>
+            <div style="padding: 20px; background: white; display: flex; gap: 15px; border-top: 1px solid #e2e8f0;">
+                <button class="btn" onclick="fecharModal()" style="background: #f1f5f9; color: #475569;">CANCELAR</button>
+                <button class="btn btn-p" onclick="baixarPDF()">GERAR PDF AGORA</button>
+            </div>
+        </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        // Garantir que Lucide carrega
-        const safeCreateIcons = () => {
-            if (window.lucide) window.lucide.createIcons();
-            else setTimeout(safeCreateIcons, 100);
+    <script>
+        const state = {
+            carrinho: [],
+            db: null,
+            clientesRaw: []
         };
 
-        // UI Helpers
-        window.toggleAuthMode = (mode) => {
-            const loginForm = document.getElementById('form-login');
-            const regForm = document.getElementById('form-register');
-            const btnLogin = document.getElementById('btn-mode-login');
-            const btnReg = document.getElementById('btn-mode-register');
-
-            if (mode === 'login') {
-                loginForm.classList.remove('hidden');
-                regForm.classList.add('hidden');
-                btnLogin.classList.add('active');
-                btnReg.classList.remove('active');
-                btnReg.classList.add('text-slate-400');
-            } else {
-                loginForm.classList.add('hidden');
-                regForm.classList.remove('hidden');
-                btnLogin.classList.remove('active');
-                btnLogin.classList.add('text-slate-400');
-                btnReg.classList.add('active');
-            }
-            safeCreateIcons();
+        const initDB = () => {
+            const request = indexedDB.open("EnterpriseDB", 3);
+            request.onupgradeneeded = (e) => {
+                const db = e.target.result;
+                if (!db.objectStoreNames.contains("clientes")) db.createObjectStore("clientes", { keyPath: "id", autoIncrement: true });
+                if (!db.objectStoreNames.contains("produtos")) db.createObjectStore("produtos", { keyPath: "id", autoIncrement: true });
+                if (!db.objectStoreNames.contains("config")) db.createObjectStore("config", { keyPath: "id" });
+            };
+            request.onsuccess = (e) => {
+                state.db = e.target.result;
+                carregarTudo();
+            };
         };
 
-        window.handleLogin = () => {
-            const user = document.getElementById('login-user').value;
-            if(user) {
-                document.getElementById('auth-screen').classList.add('hidden');
-                document.getElementById('app-interface').classList.remove('hidden');
-                initApp();
-            } else {
-                alert('Insira o seu utilizador.');
-            }
+        const carregarTudo = () => {
+            listarClientes();
+            listarProdutos();
+            carregarConfig();
         };
 
-        window.handleRegister = () => {
-            const name = document.getElementById('reg-name').value;
-            const email = document.getElementById('reg-email').value;
-            if(name && email) {
-                alert('Conta criada com sucesso! Aceder ao Trial...');
-                document.getElementById('auth-screen').classList.add('hidden');
-                document.getElementById('app-interface').classList.remove('hidden');
-                document.getElementById('user-display-name').innerText = name;
-                initApp();
-            } else {
-                alert('Preencha todos os campos para registar.');
-            }
+        const listarClientes = () => {
+            const tx = state.db.transaction("clientes", "readonly");
+            tx.objectStore("clientes").getAll().onsuccess = (e) => {
+                state.clientesRaw = e.target.result;
+                const select = document.getElementById('os-cliente');
+                const list = document.getElementById('lista-clientes');
+
+                select.innerHTML = '<option value="">Selecione um cliente...</option>' + 
+                    state.clientesRaw.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
+
+                list.innerHTML = state.clientesRaw.map(c => `
+                    <div class="card" style="padding:15px; margin-bottom:10px; border-left: 4px solid var(--p)">
+                        <div style="font-weight:700">${c.nome}</div>
+                        <div style="font-size:12px; color:var(--slate)">${c.doc || 'Sem Documento'} | ${c.tel || 'Sem Telefone'}</div>
+                    </div>
+                `).join('');
+            };
         };
 
-        window.logout = () => location.reload();
+        const listarProdutos = () => {
+            const tx = state.db.transaction("produtos", "readonly");
+            tx.objectStore("produtos").getAll().onsuccess = (e) => {
+                const data = e.target.result;
+                const select = document.getElementById('os-item-add');
+                const list = document.getElementById('lista-produtos');
 
-        window.showTab = (tabId) => {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(b => {
-                b.classList.remove('text-indigo-600', 'bg-indigo-50');
-                b.classList.add('text-slate-400');
+                select.innerHTML = '<option value="">Selecione um item...</option>' + 
+                    data.map(p => `<option value="${p.nome}" data-preco="${p.preco}">${p.nome}</option>`).join('');
+
+                list.innerHTML = data.map(p => `
+                    <div class="card" style="padding:15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center">
+                        <span>${p.nome}</span>
+                        <b style="color:var(--s)">R$ ${parseFloat(p.preco).toFixed(2)}</b>
+                    </div>
+                `).join('');
+            };
+        };
+
+        const carregarConfig = () => {
+            state.db.transaction("config").objectStore("config").get(1).onsuccess = (e) => {
+                const c = e.target.result;
+                if (c) {
+                    document.getElementById('cfg-nome').value = c.nome || '';
+                    document.getElementById('cfg-doc').value = c.doc || '';
+                    document.getElementById('cfg-end').value = c.end || '';
+                    document.getElementById('cfg-tel').value = c.tel || '';
+                }
+            };
+        };
+
+        const salvarConfig = () => {
+            const dados = {
+                id: 1,
+                nome: document.getElementById('cfg-nome').value,
+                doc: document.getElementById('cfg-doc').value,
+                end: document.getElementById('cfg-end').value,
+                tel: document.getElementById('cfg-tel').value
+            };
+            state.db.transaction("config", "readwrite").objectStore("config").put(dados).onsuccess = () => toast("Empresa atualizada!");
+        };
+
+        const salvarCliente = () => {
+            const cliente = {
+                nome: document.getElementById('cli-nome').value,
+                doc: document.getElementById('cli-doc').value,
+                tel: document.getElementById('cli-tel').value,
+                end: document.getElementById('cli-end').value
+            };
+            if (!cliente.nome) return toast("Nome é obrigatório!");
+            state.db.transaction("clientes", "readwrite").objectStore("clientes").add(cliente).onsuccess = () => {
+                ['cli-nome', 'cli-doc', 'cli-tel', 'cli-end'].forEach(id => document.getElementById(id).value = '');
+                listarClientes();
+                toast("Cliente cadastrado!");
+            };
+        };
+
+        const salvarProduto = () => {
+            const nome = document.getElementById('srv-nome').value;
+            const preco = parseFloat(document.getElementById('srv-preco').value);
+            if (!nome || isNaN(preco)) return toast("Preencha os dados!");
+            state.db.transaction("produtos", "readwrite").objectStore("produtos").add({ nome, preco }).onsuccess = () => {
+                document.getElementById('srv-nome').value = '';
+                document.getElementById('srv-preco').value = '';
+                listarProdutos();
+                toast("Item adicionado!");
+            };
+        };
+
+        const atualizaPrecoUnitario = () => {
+            const sel = document.getElementById('os-item-add');
+            const preco = sel.options[sel.selectedIndex].dataset.preco;
+            document.getElementById('os-item-val').value = preco || '';
+        };
+
+        const addItem = () => {
+            const sel = document.getElementById('os-item-add');
+            const nome = sel.value;
+            const preco = parseFloat(document.getElementById('os-item-val').value);
+            if (!nome || isNaN(preco)) return;
+            state.carrinho.push({ nome, preco });
+            renderCarrinho();
+        };
+
+        const renderCarrinho = () => {
+            const container = document.getElementById('lista-carrinho');
+            container.innerHTML = state.carrinho.map((item, idx) => `
+                <div class="item-row">
+                    <span>${item.nome}</span>
+                    <div style="display:flex; gap:15px; align-items:center">
+                        <b>R$ ${item.preco.toFixed(2)}</b>
+                        <button onclick="removeItem(${idx})" style="border:none; background:none; color:red; cursor:pointer">✕</button>
+                    </div>
+                </div>
+            `).join('');
+            const total = state.carrinho.reduce((acc, cur) => acc + cur.preco, 0);
+            document.getElementById('total-venda').innerText = `R$ ${total.toFixed(2)}`;
+        };
+
+        const removeItem = (idx) => { state.carrinho.splice(idx, 1); renderCarrinho(); };
+
+        const visualizarPDF = () => {
+            const cliId = document.getElementById('os-cliente').value;
+            if (!cliId) return toast("Selecione um cliente!");
+            if (state.carrinho.length === 0) return toast("Adicione itens!");
+
+            const clienteObj = state.clientesRaw.find(c => c.id == cliId);
+            
+            state.db.transaction("config").objectStore("config").get(1).onsuccess = (e) => {
+                const config = e.target.result || { nome: "SUA EMPRESA", doc: "-", end: "-", tel: "-" };
+                const data = new Date().toLocaleDateString('pt-BR');
+                const total = state.carrinho.reduce((acc, cur) => acc + cur.preco, 0);
+
+                const html = `
+                    <div class="pdf-page" id="pdf-content">
+                        <div class="pdf-header">
+                            <div class="empresa-info">
+                                <h1>${config.nome}</h1>
+                                <p>CNPJ/CPF: ${config.doc}</p>
+                                <p>${config.end}</p>
+                                <p>WhatsApp: ${config.tel}</p>
+                            </div>
+                            <div class="doc-tipo">
+                                <div class="badge">ORÇAMENTO</div>
+                                <p>Emitido em: ${data}</p>
+                                <p>ID: #${Math.floor(Math.random()*9000)+1000}</p>
+                            </div>
+                        </div>
+
+                        <div class="cliente-box">
+                            <h3>DADOS DO CLIENTE / DESTINATÁRIO</h3>
+                            <div>
+                                <label>NOME / RAZÃO SOCIAL</label>
+                                <p><b>${clienteObj.nome}</b></p>
+                            </div>
+                            <div>
+                                <label>CNPJ / CPF</label>
+                                <p>${clienteObj.doc || 'Não informado'}</p>
+                            </div>
+                            <div>
+                                <label>ENDEREÇO</label>
+                                <p>${clienteObj.end || 'Não informado'}</p>
+                            </div>
+                            <div>
+                                <label>TELEFONE</label>
+                                <p>${clienteObj.tel || 'Não informado'}</p>
+                            </div>
+                        </div>
+
+                        <table class="tabela-pdf">
+                            <thead>
+                                <tr>
+                                    <th style="width: 10%">QTD</th>
+                                    <th style="width: 65%">DESCRIÇÃO DOS PRODUTOS / SERVIÇOS</th>
+                                    <th style="width: 25%; text-align: right">SUBTOTAL</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${state.carrinho.map(i => `
+                                    <tr>
+                                        <td>01</td>
+                                        <td>${i.nome}</td>
+                                        <td style="text-align: right">R$ ${i.preco.toFixed(2)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+
+                        <div class="total-pdf">
+                            <span>TOTAL DO ORÇAMENTO</span>
+                            <h2>R$ ${total.toFixed(2)}</h2>
+                        </div>
+
+                        <div class="footer-pdf">
+                            Este documento é apenas uma proposta comercial válida por 7 dias.<br>
+                            Enterprise V10.1 - Gestão Inteligente
+                        </div>
+                    </div>
+                `;
+
+                document.getElementById('preview-container').innerHTML = html;
+                document.getElementById('modal-pdf').style.display = 'flex';
+            };
+        };
+
+        const baixarPDF = () => {
+            const element = document.getElementById('pdf-content');
+            const opt = {
+                margin: 0,
+                filename: `Orcamento_${Date.now()}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 3, useCORS: true, letterRendering: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save().then(() => {
+                fecharModal();
+                toast("PDF gerado com sucesso!");
             });
-            document.getElementById(`tab-${tabId}`).classList.add('active');
-            const btn = document.querySelector(`[data-tab="${tabId}"]`);
-            btn.classList.add('text-indigo-600', 'bg-indigo-50');
-            document.getElementById('page-title').innerText = tabId.charAt(0).toUpperCase() + tabId.slice(1);
-            safeCreateIcons();
         };
 
-        const initApp = async () => {
-            await signInAnonymously(auth);
-            safeCreateIcons();
+        const tab = (t) => {
+            document.querySelectorAll('section').forEach(s => s.style.display = 'none');
+            document.querySelectorAll('nav div').forEach(d => d.classList.remove('active'));
+            document.getElementById(`sec-${t}`).style.display = 'block';
+            document.getElementById(`m-${t}`).classList.add('active');
         };
 
-        window.addEventListener('DOMContentLoaded', safeCreateIcons);
+        const entrar = () => {
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('navbar').style.display = 'grid';
+            document.getElementById('app').style.display = 'block';
+            initDB();
+        };
+
+        const fecharModal = () => document.getElementById('modal-pdf').style.display = 'none';
+
+        const toast = (msg) => {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 3000);
+        };
     </script>
 </body>
 </html>
