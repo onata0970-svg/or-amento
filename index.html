@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ENTERPRISE ERP V10.3</title>
+    <title>ENTERPRISE ERP V10.9</title>
     
-    <!-- Bibliotecas de Renderização -->
+    <!-- Bibliotecas Necessárias -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
@@ -13,115 +13,91 @@
             --primary: #1e40af;
             --secondary: #10b981;
             --danger: #ef4444;
-            --background: #f8fafc;
+            --background: #f1f5f9;
             --surface: #ffffff;
             --text-main: #1e293b;
             --text-muted: #64748b;
             --border: #e2e8f0;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Segoe UI', sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
         
         body { background: var(--background); color: var(--text-main); font-size: 14px; line-height: 1.5; -webkit-tap-highlight-color: transparent; }
 
-        /* Auth Screen */
+        /* Login Screen */
         #auth-screen { position: fixed; inset: 0; z-index: 10000; background: #0f172a; display: flex; align-items: center; justify-content: center; color: white; }
         .auth-container { text-align: center; width: 100%; max-width: 320px; padding: 20px; }
-        .logo-large { font-size: 32px; font-weight: 900; letter-spacing: -1px; margin-bottom: 8px; }
+        .logo-large { font-size: 32px; font-weight: 900; letter-spacing: -1px; margin-bottom: 8px; color: #60a5fa; }
+        .auth-card { background: rgba(255,255,255,0.05); padding: 24px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(10px); }
+        .auth-input { width: 100%; padding: 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.2); color: white; text-align: center; font-size: 18px; letter-spacing: 4px; margin-bottom: 15px; outline: none; }
 
         /* Navigation */
-        nav { position: fixed; bottom: 0; width: 100%; background: #0f172a; display: none; grid-template-columns: repeat(4, 1fr); padding: 10px 0; z-index: 1000; border-top: 1px solid rgba(255,255,255,0.1); padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
-        nav div { color: #94a3b8; font-size: 11px; text-align: center; cursor: pointer; transition: 0.2s; }
+        nav { position: fixed; bottom: 0; width: 100%; background: #ffffff; display: none; grid-template-columns: repeat(4, 1fr); padding: 10px 0; z-index: 1000; border-top: 1px solid var(--border); padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
+        nav div { color: #94a3b8; font-size: 11px; text-align: center; cursor: pointer; }
         nav div i { display: block; font-size: 20px; margin-bottom: 4px; font-style: normal; }
-        nav div.active { color: #60a5fa; font-weight: bold; }
+        nav div.active { color: var(--primary); font-weight: bold; }
 
         /* Layout */
-        main { padding: 16px; max-width: 800px; margin: 0 auto 100px auto; display: none; }
-        .section-title { font-size: 18px; font-weight: 800; margin-bottom: 16px; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
+        main { padding: 16px; max-width: 850px; margin: 0 auto 100px auto; display: none; }
+        .section-title { font-size: 20px; font-weight: 800; margin-bottom: 16px; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
         
-        /* Cards & UI */
+        /* UI Components */
         .card { background: var(--surface); border-radius: 12px; padding: 16px; border: 1px solid var(--border); margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .form-group { margin-bottom: 14px; }
         label { display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 5px; }
-        input, select, textarea { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: #ffffff; font-size: 14px; color: var(--text-main); outline: none; transition: border 0.2s; }
-        input:focus { border-color: var(--primary); }
+        input, select, textarea { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: #f8fafc; font-size: 14px; color: var(--text-main); outline: none; }
+        input:focus { border-color: var(--primary); background: #fff; }
         
-        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px 20px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; font-size: 14px; gap: 8px; transition: 0.2s; text-decoration: none; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px 20px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; font-size: 14px; gap: 8px; transition: 0.2s; }
         .btn-primary { background: var(--primary); color: white; width: 100%; }
         .btn-success { background: var(--secondary); color: white; width: 100%; }
-        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-main); }
-        .btn:active { transform: scale(0.98); opacity: 0.9; }
+        .btn-danger-sm { background: #fef2f2; color: var(--danger); padding: 6px 10px; font-size: 11px; border-radius: 6px; border: 1px solid #fee2e2; }
 
-        /* Carrinho e Listas */
-        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f1f5f9; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid var(--primary); }
-        .remove-btn { color: var(--danger); font-weight: bold; cursor: pointer; padding: 5px; }
+        .list-item { padding: 12px; background: #f8fafc; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border); position: relative; }
+        .remove-btn { position: absolute; top: 12px; right: 12px; cursor: pointer; color: var(--danger); font-size: 18px; font-weight: bold; }
 
-        /* MODAL PREVIEW */
-        #modal-preview { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 5000; display: none; flex-direction: column; }
-        #modal-header { background: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
-        #preview-body { flex: 1; overflow-y: auto; padding: 20px; display: flex; justify-content: center; background: #525659; }
+        /* Modal Preview */
+        #modal-preview { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 5000; display: none; flex-direction: column; }
+        #modal-header { background: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+        #preview-body { flex: 1; overflow-y: auto; padding: 20px; display: flex; justify-content: center; background: #334155; }
         
-        /* ESTILO DO DOCUMENTO PDF (A4 Real) */
-        .pdf-page { 
-            width: 210mm; 
-            min-height: 297mm; 
-            background: white; 
-            padding: 20mm; 
-            box-shadow: 0 0 20px rgba(0,0,0,0.5); 
-            color: #000; 
-            position: relative;
-        }
+        /* PDF Template */
+        .pdf-page { width: 210mm; min-height: 297mm; background: white; padding: 15mm; color: #000; font-size: 11pt; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .pdf-header { display: flex; justify-content: space-between; border-bottom: 3px solid #1e40af; padding-bottom: 15px; margin-bottom: 20px; align-items: center; }
+        .pdf-logo { max-width: 180px; max-height: 90px; object-fit: contain; }
+        .pdf-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .pdf-table th { background: #f1f5f9; color: #1e40af; text-align: left; padding: 10px; font-size: 9pt; border-bottom: 2px solid #cbd5e1; }
+        .pdf-table td { padding: 10px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
 
-        /* Classes para o PDF */
-        .pdf-header { display: flex; justify-content: space-between; border-bottom: 2px solid #1e40af; padding-bottom: 20px; margin-bottom: 30px; }
-        .pdf-company h1 { color: #1e40af; font-size: 24pt; text-transform: uppercase; margin: 0; }
-        .pdf-company p { font-size: 10pt; margin: 2px 0; color: #334155; }
-        .pdf-meta { text-align: right; }
-        .pdf-meta h2 { font-size: 18pt; color: #64748b; margin: 0; }
+        #toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 10px 20px; border-radius: 8px; z-index: 11000; display: none; font-size: 13px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
         
-        .pdf-info-box { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
-        .pdf-info-card { background: #f8fafc; padding: 15px; border-radius: 5px; border-top: 3px solid #1e40af; }
-        .pdf-info-card h3 { font-size: 9pt; color: #64748b; text-transform: uppercase; margin-bottom: 5px; }
-        .pdf-info-card p { font-size: 11pt; font-weight: bold; }
-
-        .pdf-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-        .pdf-table th { background: #1e40af; color: white; text-align: left; padding: 12px; font-size: 10pt; }
-        .pdf-table td { padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 10pt; }
-        
-        .pdf-total-container { display: flex; justify-content: flex-end; }
-        .pdf-total-box { background: #1e40af; color: white; padding: 20px 40px; border-radius: 8px; text-align: right; }
-        .pdf-total-label { font-size: 10pt; opacity: 0.8; }
-        .pdf-total-value { font-size: 24pt; font-weight: 800; }
-
-        .pdf-footer { position: absolute; bottom: 20mm; left: 20mm; right: 20mm; border-top: 1px solid #e2e8f0; padding-top: 10px; font-size: 8pt; color: #94a3b8; text-align: center; }
-
-        /* Toast */
-        #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #1e293b; color: white; padding: 12px 24px; border-radius: 50px; font-size: 13px; z-index: 11000; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        .img-preview-box { width: 100%; height: 150px; border: 2px dashed var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin: 10px 0; background: #f8fafc; cursor: pointer; }
+        .img-preview-box img { max-width: 100%; max-height: 100%; }
     </style>
 </head>
-<body>
+<body onload="auth.check()">
 
-    <div id="toast">Notificação</div>
+    <div id="toast"></div>
 
-    <!-- Tela de Carregamento/Auth -->
+    <!-- Tela de Login -->
     <div id="auth-screen">
         <div class="auth-container">
             <div class="logo-large">ENTERPRISE</div>
-            <p style="opacity: 0.6; margin-bottom: 40px;">GESTÃO INTELIGENTE V10.3</p>
-            <button class="btn btn-primary" onclick="app.init()">ACESSAR SISTEMA</button>
+            <div class="auth-card" id="auth-card">Processando...</div>
         </div>
     </div>
 
-    <!-- Navegação Inferior -->
+    <!-- Navegação -->
     <nav id="main-nav">
-        <div onclick="ui.tab('vendas')" id="tab-vendas" class="active"><i>📄</i>Venda</div>
+        <div onclick="ui.tab('vendas')" id="tab-vendas" class="active"><i>📋</i>Orçar</div>
         <div onclick="ui.tab('clientes')" id="tab-clientes"><i>👥</i>Clientes</div>
         <div onclick="ui.tab('itens')" id="tab-itens"><i>📦</i>Produtos</div>
-        <div onclick="ui.tab('config')" id="tab-config"><i>⚙️</i>Perfil</div>
+        <div onclick="ui.tab('config')" id="tab-config"><i>⚙️</i>Empresa</div>
     </nav>
 
     <main id="main-app">
-        <!-- Aba de Vendas -->
+        
+        <!-- ABA: VENDAS -->
         <section id="sec-vendas">
             <div class="section-title">Gerar Orçamento</div>
             <div class="card">
@@ -130,396 +106,416 @@
                     <select id="venda-cliente"></select>
                 </div>
                 
-                <div style="background: #f1f5f9; padding: 15px; border-radius: 12px; margin-bottom: 15px;">
-                    <label>Adicionar Item ao Orçamento</label>
-                    <select id="venda-item-select" onchange="ui.autoPreco()"></select>
-                    <div style="display: flex; gap: 10px; margin-top: 10px;">
-                        <input type="number" id="venda-item-preco" placeholder="R$ 0,00">
-                        <button class="btn btn-primary" onclick="app.addItem()" style="width: 100px;">ADD</button>
+                <div style="background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 15px;">
+                    <label>Adicionar Produto/Serviço</label>
+                    <select id="venda-item-select" onchange="ui.autoPreco()" style="margin-bottom: 10px;"></select>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div class="form-group">
+                            <label>Preço Unitário</label>
+                            <input type="number" id="venda-item-preco" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label>Quantidade</label>
+                            <input type="number" id="venda-item-qtd" value="1" step="0.1">
+                        </div>
                     </div>
+                    
+                    <div class="form-group">
+                        <label>Observação Técnica (Ex: Medidas, Material)</label>
+                        <input type="text" id="venda-item-obs" placeholder="Detalhes específicos deste item...">
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="app.addItem()">INCLUIR NO ORÇAMENTO</button>
                 </div>
 
-                <div id="carrinho-lista">
-                    <p style="text-align: center; color: var(--text-muted); padding: 20px;">Nenhum item adicionado.</p>
-                </div>
+                <div id="carrinho-lista"></div>
 
-                <div style="margin-top: 20px; border-top: 2px solid var(--background); padding-top: 20px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-weight: bold; color: var(--text-muted);">TOTAL:</span>
-                        <h1 id="venda-total" style="color: var(--primary);">R$ 0,00</h1>
+                <div style="margin-top: 20px; border-top: 2px solid var(--background); padding-top: 15px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div class="form-group">
+                            <label>Validade (Dias)</label>
+                            <input type="number" id="venda-validade" value="7">
+                        </div>
+                        <div class="form-group">
+                            <label>Nº do Orçamento</label>
+                            <input type="text" id="venda-manual-ref" placeholder="Automático">
+                        </div>
                     </div>
-                    <button class="btn btn-success" onclick="app.preparePDF()" style="margin-top: 20px; height: 60px; font-size: 16px;">
-                        VISUALIZAR E GERAR PDF
-                    </button>
+                    <div class="form-group">
+                        <label>Condições e Observações Gerais</label>
+                        <textarea id="venda-notas" rows="2" placeholder="Ex: Pagamento 50% ato, 50% entrega."></textarea>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin: 15px 0;">
+                        <span style="font-weight: bold; color: var(--text-muted);">VALOR TOTAL:</span>
+                        <h2 id="venda-total" style="color: var(--primary);">R$ 0,00</h2>
+                    </div>
+                    <button class="btn btn-success" onclick="app.preparePDF()" style="height: 60px; font-size: 16px;">VISUALIZAR E GERAR PDF</button>
                 </div>
             </div>
         </section>
 
-        <!-- Aba de Clientes -->
+        <!-- ABA: CLIENTES -->
         <section id="sec-clientes" style="display:none">
             <div class="section-title">Clientes</div>
             <div class="card">
-                <div class="form-group"><label>Nome Completo / Razão</label><input id="cli-nome"></div>
+                <div class="form-group"><label>Nome / Empresa</label><input id="cli-nome"></div>
                 <div class="form-group"><label>CPF / CNPJ</label><input id="cli-doc"></div>
-                <div class="form-group"><label>Telefone / WhatsApp</label><input id="cli-tel"></div>
+                <div class="form-group"><label>WhatsApp / Tel</label><input id="cli-tel"></div>
                 <button class="btn btn-primary" onclick="app.saveCliente()">SALVAR CLIENTE</button>
             </div>
             <div id="lista-clientes-cad"></div>
         </section>
 
-        <!-- Aba de Itens -->
+        <!-- ABA: PRODUTOS -->
         <section id="sec-itens" style="display:none">
-            <div class="section-title">Catálogo de Serviços/Produtos</div>
+            <div class="section-title">Produtos e Serviços</div>
             <div class="card">
-                <div class="form-group"><label>Nome do Item</label><input id="item-nome"></div>
-                <div class="form-group"><label>Preço Sugerido (R$)</label><input id="item-preco" type="number"></div>
-                <button class="btn btn-primary" onclick="app.saveProduto()">SALVAR NO CATÁLOGO</button>
+                <div class="form-group"><label>Descrição do Item</label><input id="item-nome"></div>
+                <div class="form-group">
+                    <label>Unidade de Medida</label>
+                    <select id="item-unid">
+                        <option value="Unid.">Unidade</option>
+                        <option value="Mts">Metros (Lin)</option>
+                        <option value="M2">M2 (Quadrado)</option>
+                        <option value="Kg">Quilos</option>
+                        <option value="Serviço">Serviço/Mão de Obra</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Preço Base (R$)</label><input id="item-preco" type="number" step="0.01"></div>
+                <button class="btn btn-primary" onclick="app.saveProduto()">ADICIONAR AO CATÁLOGO</button>
             </div>
             <div id="lista-produtos-cad"></div>
         </section>
 
-        <!-- Aba de Configuração -->
+        <!-- ABA: EMPRESA -->
         <section id="sec-config" style="display:none">
-            <div class="section-title">Dados do Emitente</div>
+            <div class="section-title">Configurações da Empresa</div>
             <div class="card">
-                <div class="form-group"><label>Sua Empresa (Nome)</label><input id="cfg-nome"></div>
-                <div class="form-group"><label>Seu CNPJ / CPF</label><input id="cfg-doc"></div>
+                <label>Logo da Empresa (Clique para alterar)</label>
+                <div class="img-preview-box" onclick="document.getElementById('cfg-logo-input').click()" id="logo-preview-container">
+                    <span>Clique para carregar imagem</span>
+                </div>
+                <input type="file" id="cfg-logo-input" accept="image/*" style="display:none" onchange="ui.previewLogo(this)">
+                
+                <div class="form-group"><label>Nome Fantasia</label><input id="cfg-nome"></div>
+                <div class="form-group"><label>CNPJ ou CPF</label><input id="cfg-doc"></div>
+                <div class="form-group"><label>Telefone / WhatsApp</label><input id="cfg-tel"></div>
                 <div class="form-group"><label>Endereço Completo</label><input id="cfg-end"></div>
-                <div class="form-group"><label>Seu WhatsApp</label><input id="cfg-tel"></div>
-                <button class="btn btn-primary" onclick="app.saveConfig()">ATUALIZAR MEUS DADOS</button>
+                <button class="btn btn-primary" onclick="app.saveConfig()">ATUALIZAR DADOS</button>
+            </div>
+            <div style="text-align: center; margin: 30px 0;">
+                <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 10px;">Versão 10.9 Pro - Armazenamento Local</p>
+                <button onclick="if(confirm('Apagar tudo?')) { localStorage.clear(); location.reload(); }" style="color: var(--danger); background: none; border: none; font-size: 11px; text-decoration: underline;">Limpar Memória do Sistema</button>
             </div>
         </section>
     </main>
 
-    <!-- MODAL DE PREVIEW (ONDE O PDF É MONTADO) -->
+    <!-- MODAL PDF -->
     <div id="modal-preview">
         <div id="modal-header">
-            <h2 style="font-size: 16px;">Pré-visualização do Documento</h2>
-            <button onclick="ui.closeModal()" style="background: none; border: none; font-size: 30px; cursor: pointer;">&times;</button>
+            <h3>Pré-visualização do Documento</h3>
+            <button onclick="ui.closeModal()" style="font-size: 30px; border:none; background:none;">&times;</button>
         </div>
-        <div id="preview-body">
-            <!-- O PDF será renderizado aqui dentro de um .pdf-page -->
-        </div>
-        <div style="background: white; padding: 20px; border-top: 1px solid var(--border);">
-            <button class="btn btn-success" onclick="app.downloadPDF()" style="height: 55px; font-size: 18px;">
-                CONFIRMAR E DESCARREGAR PDF
-            </button>
+        <div id="preview-body"></div>
+        <div style="padding: 15px 20px; background: white; border-top: 1px solid var(--border);">
+            <button class="btn btn-success" onclick="app.downloadPDF()" style="width: 100%; height: 50px;">BAIXAR PDF AGORA</button>
         </div>
     </div>
 
-    <!-- Div invisível usada como ponte de renderização final para evitar erros de CSS -->
-    <div id="render-bridge" style="position: absolute; left: -9999px; top: -9999px; width: 210mm;"></div>
+    <!-- Ponte de Renderização Invisível -->
+    <div id="render-bridge" style="position: absolute; left: -9999px; top: 0; width: 210mm;"></div>
 
     <script>
-        // --- MOTOR LOGICO ---
-        const app = {
-            db: null,
-            carrinho: [],
-            clientes: [],
-            produtos: [],
-            config: {},
-
-            init() {
-                document.getElementById('auth-screen').style.display = 'none';
-                document.getElementById('main-nav').style.display = 'grid';
-                document.getElementById('main-app').style.display = 'block';
-                this.initDB();
+        const auth = {
+            key: "enterprise_v109_key",
+            check() {
+                const s = localStorage.getItem(this.key);
+                const c = document.getElementById('auth-card');
+                if(!s) {
+                    c.innerHTML = `<h3>Novo Acesso</h3><p style="margin:10px 0; font-size:12px">Crie sua senha de acesso.</p><input type="password" id="np" class="auth-input"><button class="btn btn-primary" onclick="auth.create()">CRIAR</button>`;
+                } else {
+                    c.innerHTML = `<h3>Login</h3><p style="margin:10px 0; font-size:12px">Digite sua senha.</p><input type="password" id="lp" class="auth-input" autofocus><button class="btn btn-primary" onclick="auth.login()">ENTRAR</button>`;
+                    document.getElementById('lp').addEventListener('keyup', (e) => { if(e.key === 'Enter') this.login(); });
+                }
             },
+            create() { const p = document.getElementById('np').value; if(p) { localStorage.setItem(this.key, p); this.enter(); } },
+            login() { if(document.getElementById('lp').value === localStorage.getItem(this.key)) this.enter(); else ui.toast("Senha incorreta"); },
+            enter() {
+                document.getElementById('auth-screen').style.display='none';
+                document.getElementById('main-nav').style.display='grid';
+                document.getElementById('main-app').style.display='block';
+                app.initDB();
+            }
+        };
+
+        const app = {
+            db: null, carrinho: [], clientes: [], produtos: [], config: {},
 
             initDB() {
-                const request = indexedDB.open("EnterpriseERP", 5);
-                request.onupgradeneeded = (e) => {
+                const req = indexedDB.open("Enterprise_Final_DB", 2);
+                req.onupgradeneeded = (e) => {
                     const db = e.target.result;
                     if(!db.objectStoreNames.contains("clientes")) db.createObjectStore("clientes", { keyPath: "id", autoIncrement: true });
                     if(!db.objectStoreNames.contains("produtos")) db.createObjectStore("produtos", { keyPath: "id", autoIncrement: true });
                     if(!db.objectStoreNames.contains("config")) db.createObjectStore("config", { keyPath: "id" });
                 };
-                request.onsuccess = (e) => {
-                    this.db = e.target.result;
-                    this.loadAll();
-                };
+                req.onsuccess = (e) => { this.db = e.target.result; this.loadAll(); };
             },
 
             loadAll() {
-                this.db.transaction("clientes").objectStore("clientes").getAll().onsuccess = (e) => {
-                    this.clientes = e.target.result;
-                    ui.renderClientes();
-                };
-                this.db.transaction("produtos").objectStore("produtos").getAll().onsuccess = (e) => {
-                    this.produtos = e.target.result;
-                    ui.renderProdutos();
-                };
-                this.db.transaction("config").objectStore("config").get(1).onsuccess = (e) => {
-                    if(e.target.result) {
-                        this.config = e.target.result;
-                        ui.fillConfig();
-                    }
+                const tx = this.db.transaction(["clientes", "produtos", "config"], "readonly");
+                tx.objectStore("clientes").getAll().onsuccess = (e) => { this.clientes = e.target.result; ui.renderClientes(); };
+                tx.objectStore("produtos").getAll().onsuccess = (e) => { this.produtos = e.target.result; ui.renderProdutos(); };
+                tx.objectStore("config").get(1).onsuccess = (e) => { 
+                    if(e.target.result) { this.config = e.target.result; ui.fillConfig(); }
                 };
             },
 
             saveConfig() {
-                const data = {
-                    id: 1,
-                    nome: document.getElementById('cfg-nome').value,
-                    doc: document.getElementById('cfg-doc').value,
+                const d = { 
+                    id: 1, 
+                    nome: document.getElementById('cfg-nome').value, 
+                    doc: document.getElementById('cfg-doc').value, 
+                    tel: document.getElementById('cfg-tel').value,
                     end: document.getElementById('cfg-end').value,
-                    tel: document.getElementById('cfg-tel').value
+                    logo: this.tempLogo || this.config.logo || ""
                 };
-                this.db.transaction("config", "readwrite").objectStore("config").put(data).onsuccess = () => {
-                    this.config = data;
-                    ui.toast("Perfil atualizado com sucesso!");
+                this.db.transaction("config", "readwrite").objectStore("config").put(d).onsuccess = () => { 
+                    this.config = d; ui.toast("Empresa Atualizada!"); 
                 };
             },
 
             saveCliente() {
-                const cli = {
-                    nome: document.getElementById('cli-nome').value,
-                    doc: document.getElementById('cli-doc').value,
-                    tel: document.getElementById('cli-tel').value
-                };
-                if(!cli.nome) return ui.toast("O nome do cliente é obrigatório");
-                this.db.transaction("clientes", "readwrite").objectStore("clientes").add(cli).onsuccess = () => {
-                    ui.clearInputs(['cli-nome', 'cli-doc', 'cli-tel']);
-                    this.loadAll();
-                    ui.toast("Cliente cadastrado!");
+                const c = { nome: document.getElementById('cli-nome').value, doc: document.getElementById('cli-doc').value, tel: document.getElementById('cli-tel').value };
+                if(!c.nome) return ui.toast("Nome é obrigatório");
+                this.db.transaction("clientes", "readwrite").objectStore("clientes").add(c).onsuccess = () => { 
+                    this.loadAll(); document.getElementById('cli-nome').value=''; document.getElementById('cli-doc').value=''; document.getElementById('cli-tel').value='';
+                    ui.toast("Cliente salvo");
                 };
             },
 
+            deleteCliente(id) { if(confirm("Remover cliente?")) this.db.transaction("clientes", "readwrite").objectStore("clientes").delete(id).onsuccess = () => this.loadAll(); },
+
             saveProduto() {
-                const prod = {
-                    nome: document.getElementById('item-nome').value,
-                    preco: parseFloat(document.getElementById('item-preco').value) || 0
-                };
-                if(!prod.nome) return ui.toast("O nome do item é obrigatório");
-                this.db.transaction("produtos", "readwrite").objectStore("produtos").add(prod).onsuccess = () => {
-                    ui.clearInputs(['item-nome', 'item-preco']);
-                    this.loadAll();
-                    ui.toast("Item adicionado ao catálogo!");
+                const p = { nome: document.getElementById('item-nome').value, preco: parseFloat(document.getElementById('item-preco').value) || 0, unid: document.getElementById('item-unid').value };
+                if(!p.nome) return ui.toast("Nome do produto obrigatório");
+                this.db.transaction("produtos", "readwrite").objectStore("produtos").add(p).onsuccess = () => { 
+                    this.loadAll(); document.getElementById('item-nome').value=''; document.getElementById('item-preco').value='';
+                    ui.toast("Produto salvo"); 
                 };
             },
+
+            deleteProduto(id) { if(confirm("Remover produto?")) this.db.transaction("produtos", "readwrite").objectStore("produtos").delete(id).onsuccess = () => this.loadAll(); },
 
             addItem() {
                 const sel = document.getElementById('venda-item-select');
-                const nome = sel.value;
-                const preco = parseFloat(document.getElementById('venda-item-preco').value);
-                
-                if(!nome || isNaN(preco)) return ui.toast("Selecione um item e informe o preço");
-                
-                this.carrinho.push({ nome, preco });
+                const opt = sel.options[sel.selectedIndex];
+                const p = { 
+                    nome: sel.value, 
+                    obs: document.getElementById('venda-item-obs').value,
+                    preco: parseFloat(document.getElementById('venda-item-preco').value) || 0,
+                    qtd: parseFloat(document.getElementById('venda-item-qtd').value) || 1,
+                    unid: opt.dataset.u || 'Unid.'
+                };
+                if(!p.nome) return ui.toast("Selecione um item");
+                this.carrinho.push(p);
                 ui.renderCarrinho();
-                ui.toast("Item adicionado");
+                document.getElementById('venda-item-obs').value = '';
             },
 
-            removeItem(idx) {
-                this.carrinho.splice(idx, 1);
-                ui.renderCarrinho();
-            },
+            removeItem(i) { this.carrinho.splice(i, 1); ui.renderCarrinho(); },
 
             preparePDF() {
                 const cliId = document.getElementById('venda-cliente').value;
-                if(!cliId) return ui.toast("Selecione um cliente primeiro");
-                if(this.carrinho.length === 0) return ui.toast("O orçamento está vazio");
+                const cli = this.clientes.find(c => c.id == cliId);
+                if(!cli) return ui.toast("Selecione um cliente primeiro");
+                if(!this.carrinho.length) return ui.toast("Adicione produtos ao orçamento");
+                
+                const total = this.carrinho.reduce((a, b) => a + (b.preco * b.qtd), 0);
+                const ref = document.getElementById('venda-manual-ref').value || Math.floor(Date.now()/1000);
+                const validade = document.getElementById('venda-validade').value || '7';
+                const notas = document.getElementById('venda-notas').value || 'Pagamento conforme acordado.';
 
-                const cliente = this.clientes.find(c => c.id == cliId);
-                const total = this.carrinho.reduce((a, b) => a + b.preco, 0);
-                const dataDoc = new Date().toLocaleDateString('pt-BR');
-                const refDoc = "#" + Date.now().toString().slice(-6);
-
-                // Montar HTML do PDF
                 const html = `
-                    <div class="pdf-page" id="documento-final">
+                    <div class="pdf-page" id="doc-pdf">
                         <div class="pdf-header">
-                            <div class="pdf-company">
-                                <h1>${this.config.nome || 'NOME DA EMPRESA'}</h1>
-                                <p>CNPJ/CPF: ${this.config.doc || '---'}</p>
-                                <p>${this.config.end || 'Endereço não configurado'}</p>
-                                <p>Tel: ${this.config.tel || '---'}</p>
+                            <div style="flex:1">
+                                ${this.config.logo ? `<img src="${this.config.logo}" class="pdf-logo">` : `<h2 style="color:#1e40af">${this.config.nome || 'EMPRESA NÃO CONFIGURADA'}</h2>`}
+                                <div style="font-size:9pt; color:#475569; margin-top:10px; line-height:1.4">
+                                    <p><b>${this.config.nome || 'Favor configurar dados da empresa'}</b></p>
+                                    <p>CNPJ/CPF: ${this.config.doc || '-'}</p>
+                                    <p>Telefone: ${this.config.tel || '-'}</p>
+                                    <p>${this.config.end || '-'}</p>
+                                </div>
                             </div>
-                            <div class="pdf-meta">
-                                <h2>ORÇAMENTO</h2>
-                                <p>Data: ${dataDoc}</p>
-                                <p>Nº: ${refDoc}</p>
+                            <div style="text-align:right">
+                                <h1 style="color:#1e40af; font-size:24pt; margin:0">ORÇAMENTO</h1>
+                                <p style="font-size:10pt; color:#64748b">Ref: #${ref}</p>
+                                <p style="font-size:10pt; font-weight:bold; margin-top:5px">Data: ${new Date().toLocaleDateString('pt-BR')}</p>
                             </div>
                         </div>
 
-                        <div class="pdf-info-box">
-                            <div class="pdf-info-card">
-                                <h3>Destinatário / Cliente</h3>
-                                <p>${cliente.nome}</p>
-                                <div style="font-size: 9pt; color: #64748b; margin-top:5px">
-                                    Documento: ${cliente.doc || 'Não informado'}<br>
-                                    Contato: ${cliente.tel || 'Não informado'}
-                                </div>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:20px">
+                            <div style="background:#f8fafc; padding:15px; border-radius:10px; border:1px solid #e2e8f0">
+                                <p style="font-size:8pt; color:#64748b; text-transform:uppercase; margin-bottom:5px">Dados do Cliente</p>
+                                <p style="font-size:12pt; font-weight:bold; color:#1e293b">${cli.nome}</p>
+                                <p style="font-size:10pt; color:#475569">Doc: ${cli.doc || 'Não informado'}</p>
+                                <p style="font-size:10pt; color:#475569">Tel: ${cli.tel || '-'}</p>
                             </div>
-                            <div class="pdf-info-card">
-                                <h3>Status do Documento</h3>
-                                <p>VÁLIDO POR 10 DIAS</p>
-                                <div style="font-size: 9pt; color: #64748b; margin-top:5px">
-                                    Este documento é uma proposta comercial e não possui validade fiscal automática.
-                                </div>
+                            <div style="background:#f8fafc; padding:15px; border-radius:10px; border:1px solid #e2e8f0; text-align:right">
+                                <p style="font-size:8pt; color:#64748b; text-transform:uppercase; margin-bottom:5px">Validade da Proposta</p>
+                                <p style="font-size:14pt; font-weight:bold; color:#1e293b">${validade} Dias</p>
+                                <p style="font-size:9pt; color:#64748b">A contar da data de emissão</p>
                             </div>
                         </div>
 
                         <table class="pdf-table">
                             <thead>
                                 <tr>
-                                    <th style="width: 70%">DESCRIÇÃO DOS SERVIÇOS / PRODUTOS</th>
-                                    <th style="width: 30%; text-align: right">VALOR UNIT.</th>
+                                    <th style="width:55%">Descrição Detalhada do Item / Serviço</th>
+                                    <th>Qtd.</th>
+                                    <th>P. Unit.</th>
+                                    <th style="text-align:right">Subtotal</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 ${this.carrinho.map(it => `
                                     <tr>
-                                        <td>${it.nome}</td>
-                                        <td style="text-align: right">R$ ${it.preco.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
-                                    </tr>
-                                `).join('')}
+                                        <td>
+                                            <div style="font-weight:bold; color:#1e293b">${it.nome}</div>
+                                            <div style="font-size:8.5pt; color:#64748b; margin-top:3px">${it.obs || ''}</div>
+                                        </td>
+                                        <td style="font-size:10pt">${it.qtd} ${it.unid}</td>
+                                        <td style="font-size:10pt">R$ ${it.preco.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                                        <td style="text-align:right; font-weight:bold; color:#1e293b">R$ ${(it.preco * it.qtd).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                                    </tr>`).join('')}
                             </tbody>
                         </table>
 
-                        <div class="pdf-total-container">
-                            <div class="pdf-total-box">
-                                <div class="pdf-total-label">VALOR TOTAL DA PROPOSTA</div>
-                                <div class="pdf-total-value">R$ ${total.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+                        <div style="display:flex; justify-content: space-between; align-items: flex-start; margin-top:30px">
+                            <div style="max-width:60%">
+                                <p style="font-size:8pt; color:#64748b; text-transform:uppercase; margin-bottom:8px">Observações Técnicas e Pagamento</p>
+                                <div style="font-size:10pt; color:#475569; background:#f8fafc; padding:10px; border-radius:8px; border-left:4px solid #cbd5e1">
+                                    ${notas.replace(/\n/g, '<br>')}
+                                </div>
+                            </div>
+                            <div style="text-align:right; min-width:200px">
+                                <p style="font-size:11pt; color:#64748b; margin-bottom:5px">VALOR TOTAL</p>
+                                <div style="background:#1e40af; color:white; padding:15px; border-radius:10px">
+                                    <span style="font-size:10pt">R$</span> 
+                                    <span style="font-size:22pt; font-weight:900">${total.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</span>
+                                </div>
                             </div>
                         </div>
 
-                        <div style="margin-top: 50px; font-size: 10pt;">
-                            <p><b>Observações:</b></p>
-                            <p style="color: #475569">- Pagamento conforme acordado entre as partes.</p>
-                            <p style="color: #475569">- Execução imediata após aprovação.</p>
+                        <div style="margin-top:80px; text-align:center;">
+                            <div style="width:250px; border-top:1px solid #94a3b8; margin:0 auto; padding-top:10px">
+                                <p style="font-size:9pt; font-weight:bold">${this.config.nome || 'Assinatura do Responsável'}</p>
+                                <p style="font-size:8pt; color:#64748b">Responsável pela Proposta</p>
+                            </div>
                         </div>
 
-                        <div class="pdf-footer">
-                            Gerado por Enterprise ERP V10.3 - Sistema de Gestão Profissional
+                        <div style="position:absolute; bottom:15mm; left:15mm; right:15mm; text-align:center; font-size:8pt; color:#94a3b8; border-top:1px solid #f1f5f9; padding-top:10px">
+                            Este documento é uma proposta comercial e não tem valor de nota fiscal.
                         </div>
                     </div>
                 `;
-
                 document.getElementById('preview-body').innerHTML = html;
-                document.getElementById('modal-preview').style.display = 'flex';
+                document.getElementById('modal-preview').style.display='flex';
             },
 
             downloadPDF() {
-                const source = document.getElementById('documento-final');
-                
-                // IMPORTANTE: Movemos o elemento para a "ponte" de renderização visível para o html2pdf capturar
+                const el = document.getElementById('doc-pdf');
                 const bridge = document.getElementById('render-bridge');
-                bridge.innerHTML = source.outerHTML;
+                bridge.innerHTML = el.outerHTML;
                 
-                ui.toast("Processando arquivo...");
-
-                const opt = {
-                    margin: 0,
-                    filename: `Orcamento_${Date.now()}.pdf`,
+                // Opções otimizadas para PDF móvel e Desktop
+                const opt = { 
+                    margin: 0, 
+                    filename: `Orcamento_${Date.now()}.pdf`, 
                     image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: { 
-                        scale: 2, 
-                        useCORS: true, 
-                        letterRendering: true,
-                        scrollY: 0,
-                        scrollX: 0
-                    },
-                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                    html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
                 };
-
+                
+                ui.toast("Gerando PDF... Aguarde.");
                 html2pdf().set(opt).from(bridge.firstChild).save().then(() => {
-                    ui.toast("PDF gerado com sucesso!");
                     ui.closeModal();
-                    bridge.innerHTML = ''; // Limpa a ponte
-                }).catch(err => {
-                    console.error(err);
-                    ui.toast("Erro ao gerar PDF.");
+                    ui.toast("PDF gerado com sucesso!");
                 });
             }
         };
 
-        // --- INTERFACE ---
         const ui = {
+            tempLogo: null,
             tab(t) {
-                document.querySelectorAll('main section').forEach(s => s.style.display = 'none');
+                document.querySelectorAll('main section').forEach(s => s.style.display='none');
                 document.querySelectorAll('nav div').forEach(d => d.classList.remove('active'));
-                document.getElementById(`sec-${t}`).style.display = 'block';
-                document.getElementById(`tab-${t}`).classList.add('active');
+                document.getElementById('sec-'+t).style.display='block';
+                document.getElementById('tab-'+t).classList.add('active');
             },
-
-            toast(msg) {
-                const t = document.getElementById('toast');
-                t.innerText = msg;
-                t.style.display = 'block';
-                setTimeout(() => t.style.display = 'none', 3000);
+            toast(m) { 
+                const t=document.getElementById('toast'); t.innerText=m; t.style.display='block'; 
+                setTimeout(()=>t.style.display='none',3000);
             },
-
-            clearInputs(ids) {
-                ids.forEach(id => document.getElementById(id).value = '');
+            previewLogo(input) {
+                if (input.files && input.files[0]) {
+                    const r = new FileReader();
+                    r.onload = (e) => {
+                        app.tempLogo = e.target.result;
+                        document.getElementById('logo-preview-container').innerHTML = `<img src="${e.target.result}">`;
+                    };
+                    r.readAsDataURL(input.files[0]);
+                }
             },
-
             fillConfig() {
                 document.getElementById('cfg-nome').value = app.config.nome || '';
                 document.getElementById('cfg-doc').value = app.config.doc || '';
-                document.getElementById('cfg-end').value = app.config.end || '';
                 document.getElementById('cfg-tel').value = app.config.tel || '';
-            },
-
-            renderClientes() {
-                const sel = document.getElementById('venda-cliente');
-                sel.innerHTML = '<option value="">Selecione...</option>' + 
-                    app.clientes.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
-                
-                document.getElementById('lista-clientes-cad').innerHTML = app.clientes.map(c => `
-                    <div class="card">
-                        <b>${c.nome}</b><br>
-                        <small>${c.doc || 'Sem documento'} | ${c.tel || 'Sem tel'}</small>
-                    </div>
-                `).join('');
-            },
-
-            renderProdutos() {
-                const sel = document.getElementById('venda-item-select');
-                sel.innerHTML = '<option value="">Selecione um item...</option>' + 
-                    app.produtos.map(p => `<option value="${p.nome}" data-price="${p.preco}">${p.nome}</option>`).join('');
-
-                document.getElementById('lista-produtos-cad').innerHTML = app.produtos.map(p => `
-                    <div class="card">
-                        <b>${p.nome}</b><br>
-                        <small>Preço: R$ ${p.preco.toFixed(2)}</small>
-                    </div>
-                `).join('');
-            },
-
-            autoPreco() {
-                const sel = document.getElementById('venda-item-select');
-                const price = sel.options[sel.selectedIndex].dataset.price;
-                if(price) document.getElementById('venda-item-preco').value = price;
-            },
-
-            renderCarrinho() {
-                const container = document.getElementById('carrinho-lista');
-                if(app.carrinho.length === 0) {
-                    container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 20px;">Nenhum item adicionado.</p>';
-                } else {
-                    container.innerHTML = app.carrinho.map((it, i) => `
-                        <div class="list-item">
-                            <div>
-                                <div style="font-weight: bold;">${it.nome}</div>
-                                <div style="color: var(--primary); font-size: 12px;">R$ ${it.preco.toFixed(2)}</div>
-                            </div>
-                            <div class="remove-btn" onclick="app.removeItem(${i})">REMOVER</div>
-                        </div>
-                    `).join('');
+                document.getElementById('cfg-end').value = app.config.end || '';
+                if(app.config.logo) {
+                    document.getElementById('logo-preview-container').innerHTML = `<img src="${app.config.logo}">`;
                 }
-                const total = app.carrinho.reduce((a, b) => a + b.preco, 0);
-                document.getElementById('venda-total').innerText = `R$ ${total.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
             },
-
-            closeModal() {
-                document.getElementById('modal-preview').style.display = 'none';
-            }
+            renderClientes() {
+                const s = document.getElementById('venda-cliente');
+                s.innerHTML = '<option value="">Selecionar Cliente...</option>' + app.clientes.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
+                document.getElementById('lista-clientes-cad').innerHTML = app.clientes.map(c => `
+                    <div class="list-item">
+                        <div class="remove-btn" onclick="app.deleteCliente(${c.id})">&times;</div>
+                        <b>${c.nome}</b><br><small>${c.doc || ''} | ${c.tel || ''}</small>
+                    </div>`).join('');
+            },
+            renderProdutos() {
+                const s = document.getElementById('venda-item-select');
+                s.innerHTML = '<option value="">Escolher Item do Catálogo...</option>' + app.produtos.map(p => `<option value="${p.nome}" data-p="${p.preco}" data-u="${p.unid}">${p.nome}</option>`).join('');
+                document.getElementById('lista-produtos-cad').innerHTML = app.produtos.map(p => `
+                    <div class="list-item">
+                        <div class="remove-btn" onclick="app.deleteProduto(${p.id})">&times;</div>
+                        <b>${p.nome}</b><br><small>R$ ${p.preco.toFixed(2)} / ${p.unid}</small>
+                    </div>`).join('');
+            },
+            autoPreco() {
+                const s = document.getElementById('venda-item-select');
+                const opt = s.options[s.selectedIndex];
+                if(opt && opt.dataset.p) document.getElementById('venda-item-preco').value = opt.dataset.p;
+            },
+            renderCarrinho() {
+                const c = document.getElementById('carrinho-lista');
+                c.innerHTML = app.carrinho.map((it, i) => `
+                    <div class="list-item" style="border-left:5px solid var(--primary)">
+                        <div class="remove-btn" onclick="app.removeItem(${i})">&times;</div>
+                        <div style="font-weight:bold; font-size:15px">${it.qtd} ${it.unid} x ${it.nome}</div>
+                        <div style="font-size:12px; color:var(--text-muted)">${it.obs || 'Sem observação'}</div>
+                        <div style="text-align:right; font-weight:bold; color:var(--primary)">Subtotal: R$ ${(it.preco*it.qtd).toLocaleString('pt-BR', {minimumFractionDigits:2})}</div>
+                    </div>`).join('');
+                const total = app.carrinho.reduce((a, b) => a + (b.preco * b.qtd), 0);
+                document.getElementById('venda-total').innerText = "R$ " + total.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            },
+            closeModal() { document.getElementById('modal-preview').style.display='none'; }
         };
-
-        // Previnir zoom acidental em dispositivos móveis ao focar inputs
-        document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
     </script>
-
 </body>
 </html>
