@@ -3,14 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>ERP Pro V7 - PDF Corrigido</title>
+<title>ERP Pro V18 - Seleção Múltipla</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 
 <style>
-/* --- CONFIGURAÇÕES VISUAIS --- */
+/* --- ESTILOS GERAIS --- */
 :root {
     --primary: #0f172a;
     --accent: #2563eb;
@@ -19,33 +20,37 @@
     --border: #e2e8f0;
     --text-main: #334155;
     --danger: #ef4444;
+    --warning: #f59e0b;
+    --success: #10b981;
+    --whatsapp: #25D366;
 }
 
 * { box-sizing: border-box; font-family: 'Inter', sans-serif; outline: none; -webkit-tap-highlight-color: transparent; }
 body { margin: 0; background: var(--bg-app); color: var(--text-main); padding-bottom: 90px; }
 
 /* TOAST */
-#toast-container { position: fixed; top: 20px; right: 20px; z-index: 11000; }
+#toast-container { position: fixed; top: 20px; right: 20px; z-index: 13000; }
 .toast { background: #333; color: #fff; padding: 12px 24px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); animation: slideIn 0.3s; display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; }
-.toast.success { background: #059669; }
+.toast.success { background: var(--success); }
 .toast.error { background: var(--danger); }
 @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
 
-/* LOGIN */
-#auth-overlay { position: fixed; inset: 0; z-index: 10000; background: var(--primary); display: flex; align-items: center; justify-content: center; padding: 20px; }
+/* LOGIN & MODALS */
+#auth-overlay { position: fixed; inset: 0; z-index: 12000; background: var(--primary); display: flex; align-items: center; justify-content: center; padding: 20px; }
+#import-overlay, #multiselect-overlay { position: fixed; inset: 0; z-index: 11000; background: rgba(15, 23, 42, 0.95); display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+
 .auth-card { background: var(--surface); width: 100%; max-width: 360px; padding: 40px; border-radius: 20px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
 .pin-display { font-size: 32px; letter-spacing: 12px; font-weight: 800; border: 2px solid var(--border); border-radius: 12px; padding: 10px; width: 100%; text-align: center; margin: 25px 0; color: var(--primary); }
 .btn-auth { width: 100%; padding: 16px; background: var(--primary); color: #fff; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 14px; transition: 0.2s; }
 .input-std { width: 100%; padding: 14px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 15px; font-size: 15px; }
 .auth-link { margin-top: 20px; font-size: 12px; color: #64748b; text-decoration: underline; cursor: pointer; }
+.wa-link-card { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 20px; color: var(--whatsapp); font-weight: 700; font-size: 13px; text-decoration: none; padding: 10px; border-radius: 8px; border: 1px solid #dcfce7; background: #f0fdf4; transition: 0.2s; cursor: pointer; }
 
-/* NAV */
-nav { position: fixed; bottom: 0; width: 100%; display: grid; grid-template-columns: repeat(5, 1fr); background: var(--surface); border-top: 1px solid var(--border); z-index: 1000; padding-bottom: env(safe-area-inset-bottom); }
-nav div { padding: 12px 0; text-align: center; color: #94a3b8; cursor: pointer; font-size: 9px; font-weight: 700; text-transform: uppercase; transition: 0.2s; }
-nav div i { font-size: 20px; display: block; margin-bottom: 6px; }
+nav { position: fixed; bottom: 0; width: 100%; display: grid; grid-template-columns: repeat(6, 1fr); background: var(--surface); border-top: 1px solid var(--border); z-index: 1000; padding-bottom: env(safe-area-inset-bottom); }
+nav div { padding: 12px 0; text-align: center; color: #94a3b8; cursor: pointer; font-size: 8px; font-weight: 700; text-transform: uppercase; transition: 0.2s; }
+nav div i { font-size: 18px; display: block; margin-bottom: 6px; }
 nav div.active { color: var(--accent); background: #eff6ff; border-top: 3px solid var(--accent); }
 
-/* APP LAYOUT */
 main { padding: 20px; max-width: 800px; margin: 0 auto; display: none; animation: fadeIn 0.3s; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
@@ -59,73 +64,78 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); outline
 
 .btn { padding: 16px; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; font-size: 14px; }
 .btn-primary { background: var(--primary); color: #fff; }
-.btn-success { background: var(--accent); color: #fff; }
+.btn-success { background: var(--success); color: #fff; }
+.btn-warning { background: var(--warning); color: #fff; }
 .btn:active { transform: scale(0.98); }
 
 .list-item { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 10px; }
 .list-info { flex: 1; }
 .list-title { font-weight: 700; color: var(--primary); font-size: 14px; }
 .list-sub { font-size: 11px; color: #64748b; margin-top: 2px; }
-.btn-delete { background: #fee2e2; color: var(--danger); border: none; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; margin-left: 10px; }
-.input-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.action-group { display: flex; gap: 8px; }
+.btn-icon { border: none; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; }
+.btn-delete { background: #fee2e2; color: var(--danger); }
+.btn-edit { background: #eff6ff; color: var(--accent); }
 
+.input-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
 #logo-preview-box { text-align: center; margin-bottom: 15px; background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px dashed var(--border); display: none; }
 #current-logo-img { max-height: 80px; display: block; margin: 0 auto; }
 
-/* --- ESTILOS DO PDF (MODO IMPRESSÃO) --- */
-#preview { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.98); display: none; flex-direction: column; z-index: 2000; backdrop-filter: blur(5px); }
+/* AGENDA */
+.agenda-card { border-left: 5px solid var(--accent); background: #fff; margin-bottom: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); overflow: hidden; }
+.agenda-head { padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; }
+.agenda-date { background: #eff6ff; color: var(--accent); padding: 5px 10px; border-radius: 6px; font-weight: 800; font-size: 12px; text-align: center; line-height: 1.2; }
+.agenda-body { padding: 15px; }
+.agenda-map-box { height: 150px; background: #e2e8f0; margin-top: 15px; border-radius: 8px; overflow: hidden; position: relative; }
+.map-iframe { width: 100%; height: 100%; border: 0; }
+.btn-gps { margin-top: 10px; background: #fff; border: 1px solid var(--accent); color: var(--accent); display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 13px; }
+
+.whatsapp-float { position: fixed; bottom: 100px; right: 20px; background: var(--whatsapp); color: #fff; width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 13000; font-size: 28px; transition: 0.3s; }
+.whatsapp-float:hover { transform: scale(1.1); }
+
+/* IMPORTADOR & MULTI-SELECT STYLES */
+.import-modal { background: #fff; width: 95%; max-width: 700px; height: 85vh; border-radius: 16px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 50px 100px -20px rgba(0,0,0,0.5); }
+.import-header { padding: 15px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: #fff; z-index: 10; }
+.import-drop-zone { background: #eff6ff; border: 2px dashed #93c5fd; border-radius: 10px; padding: 30px; text-align: center; margin: 20px; transition: 0.2s; cursor: pointer; }
+.import-toolbar { padding: 10px 20px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
+.import-body { flex: 1; overflow-y: auto; padding: 10px; background: #f1f5f9; }
+.import-row { display: grid; grid-template-columns: 30px 1fr 70px 90px 40px; gap: 8px; align-items: center; background: #fff; padding: 8px; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 6px; }
+/* Estilo Específico para Multi-Select que é mais simples */
+.multi-select-row { display: flex; align-items: center; gap: 15px; background: #fff; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 6px; cursor: pointer; }
+.multi-select-row:hover { background: #f8fafc; border-color: var(--accent); }
+.ms-check { width: 20px; height: 20px; }
+
+.imp-input { border: 1px solid #cbd5e1; padding: 6px; border-radius: 4px; font-size: 12px; width: 100%; margin: 0; }
+.imp-select { border: 1px solid #cbd5e1; padding: 6px; border-radius: 4px; font-size: 12px; width: 100%; margin: 0; background: #fff; }
+.import-footer { padding: 15px 20px; border-top: 1px solid #e2e8f0; background: #fff; display: flex; justify-content: flex-end; gap: 10px; }
+.btn-del-row { color: #94a3b8; cursor: pointer; text-align: center; }
+.btn-del-row:hover { color: var(--danger); }
+
+/* PDF */
+#preview { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.98); display: none; flex-direction: column; z-index: 14000; backdrop-filter: blur(5px); }
 .preview-header { background: #fff; padding: 15px 20px; display: flex; justify-content: space-between; border-bottom: 1px solid #ddd; }
 #pdf-wrapper { overflow: auto; padding: 40px; flex: 1; display: flex; justify-content: center; background: #525659; }
-
-/* --- CORREÇÃO DE CORTE APLICADA AQUI --- */
-#pdf-box { 
-    width: 100%; /* Permite ajuste automático na geração */
-    max-width: 800px; /* Limite visual na tela */
-    background: #fff; 
-    padding: 30px; /* Espaçamento interno em PX */
-    color: #1e293b; 
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5); 
-    font-family: 'Inter', sans-serif; 
-    margin: 0 auto;
-    box-sizing: border-box; /* Importante para não estourar largura */
-}
-
-/* CSS para evitar quebras ruins */
+#pdf-box { width: 100%; max-width: 800px; background: #fff; padding: 30px; color: #1e293b; box-shadow: 0 20px 50px rgba(0,0,0,0.5); font-family: 'Inter', sans-serif; margin: 0 auto; box-sizing: border-box; }
 .p-break-avoid { page-break-inside: avoid; }
-
 .p-header { background: #f8fafc; padding: 30px; border-bottom: 3px solid var(--primary); display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; border-radius: 8px; }
 .p-brand-col { display: flex; flex-direction: column; justify-content: center; max-width: 60%; }
 .p-logo { max-height: 60px; margin-bottom: 15px; object-fit: contain; object-position: left; }
 .p-title { margin: 0; color: var(--primary); font-size: 24px; text-transform: uppercase; letter-spacing: -0.5px; line-height: 1.2; }
-.p-subtitle { margin: 5px 0 0; color: #475569; font-size: 11px; font-weight: 500; }
-
 .p-meta-col { text-align: right; }
 .p-badge { background: var(--accent); color: #fff; padding: 6px 12px; font-size: 11px; font-weight: 700; border-radius: 4px; display: inline-block; margin-bottom: 8px; }
-.p-meta-row { font-size: 10px; color: #64748b; font-weight: 600; margin-top: 3px; }
-
 .p-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; page-break-inside: avoid; }
 .p-box { border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; page-break-inside: avoid; }
 .p-box-head { background: #f1f5f9; padding: 8px 15px; font-size: 9px; font-weight: 800; color: #475569; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; }
 .p-box-content { padding: 15px; font-size: 11px; line-height: 1.5; color: #334155; }
-.p-box-content b { color: var(--primary); font-size: 13px; display: block; margin-bottom: 4px; }
-
 .p-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
 .p-table th { text-align: left; padding: 10px; background: var(--primary); color: #fff; font-size: 9px; text-transform: uppercase; letter-spacing: 1px; }
 .p-table td { padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 10px; color: #334155; }
-.p-table tr:nth-child(even) { background: #f8fafc; }
-/* Evita quebrar linha de tabela no meio */
-.p-table tr { page-break-inside: avoid; }
-
 .p-total-section { display: flex; justify-content: flex-end; page-break-inside: avoid; }
 .p-total-card { width: 240px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; text-align: right; }
-.p-total-label { font-size: 10px; color: #64748b; text-transform: uppercase; font-weight: 700; }
 .p-total-amount { font-size: 24px; color: var(--accent); font-weight: 800; margin-top: 5px; }
-
 .p-terms { margin-top: 40px; padding: 15px; background: #f1f5f9; border-left: 4px solid #cbd5e1; border-radius: 4px; font-size: 9px; color: #475569; white-space: pre-wrap; line-height: 1.4; page-break-inside: avoid; }
-
 .p-sign-area { margin-top: 60px; display: grid; grid-template-columns: 1fr 1fr; gap: 60px; page-break-inside: avoid; }
 .p-sign-line { border-top: 1px solid #94a3b8; padding-top: 10px; text-align: center; font-size: 9px; font-weight: 700; color: #64748b; text-transform: uppercase; }
-
 .p-footer { margin-top: 50px; border-top: 1px solid #eee; padding-top: 15px; text-align: center; font-size: 8px; color: #94a3b8; letter-spacing: 1px; }
 </style>
 </head>
@@ -135,8 +145,18 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); outline
 <div id="toast-container"></div>
 
 <div id="auth-overlay">
-    <div id="view-login" class="auth-card">
-        <i class="fas fa-file-invoice" style="font-size:48px; color:#2563eb; margin-bottom:20px"></i>
+    <div id="view-master" class="auth-card" style="display:none">
+        <i class="fas fa-lock" style="font-size:48px; color:#f59e0b; margin-bottom:20px"></i>
+        <h2 style="margin:0; color:#0f172a">Acesso Inicial</h2>
+        <p style="color:#64748b; font-size:13px; margin-bottom:20px">Digite a senha mestra.</p>
+        <input id="master-pass" type="password" class="input-std" placeholder="Senha Mestra">
+        <button class="btn-auth" onclick="auth.checkMaster()">DESBLOQUEAR</button>
+        <a href="https://wa.me/5514991580362" target="_blank" class="wa-link-card">
+            <i class="fab fa-whatsapp"></i> Falar com Suporte (14) 99158-0362
+        </a>
+    </div>
+
+    <div id="view-login" class="auth-card" style="display:none">
         <h2 style="margin:0; color:#0f172a">Bem-vindo</h2>
         <p style="color:#64748b; font-size:13px; margin-bottom:30px">Digite seu PIN de acesso</p>
         <input id="login-pin" type="tel" maxlength="4" class="pin-display" placeholder="••••" onkeyup="if(this.value.length==4) auth.login()">
@@ -145,8 +165,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); outline
     </div>
     
     <div id="view-setup" class="auth-card" style="display:none">
-        <h2 style="margin:0; color:#0f172a">Primeiro Acesso</h2>
-        <p style="color:#64748b; font-size:13px; margin-bottom:20px">Configure sua segurança</p>
+        <h2 style="margin:0; color:#0f172a">Configurar Acesso</h2>
         <input id="setup-pin" type="tel" maxlength="4" class="input-std" placeholder="Crie um PIN (4 dígitos)">
         <input id="setup-secret" type="text" class="input-std" placeholder="Palavra de Recuperação (Ex: Mãe)">
         <button class="btn-auth" onclick="auth.setup()">SALVAR E ENTRAR</button>
@@ -154,33 +173,86 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); outline
 
     <div id="view-recovery" class="auth-card" style="display:none">
         <h2 style="margin:0; color:#0f172a">Recuperar Acesso</h2>
-        <p style="color:#64748b; font-size:13px; margin-bottom:20px">Qual sua palavra de recuperação?</p>
-        <input id="recovery-secret" type="text" class="input-std">
+        <input id="recovery-secret" type="text" class="input-std" placeholder="Palavra Secreta">
         <button class="btn-auth" onclick="auth.recover()">VERIFICAR</button>
         <div class="auth-link" onclick="auth.switch('login')">Cancelar</div>
     </div>
 </div>
 
+<div id="import-overlay">
+    <div class="import-modal">
+        <div class="import-header">
+            <h3><i class="fas fa-file-pdf" style="color:var(--danger)"></i> Importador Inteligente</h3>
+            <button onclick="document.getElementById('import-overlay').style.display='none'" style="background:none; border:none; font-size:24px; cursor:pointer; color:#64748b; font-weight:bold">×</button>
+        </div>
+        <div id="import-initial-view">
+            <div class="import-drop-zone" onclick="document.getElementById('pdf-upload').click()">
+                <i class="fas fa-cloud-upload-alt" style="font-size:40px; color:#3b82f6; margin-bottom:15px"></i>
+                <h4 style="margin:0; color:#1e293b">Clique ou Arraste seu PDF aqui</h4>
+                <p style="font-size:12px; color:#64748b">O sistema tentará detectar itens, preços e descrições.</p>
+                <input type="file" id="pdf-upload" accept="application/pdf" onchange="importer.process(this)" style="display:none">
+            </div>
+        </div>
+        <div id="import-process-view" style="display:none; flex:1; flex-direction:column; overflow:hidden">
+            <div class="import-toolbar">
+                <div style="display:flex; gap:10px">
+                    <span style="font-weight:bold" id="items-count-badge">0 itens</span>
+                    <a href="#" onclick="importer.toggleAll(true)" style="color:var(--accent); text-decoration:none">Marcar Todos</a>
+                    <span style="color:#ccc">|</span>
+                    <a href="#" onclick="importer.toggleAll(false)" style="color:#64748b; text-decoration:none">Nenhum</a>
+                </div>
+                <button class="btn-icon" style="background:#fee2e2; color:red" onclick="importer.reset()">Reiniciar</button>
+            </div>
+            <div class="import-body" id="import-list-container"></div>
+            <div class="import-footer">
+                <button class="btn btn-primary" onclick="importer.saveSelected()" style="width:auto; padding:12px 30px"><i class="fas fa-check"></i> IMPORTAR SELECIONADOS</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="multiselect-overlay">
+    <div class="import-modal">
+        <div class="import-header">
+            <h3><i class="fas fa-check-double" style="color:var(--warning)"></i> Selecionar Itens</h3>
+            <button onclick="document.getElementById('multiselect-overlay').style.display='none'" style="background:none; border:none; font-size:24px; cursor:pointer; color:#64748b; font-weight:bold">×</button>
+        </div>
+        <div class="import-body" id="multiselect-list-container">
+            </div>
+        <div class="import-footer">
+            <button class="btn btn-warning" onclick="app.confirmMultiSelect()" style="width:auto; padding:12px 30px">
+                <i class="fas fa-plus-circle"></i> ADICIONAR SELECIONADOS AO ORÇAMENTO
+            </button>
+        </div>
+    </div>
+</div>
+
 <nav id="nav-bar" style="display:none">
     <div onclick="ui.tab('v', this)" class="active"><i class="fas fa-calculator"></i>Orçamento</div>
+    <div onclick="ui.tab('a', this)"><i class="fas fa-calendar-alt"></i>Agenda</div>
     <div onclick="ui.tab('c', this)"><i class="fas fa-users"></i>Clientes</div>
     <div onclick="ui.tab('i', this)"><i class="fas fa-box-open"></i>Catálogo</div>
     <div onclick="ui.tab('f', this)"><i class="fas fa-chart-pie"></i>Resumo</div>
     <div onclick="ui.tab('e', this)"><i class="fas fa-building"></i>Empresa</div>
 </nav>
 
-<main id="app-container">
+<a href="https://wa.me/5514991580362" target="_blank" class="whatsapp-float" title="Suporte via WhatsApp"><i class="fab fa-whatsapp"></i></a>
 
+<main id="app-container">
     <section id="v">
         <div class="section-header"><i class="fas fa-file-contract"></i> Novo Orçamento</div>
         <div class="card">
             <label>Selecione o Cliente</label>
             <select id="v-cli-select"></select>
             <div style="margin: 20px 0; border-top: 1px dashed #cbd5e1;"></div>
+            
             <label>Adicionar Item</label>
-            <select id="v-saved-items" onchange="app.fillItem(this)" style="background:#eff6ff; border-color:var(--accent)">
-                <option value="">📂 Buscar no Catálogo (Opcional)</option>
-            </select>
+            
+            <button class="btn btn-warning" onclick="app.openMultiSelect()" style="margin-bottom:15px; font-weight:bold;">
+                <i class="fas fa-list-ul"></i> SELECIONAR VÁRIOS DO CATÁLOGO
+            </button>
+
+            <select id="v-saved-items" onchange="app.fillItem(this)" style="background:#eff6ff; border-color:var(--accent)"><option value="">📂 Buscar individualmente...</option></select>
             <input id="v-item" placeholder="Descrição do produto ou serviço">
             <div class="input-row">
                 <div><label>Unidade</label><select id="v-un"><option value="un">UN</option><option value="m">Metro</option><option value="kg">KG</option><option value="h">Hora</option><option value="dia">Dia</option><option value="vb">Verba</option></select></div>
@@ -190,32 +262,56 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); outline
             <button class="btn btn-primary" onclick="app.addItem()"><i class="fas fa-plus"></i> INCLUIR NA LISTA</button>
         </div>
         <div id="cart-list"></div>
-        <button id="btn-gerar" class="btn btn-success" style="display:none; margin-bottom:50px; position:sticky; bottom:80px; box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.4);" onclick="app.preview()">
-            <i class="fas fa-file-pdf"></i> GERAR PDF FINAL
-        </button>
+        <button id="btn-gerar" class="btn btn-success" style="display:none; margin-bottom:50px; position:sticky; bottom:80px; box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.4);" onclick="app.preview()"><i class="fas fa-file-pdf"></i> GERAR PDF FINAL</button>
+    </section>
+
+    <section id="a" style="display:none">
+        <div class="section-header"><i class="fas fa-calendar-check"></i> Agenda de Serviços</div>
+        <div class="card" style="background:#f8fafc; border:1px solid #cbd5e1">
+            <label>Novo Agendamento</label>
+            <div class="input-row">
+                <input type="date" id="ag-date">
+                <input type="time" id="ag-time">
+                <select id="ag-type"><option>Visita Técnica</option><option>Orçamento</option><option>Execução</option></select>
+            </div>
+            <label>Cliente (Vincular)</label>
+            <select id="ag-client" onchange="agenda.fillAddress(this)"><option value="">-- Avulso --</option></select>
+            <label>Endereço / Localização</label>
+            <input id="ag-address" placeholder="Rua, Número, Bairro, Cidade">
+            <label>Observações</label>
+            <textarea id="ag-obs" rows="2"></textarea>
+            <button class="btn btn-primary" onclick="agenda.save()"><i class="fas fa-save"></i> AGENDAR</button>
+        </div>
+        <div id="agenda-list"></div>
     </section>
 
     <section id="c" style="display:none">
         <div class="section-header"><i class="fas fa-user-plus"></i> Gerenciar Clientes</div>
         <div class="card">
+            <input type="hidden" id="c-id-editing">
             <input id="c-n" placeholder="Nome / Razão Social">
             <input id="c-d" placeholder="CPF / CNPJ">
             <input id="c-t" placeholder="Telefone / WhatsApp">
             <input id="c-e" placeholder="Endereço Completo">
-            <button class="btn btn-primary" onclick="app.saveClient()">SALVAR CLIENTE</button>
+            <button id="btn-save-client" class="btn btn-primary" onclick="app.saveClient()">SALVAR CLIENTE</button>
+            <button id="btn-cancel-edit-c" class="btn" style="background:#ddd; color:#333; margin-top:10px; display:none" onclick="app.cancelEditClient()">CANCELAR EDIÇÃO</button>
         </div>
         <div id="c-list"></div>
     </section>
 
     <section id="i" style="display:none">
         <div class="section-header"><i class="fas fa-boxes"></i> Catálogo de Itens</div>
+        <div class="card" style="border:1px dashed var(--accent); background:#eff6ff">
+            <div style="text-align:center; font-size:12px; color:var(--accent); font-weight:bold; margin-bottom:10px">FERRAMENTAS</div>
+            <button class="btn btn-primary" onclick="document.getElementById('import-overlay').style.display='flex'"><i class="fas fa-file-import"></i> IMPORTAR PDF DE SERVIÇOS</button>
+        </div>
         <div class="card">
             <input id="i-n" placeholder="Nome do Item / Serviço">
             <div class="input-row" style="grid-template-columns: 1fr 1fr;">
                 <select id="i-un"><option value="un">UN</option><option value="m">Metro</option><option value="kg">KG</option><option value="h">Hora</option></select>
                 <input id="i-p" type="number" placeholder="Preço Padrão">
             </div>
-            <button class="btn btn-primary" onclick="app.saveItem()">SALVAR NO CATÁLOGO</button>
+            <button class="btn btn-primary" onclick="app.saveItem()">SALVAR MANUALMENTE</button>
         </div>
         <div id="i-list"></div>
     </section>
@@ -245,8 +341,20 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); outline
             <textarea id="e-p" rows="5" placeholder="Ex: Chave PIX: 000... Validade 15 dias..."></textarea>
             <button class="btn btn-success" onclick="app.saveConfig()">SALVAR DADOS</button>
         </div>
+        <div class="card" style="border:1px solid #64748b; background:#f8fafc">
+            <div class="section-header" style="font-size:16px; margin-bottom:10px"><i class="fas fa-cloud-download-alt"></i> Backup e Segurança</div>
+            <label>Enviar Backup por Email</label>
+            <div style="display:flex; gap:10px; margin-bottom:15px">
+                <input type="email" id="backup-email" placeholder="seuemail@exemplo.com" style="margin:0">
+                <button class="btn btn-primary" onclick="backup.download(true)" style="width:auto; white-space:nowrap"><i class="fas fa-envelope"></i> BAIXAR E ENVIAR</button>
+            </div>
+            <button class="btn" style="background:#334155; color:#fff; margin-bottom:15px" onclick="backup.download(false)"><i class="fas fa-download"></i> BAIXAR ARQUIVO DE BACKUP (JSON)</button>
+            <div style="border-top:1px dashed #cbd5e1; margin:15px 0; padding-top:15px">
+                <label style="color:#ef4444">Restaurar Dados</label>
+                <input type="file" accept=".json" onchange="backup.restore(this)">
+            </div>
+        </div>
     </section>
-
 </main>
 
 <div id="preview">
@@ -254,12 +362,11 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); outline
         <button class="btn" style="width:auto; background:#fff; color:#333; border:1px solid #ddd" onclick="ui.close()">VOLTAR</button>
         <button class="btn btn-success" style="width:auto" onclick="app.download()">BAIXAR PDF</button>
     </div>
-    <div id="pdf-wrapper">
-        <div id="pdf-box"></div>
-    </div>
+    <div id="pdf-wrapper"><div id="pdf-box"></div></div>
 </div>
 
 <script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
 const BRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 
 const ui = {
@@ -275,45 +382,50 @@ const ui = {
         document.getElementById(id).style.display = "block";
         document.querySelectorAll("nav div").forEach(d => d.classList.remove("active"));
         el.classList.add("active");
-        if(db) app.load();
+        if(db) { app.load(); agenda.load(); }
     },
     close() { document.getElementById("preview").style.display = "none"; }
 };
 
 const auth = {
+    MASTER_KEY: '91538300AA',
     hash(s) {
         let h = 0xdeadbeef;
         for(let i=0; i<s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 2654435761);
         return ((h ^ h >>> 16) >>> 0).toString(16);
     },
     init() {
-        const d = localStorage.getItem("erp_v7_auth");
-        if(d) this.switch('login'); else this.switch('setup');
+        const d = localStorage.getItem("erp_v18_auth");
+        if(d) this.switch('login'); else this.switch('master'); 
     },
     switch(v) {
-        ['login','setup','recovery'].forEach(i => document.getElementById('view-'+i).style.display='none');
+        ['login','setup','recovery','master'].forEach(i => document.getElementById('view-'+i).style.display='none');
         document.getElementById('view-'+v).style.display='block';
-        document.getElementById('login-pin').value = ''; 
+        if(v === 'login') document.getElementById('login-pin').value = ''; 
+    },
+    checkMaster() {
+        if(document.getElementById('master-pass').value === this.MASTER_KEY) this.switch('setup');
+        else ui.toast('Senha Mestra Incorreta', 'error');
     },
     setup() {
         const p = document.getElementById('setup-pin').value;
         const s = document.getElementById('setup-secret').value;
         if(p.length !== 4) return ui.toast('PIN deve ter 4 dígitos', 'error');
         if(s.length < 3) return ui.toast('Palavra curta demais', 'error');
-        localStorage.setItem("erp_v7_auth", JSON.stringify({ pin: this.hash(p), secret: this.hash(s.toLowerCase().trim()) }));
+        localStorage.setItem("erp_v18_auth", JSON.stringify({ pin: this.hash(p), secret: this.hash(s.toLowerCase().trim()) }));
         ui.toast('Segurança configurada!');
         this.enter();
     },
     login() {
         const p = document.getElementById('login-pin').value;
         if(p.length !== 4) return;
-        const d = JSON.parse(localStorage.getItem("erp_v7_auth"));
+        const d = JSON.parse(localStorage.getItem("erp_v18_auth"));
         if(this.hash(p) === d.pin) this.enter();
         else { ui.toast('PIN Incorreto', 'error'); document.getElementById('login-pin').value=''; }
     },
     recover() {
         const s = document.getElementById('recovery-secret').value;
-        const d = JSON.parse(localStorage.getItem("erp_v7_auth"));
+        const d = JSON.parse(localStorage.getItem("erp_v18_auth"));
         if(this.hash(s.toLowerCase().trim()) === d.secret) {
             ui.toast('Acesso liberado. Crie um novo PIN.');
             this.switch('setup');
@@ -327,144 +439,313 @@ const auth = {
     }
 };
 
+const backup = {
+    async download(withEmail) {
+        const tx = db.transaction(['clients', 'items', 'config', 'events'], 'readonly');
+        const data = {
+            clients: await new Promise(r => tx.objectStore('clients').getAll().onsuccess = e => r(e.target.result)),
+            items: await new Promise(r => tx.objectStore('items').getAll().onsuccess = e => r(e.target.result)),
+            config: await new Promise(r => tx.objectStore('config').getAll().onsuccess = e => r(e.target.result)),
+            events: await new Promise(r => tx.objectStore('events').getAll().onsuccess = e => r(e.target.result)),
+            date: new Date().toISOString()
+        };
+        const blob = new Blob([JSON.stringify(data)], {type: "application/json"});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `Backup_ERP_${new Date().toLocaleDateString().replace(/\//g,'-')}.json`;
+        a.click();
+        if(withEmail) {
+            const email = document.getElementById('backup-email').value;
+            if(!email) return ui.toast('Digite o e-mail primeiro', 'error');
+            const subject = "Backup do Sistema ERP";
+            const body = "Olá,\n\nSegue em anexo o arquivo de backup do sistema.\n\nIMPORTANTE: Anexe manualmente o arquivo que acabou de ser baixado no seu dispositivo.";
+            window.location.href = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            ui.toast('Arquivo baixado! Agora anexe-o no e-mail aberto.');
+        } else { ui.toast('Backup baixado com sucesso!'); }
+    },
+    restore(input) {
+        const file = input.files[0];
+        if(!file) return;
+        if(!confirm("ATENÇÃO: Isso apagará todos os dados atuais. Continuar?")) { input.value = ''; return; }
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const data = JSON.parse(e.target.result);
+                const tx = db.transaction(['clients', 'items', 'config', 'events'], 'readwrite');
+                await new Promise(r => tx.objectStore('clients').clear().onsuccess = r);
+                await new Promise(r => tx.objectStore('items').clear().onsuccess = r);
+                await new Promise(r => tx.objectStore('config').clear().onsuccess = r);
+                await new Promise(r => tx.objectStore('events').clear().onsuccess = r);
+                if(data.clients) data.clients.forEach(i => tx.objectStore('clients').add(i));
+                if(data.items) data.items.forEach(i => tx.objectStore('items').add(i));
+                if(data.config) data.config.forEach(i => tx.objectStore('config').add(i));
+                if(data.events) data.events.forEach(i => tx.objectStore('events').add(i));
+                tx.oncomplete = () => { ui.toast('Sistema restaurado!'); setTimeout(() => location.reload(), 1500); };
+            } catch(err) { ui.toast('Arquivo inválido', 'error'); }
+        };
+        reader.readAsText(file);
+    }
+};
+
+const agenda = {
+    save() {
+        const date = document.getElementById('ag-date').value;
+        const time = document.getElementById('ag-time').value;
+        const type = document.getElementById('ag-type').value;
+        const address = document.getElementById('ag-address').value;
+        const obs = document.getElementById('ag-obs').value;
+        const clientId = document.getElementById('ag-client').value;
+        let clientName = "Avulso";
+        if(clientId) { const c = app.clients.find(x => x.id == clientId); if(c) clientName = c.nome; }
+        if(!date || !time) return ui.toast('Data e Hora obrigatórios', 'error');
+        const event = { date, time, type, address, obs, clientName };
+        db.transaction("events", "readwrite").objectStore("events").add(event).onsuccess = () => {
+            ui.toast('Agendado!'); this.load(); document.getElementById('ag-address').value = ''; document.getElementById('ag-obs').value = '';
+        };
+    },
+    load() {
+        const container = document.getElementById('agenda-list');
+        container.innerHTML = '';
+        db.transaction("events", "readonly").objectStore("events").getAll().onsuccess = e => {
+            let events = e.target.result || [];
+            events.sort((a,b) => new Date(a.date + 'T' + a.time) - new Date(b.date + 'T' + b.time));
+            if(events.length === 0) { container.innerHTML = '<div style="text-align:center; padding:20px; color:#94a3b8">Nenhum compromisso agendado.</div>'; return; }
+            events.forEach(ev => {
+                const dateObj = new Date(ev.date + 'T' + ev.time);
+                const day = dateObj.toLocaleDateString('pt-BR', {day:'2-digit', month:'short'});
+                const week = dateObj.toLocaleDateString('pt-BR', {weekday:'short'});
+                const mapLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ev.address)}`;
+                const embedMap = `https://maps.google.com/maps?q=${encodeURIComponent(ev.address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
+                const html = `
+                <div class="agenda-card">
+                    <div class="agenda-head"><div class="agenda-date">${day}<br>${week}</div><div style="flex:1; margin-left:15px"><div style="font-weight:bold; color:#0f172a">${ev.clientName}</div><div style="font-size:12px; color:#64748b">${ev.type} às ${ev.time}</div></div><button class="btn-icon btn-delete" onclick="agenda.del(${ev.id})"><i class="fas fa-trash"></i></button></div>
+                    <div class="agenda-body">${ev.obs ? `<div style="font-size:12px; color:#475569; margin-bottom:10px">Obs: ${ev.obs}</div>` : ''}${ev.address ? `<div style="font-size:12px; font-weight:bold; color:#0f172a"><i class="fas fa-map-marker-alt"></i> ${ev.address}</div><div class="agenda-map-box"><iframe class="map-iframe" src="${embedMap}"></iframe></div><a href="${mapLink}" target="_blank" class="btn-gps"><i class="fas fa-location-arrow"></i> ABRIR GPS / MAPAS</a>` : ''}</div>
+                </div>`;
+                container.innerHTML += html;
+            });
+        };
+    },
+    del(id) { if(confirm('Apagar este agendamento?')) { db.transaction("events", "readwrite").objectStore("events").delete(id).onsuccess = () => { ui.toast('Apagado'); this.load(); }; } },
+    fillAddress(select) { const id = select.value; if(!id) return; const c = app.clients.find(x => x.id == id); if(c && c.end) document.getElementById('ag-address').value = c.end; }
+};
+
+const importer = {
+    itemsFound: [],
+    reset() { document.getElementById('import-initial-view').style.display = 'block'; document.getElementById('import-process-view').style.display = 'none'; document.getElementById('pdf-upload').value = ''; },
+    async process(input) {
+        if(!input.files.length) return;
+        const file = input.files[0];
+        document.getElementById('import-initial-view').style.display = 'none';
+        document.getElementById('import-process-view').style.display = 'flex';
+        document.getElementById('import-list-container').innerHTML = '<div style="text-align:center; padding:40px;"><i class="fas fa-spinner fa-spin"></i> Analisando estrutura do PDF...</div>';
+        try {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+            let allLines = [];
+            for(let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const textContent = await page.getTextContent();
+                const yMap = {};
+                textContent.items.forEach(item => { const y = Math.round(item.transform[5] / 5) * 5; if(!yMap[y]) yMap[y] = []; yMap[y].push({ x: item.transform[4], str: item.str }); });
+                const sortedYs = Object.keys(yMap).sort((a,b) => b-a);
+                sortedYs.forEach(y => { const lineItems = yMap[y].sort((a,b) => a.x - b.x); const lineStr = lineItems.map(it => it.str).join(" "); if(lineStr.trim()) allLines.push(lineStr); });
+            }
+            this.parseLines(allLines);
+        } catch(e) { ui.toast('Erro ao ler PDF', 'error'); this.reset(); }
+    },
+    parseLines(lines) {
+        this.itemsFound = [];
+        const priceRegex = /(\d{1,3}(?:\.\d{3})*,\d{2})/;
+        const blacklist = ['página', 'cnpj', 'inscrição', 'data', 'vencimento', 'total', 'subtotal', 'desconto', 'telefone'];
+        lines.forEach((line) => {
+            let cleanLine = line.trim(); let lower = cleanLine.toLowerCase();
+            if(cleanLine.length < 5) return; if(blacklist.some(bad => lower.includes(bad))) return;
+            const matches = cleanLine.match(priceRegex);
+            if(matches) {
+                const priceStr = matches[0];
+                const priceVal = parseFloat(priceStr.replace('.','').replace(',','.'));
+                let name = cleanLine.replace(priceStr, '').replace('R$', '').trim();
+                name = name.replace(/[.|-]*$/, '').trim();
+                if(name.length > 2 && priceVal > 0) { this.itemsFound.push({ name: name, price: priceVal, unit: 'un' }); }
+            }
+        });
+        this.renderList();
+    },
+    renderList() {
+        const container = document.getElementById('import-list-container');
+        document.getElementById('items-count-badge').innerText = `${this.itemsFound.length} itens detectados`;
+        if(this.itemsFound.length === 0) { container.innerHTML = '<div style="text-align:center; padding:20px; color:#64748b">Nenhum item válido identificado.</div>'; return; }
+        let html = '';
+        this.itemsFound.forEach((item, index) => {
+            html += `<div class="import-row" id="row-${index}"><input type="checkbox" class="import-check" id="chk-${index}" checked><input type="text" class="imp-input" id="desc-${index}" value="${item.name}"><select class="imp-select" id="unit-${index}"><option value="un">UN</option><option value="m">M</option><option value="kg">KG</option><option value="h">H</option></select><input type="number" class="imp-input" id="price-${index}" value="${item.price.toFixed(2)}" step="0.01"><div class="btn-del-row" onclick="importer.removeRow(${index})"><i class="fas fa-trash"></i></div></div>`;
+        });
+        container.innerHTML = html;
+    },
+    removeRow(idx) { const row = document.getElementById(`row-${idx}`); if(row) { row.remove(); document.getElementById(`chk-${idx}`).checked = false; } },
+    toggleAll(state) { document.querySelectorAll('.import-check').forEach(c => c.checked = state); },
+    saveSelected() {
+        let count = 0;
+        const tx = db.transaction("items","readwrite");
+        this.itemsFound.forEach((_, index) => {
+            const chk = document.getElementById(`chk-${index}`);
+            if(chk && chk.checked) {
+                const nome = document.getElementById(`desc-${index}`).value;
+                const preco = parseFloat(document.getElementById(`price-${index}`).value);
+                const unidade = document.getElementById(`unit-${index}`).value;
+                if(nome && !isNaN(preco)) { tx.objectStore("items").add({ nome, preco, unidade }); count++; }
+            }
+        });
+        tx.oncomplete = () => { if(count > 0) { ui.toast(`${count} itens importados!`); document.getElementById('import-overlay').style.display='none'; app.load(); } else { ui.toast('Nenhum item selecionado', 'warning'); } };
+    }
+};
+
 let db;
 const app = {
-    cart: [],
-    items: [],
-    clients: [],
-    config: {},
-
+    cart: [], clients: [], items: [], config: {},
     init() {
-        const req = indexedDB.open("ERP_V7_DB", 1);
+        const req = indexedDB.open("ERP_V18_DB", 1);
         req.onupgradeneeded = e => {
             const d = e.target.result;
             if(!d.objectStoreNames.contains("clients")) d.createObjectStore("clients", {keyPath:"id", autoIncrement:true});
             if(!d.objectStoreNames.contains("items")) d.createObjectStore("items", {keyPath:"id", autoIncrement:true});
             if(!d.objectStoreNames.contains("config")) d.createObjectStore("config", {keyPath:"id"});
+            if(!d.objectStoreNames.contains("events")) d.createObjectStore("events", {keyPath:"id", autoIncrement:true});
         };
         req.onsuccess = e => { db = e.target.result; this.load(); };
     },
-
     load() {
         const tx = db.transaction(["clients","items","config"], "readonly");
         tx.objectStore("clients").getAll().onsuccess = e => {
             this.clients = e.target.result;
             const s = document.getElementById("v-cli-select");
-            const val = s.value;
+            const ags = document.getElementById("ag-client");
             s.innerHTML = '<option value="">-- Selecione o Cliente --</option>';
-            this.clients.forEach(c => s.innerHTML += `<option value="${c.id}">${c.nome}</option>`);
-            if(val) s.value = val;
+            ags.innerHTML = '<option value="">-- Avulso --</option>';
+            this.clients.forEach(c => { s.innerHTML += `<option value="${c.id}">${c.nome}</option>`; ags.innerHTML += `<option value="${c.id}">${c.nome}</option>`; });
             document.getElementById("c-list").innerHTML = this.clients.map(c => `
-                <div class="list-item">
-                    <div class="list-info">
-                        <div class="list-title">${c.nome}</div>
-                        <div class="list-sub">${c.doc || ''} • ${c.tel || ''}</div>
-                    </div>
-                    <button class="btn-delete" onclick="app.deleteClient(${c.id})"><i class="fas fa-trash"></i></button>
-                </div>
-            `).join("");
+                <div class="list-item"><div class="list-info"><div class="list-title">${c.nome}</div><div class="list-sub">${c.doc || ''} • ${c.tel || ''}</div></div><div class="action-group"><button class="btn-icon btn-edit" onclick="app.editClient(${c.id})"><i class="fas fa-pen"></i></button><button class="btn-icon btn-delete" onclick="app.deleteClient(${c.id})"><i class="fas fa-trash"></i></button></div></div>`).join("");
         };
         tx.objectStore("items").getAll().onsuccess = e => {
             this.items = e.target.result;
             const s = document.getElementById("v-saved-items");
-            s.innerHTML = '<option value="">📂 Buscar no Catálogo...</option>';
+            s.innerHTML = '<option value="">📂 Buscar individualmente...</option>';
             this.items.forEach((i, idx) => s.innerHTML += `<option value="${idx}">${i.nome}</option>`);
             document.getElementById("i-list").innerHTML = this.items.map(i => `
-                <div class="list-item">
-                    <div class="list-info">
-                        <div class="list-title">${i.nome}</div>
-                        <div class="list-sub">${i.unidade} - ${BRL.format(i.preco)}</div>
-                    </div>
-                    <button class="btn-delete" onclick="app.deleteItem(${i.id})"><i class="fas fa-trash"></i></button>
-                </div>
-            `).join("");
+                <div class="list-item"><div class="list-info"><div class="list-title">${i.nome}</div><div class="list-sub">${i.unidade} - ${BRL.format(i.preco)}</div></div><button class="btn-icon btn-delete" onclick="app.deleteItem(${i.id})"><i class="fas fa-trash"></i></button></div>`).join("");
         };
         tx.objectStore("config").get(1).onsuccess = e => {
-            const c = e.target.result || {};
-            this.config = c;
-            ['n','d','c','p'].forEach(k => document.getElementById('e-'+k).value = c[k] || '');
-            if(c.logo) {
-                document.getElementById('current-logo-img').src = c.logo;
-                document.getElementById('logo-preview-box').style.display = 'block';
-            }
+            this.config = e.target.result || {};
+            ['n','d','c','p'].forEach(k => document.getElementById('e-'+k).value = this.config[k] || '');
+            if(this.config.logo) document.getElementById('current-logo-img').src = this.config.logo;
         };
     },
-
-    deleteClient(id) {
-        if(!confirm("Excluir cliente?")) return;
-        db.transaction("clients", "readwrite").objectStore("clients").delete(id).onsuccess = () => { ui.toast("Removido"); this.load(); };
+    // MULTI SELECT LOGIC
+    openMultiSelect() {
+        const container = document.getElementById('multiselect-list-container');
+        container.innerHTML = '';
+        if(this.items.length === 0) {
+            container.innerHTML = '<div style="text-align:center; padding:20px; color:#64748b">O catálogo está vazio. Adicione itens primeiro.</div>';
+        } else {
+            this.items.forEach((item, index) => {
+                container.innerHTML += `
+                    <div class="multi-select-row" onclick="document.getElementById('ms-${index}').click()">
+                        <input type="checkbox" id="ms-${index}" class="ms-check" value="${index}" onclick="event.stopPropagation()">
+                        <div style="flex:1; font-weight:bold">${item.nome}</div>
+                        <div style="color:#2563eb">${BRL.format(item.preco)}</div>
+                    </div>
+                `;
+            });
+        }
+        document.getElementById('multiselect-overlay').style.display = 'flex';
     },
-    deleteItem(id) {
-        if(!confirm("Excluir item?")) return;
-        db.transaction("items", "readwrite").objectStore("items").delete(id).onsuccess = () => { ui.toast("Removido"); this.load(); };
+    confirmMultiSelect() {
+        const checked = document.querySelectorAll('.ms-check:checked');
+        let count = 0;
+        checked.forEach(chk => {
+            const i = this.items[chk.value];
+            if(i) {
+                this.cart.push({ n: i.nome, p: i.preco, q: 1, u: i.unidade || 'un' });
+                count++;
+            }
+        });
+        if(count > 0) {
+            this.renderCart();
+            ui.toast(`${count} itens adicionados`);
+            document.getElementById('multiselect-overlay').style.display = 'none';
+        } else {
+            ui.toast('Nenhum item selecionado', 'warning');
+        }
     },
-
+    saveClient() {
+        const nome = document.getElementById("c-n").value;
+        const doc = document.getElementById("c-d").value;
+        const tel = document.getElementById("c-t").value;
+        const end = document.getElementById("c-e").value;
+        const editId = document.getElementById("c-id-editing").value;
+        if(!nome) return ui.toast("Nome obrigatório", "error");
+        const tx = db.transaction("clients","readwrite").objectStore("clients");
+        const data = {nome, doc, tel, end};
+        if(editId) { data.id = parseInt(editId); tx.put(data); } else { tx.add(data); }
+        tx.transaction.oncomplete = () => { ui.toast("Salvo"); this.load(); this.cancelEditClient(); };
+    },
+    editClient(id) {
+        const client = this.clients.find(c => c.id === id);
+        if(!client) return;
+        document.getElementById("c-id-editing").value = client.id;
+        document.getElementById("c-n").value = client.nome;
+        document.getElementById("c-d").value = client.doc;
+        document.getElementById("c-t").value = client.tel;
+        document.getElementById("c-e").value = client.end;
+        document.getElementById("btn-save-client").innerText = "ATUALIZAR DADOS";
+        document.getElementById("btn-cancel-edit-c").style.display = "block";
+    },
+    cancelEditClient() {
+        document.getElementById("c-id-editing").value = "";
+        ['c-n','c-d','c-t','c-e'].forEach(i => document.getElementById(i).value = "");
+        document.getElementById("btn-save-client").innerText = "SALVAR CLIENTE";
+        document.getElementById("btn-cancel-edit-c").style.display = "none";
+    },
+    deleteClient(id) { if(confirm("Excluir?")) db.transaction("clients", "readwrite").objectStore("clients").delete(id).onsuccess = () => { ui.toast("Removido"); this.load(); }; },
+    deleteItem(id) { if(confirm("Excluir?")) db.transaction("items", "readwrite").objectStore("items").delete(id).onsuccess = () => { ui.toast("Removido"); this.load(); }; },
+    saveItem() {
+        const nome = document.getElementById("i-n").value;
+        const preco = parseFloat(document.getElementById("i-p").value);
+        const unidade = document.getElementById("i-un").value;
+        if(!nome) return;
+        db.transaction("items","readwrite").objectStore("items").add({nome, preco, unidade}).onsuccess = () => { ui.toast("Salvo"); this.load(); document.getElementById("i-n").value=""; document.getElementById("i-p").value=""; };
+    },
     fillItem(el) {
         if(!el.value) return;
         const i = this.items[el.value];
         document.getElementById("v-item").value = i.nome;
         document.getElementById("v-preco").value = i.preco;
         document.getElementById("v-un").value = i.unidade || 'un';
-        document.getElementById("v-qtd").focus();
     },
-
     addItem() {
         const n = document.getElementById("v-item").value;
         const p = parseFloat(document.getElementById("v-preco").value);
         const q = parseFloat(document.getElementById("v-qtd").value);
         const u = document.getElementById("v-un").value;
-        if(!n || isNaN(p) || isNaN(q)) return ui.toast("Preencha corretamente", "error");
+        if(!n || isNaN(p)) return;
         this.cart.push({ n, p, q, u });
         this.renderCart();
-        document.getElementById("v-item").value = "";
-        document.getElementById("v-preco").value = "";
-        document.getElementById("v-qtd").value = "1";
-        document.getElementById("v-saved-items").value = "";
-        ui.toast("Incluído");
     },
-
     renderCart() {
         const total = this.cart.reduce((a,b) => a+(b.p*b.q), 0);
         document.getElementById("cart-list").innerHTML = this.cart.map((i,x) => `
             <div class="list-item">
-                <div style="flex:1">
-                    <div style="font-weight:700; color:#1e293b">${i.n}</div>
-                    <div style="font-size:11px; color:#64748b">${i.q} ${i.u} x ${BRL.format(i.p)}</div>
-                </div>
-                <div style="text-align:right">
-                    <div style="font-weight:800; color:#2563eb">${BRL.format(i.p*i.q)}</div>
-                    <div style="font-size:10px; color:#ef4444; margin-top:4px; cursor:pointer; font-weight:bold" onclick="app.cart.splice(${x},1);app.renderCart()">REMOVER</div>
-                </div>
-            </div>
-        `).join("");
+                <div style="flex:1"><div style="font-weight:700; color:#1e293b">${i.n}</div><div style="font-size:11px; color:#64748b">${i.q} ${i.u} x ${BRL.format(i.p)}</div></div>
+                <div style="text-align:right"><div style="font-weight:800; color:#2563eb">${BRL.format(i.p*i.q)}</div><div style="font-size:10px; color:#ef4444; margin-top:4px; cursor:pointer;" onclick="app.cart.splice(${x},1);app.renderCart()">REMOVER</div></div>
+            </div>`).join("");
         document.getElementById("saldo-box").innerText = BRL.format(total);
         document.getElementById("btn-gerar").style.display = this.cart.length ? "flex" : "none";
     },
-
-    saveClient() {
-        const nome = document.getElementById("c-n").value;
-        const doc = document.getElementById("c-d").value;
-        const tel = document.getElementById("c-t").value;
-        const end = document.getElementById("c-e").value;
-        if(!nome) return ui.toast("Nome obrigatório", "error");
-        db.transaction("clients","readwrite").objectStore("clients").add({nome, doc, tel, end}).onsuccess = () => { ui.toast("Salvo"); this.load(); ['c-n','c-d','c-t','c-e'].forEach(i => document.getElementById(i).value = ""); };
-    },
-
-    saveItem() {
-        const nome = document.getElementById("i-n").value;
-        const preco = parseFloat(document.getElementById("i-p").value);
-        const unidade = document.getElementById("i-un").value;
-        if(!nome) return ui.toast("Erro no item", "error");
-        db.transaction("items","readwrite").objectStore("items").add({nome, preco, unidade}).onsuccess = () => { ui.toast("Salvo"); this.load(); document.getElementById("i-n").value = ""; document.getElementById("i-p").value = ""; };
-    },
-
     saveConfig() {
         const fileInput = document.getElementById('e-logo-input');
         const saveData = { id: 1, n: document.getElementById('e-n').value, d: document.getElementById('e-d').value, c: document.getElementById('e-c').value, p: document.getElementById('e-p').value, logo: this.config.logo };
         const commit = (data) => { db.transaction("config","readwrite").objectStore("config").put(data).onsuccess = () => { ui.toast("Salvo!"); this.load(); }; };
         if(fileInput.files.length > 0) { const reader = new FileReader(); reader.onload = (e) => { saveData.logo = e.target.result; commit(saveData); }; reader.readAsDataURL(fileInput.files[0]); } else { commit(saveData); }
     },
-
     preview() {
         const c = this.config;
         const en = c.n || "Sua Empresa";
@@ -476,82 +757,33 @@ const app = {
         const cli = this.clients.find(c => c.id == cliId) || { nome: "Consumidor Final", doc: "", tel: "", end: "" };
         const total = this.cart.reduce((a,b) => a+(b.p*b.q), 0);
         const orcNum = Math.floor(Math.random() * 8999) + 1000;
-
         const html = `
             <div class="p-header p-break-avoid">
-                <div class="p-brand-col">
-                    ${logo ? `<img src="${logo}" class="p-logo">` : '<i class="fas fa-layer-group" style="font-size:30px; color:#2563eb; margin-bottom:15px"></i>'}
-                    <h1 class="p-title">${en}</h1>
-                    <p class="p-subtitle">CNPJ: ${ed}<br>Contato: ${ec}</p>
-                </div>
-                <div class="p-meta-col">
-                    <div class="p-badge">ORÇAMENTO #${orcNum}</div>
-                    <div class="p-meta-row">Data: ${new Date().toLocaleDateString()}</div>
-                    <div class="p-meta-row">Validade: 15 Dias</div>
-                </div>
+                <div class="p-brand-col">${logo ? `<img src="${logo}" class="p-logo">` : ''}<h1 class="p-title">${en}</h1><p class="p-subtitle">CNPJ: ${ed}<br>Contato: ${ec}</p></div>
+                <div class="p-meta-col"><div class="p-badge">ORÇAMENTO #${orcNum}</div><div class="p-meta-row">Data: ${new Date().toLocaleDateString()}</div><div class="p-meta-row">Validade: 15 Dias</div></div>
             </div>
-
             <div class="p-grid p-break-avoid">
-                <div class="p-box">
-                    <div class="p-box-head">PRESTADOR DE SERVIÇOS</div>
-                    <div class="p-box-content"><b>${en}</b>${ed}<br>${ec}</div>
-                </div>
-                <div class="p-box">
-                    <div class="p-box-head">DADOS DO CLIENTE</div>
-                    <div class="p-box-content"><b>${cli.nome}</b>${cli.doc}<br>${cli.tel}<br>${cli.end || ''}</div>
-                </div>
+                <div class="p-box"><div class="p-box-head">PRESTADOR DE SERVIÇOS</div><div class="p-box-content"><b>${en}</b>${ed}<br>${ec}</div></div>
+                <div class="p-box"><div class="p-box-head">DADOS DO CLIENTE</div><div class="p-box-content"><b>${cli.nome}</b>${cli.doc}<br>${cli.tel}<br>${cli.end || ''}</div></div>
             </div>
-
             <table class="p-table">
                 <thead><tr><th style="width:45%">DESCRIÇÃO DO ITEM</th><th style="width:10%; text-align:center">QTD</th><th style="width:20%; text-align:right">UNITÁRIO</th><th style="width:25%; text-align:right">TOTAL</th></tr></thead>
-                <tbody>
-                    ${this.cart.map(i => `
-                        <tr>
-                            <td>${i.n}</td><td style="text-align:center">${i.q} ${i.u}</td>
-                            <td style="text-align:right">${BRL.format(i.p)}</td><td style="text-align:right; font-weight:700">${BRL.format(i.p*i.q)}</td>
-                        </tr>
-                    `).join('')}
-                </tbody>
+                <tbody>${this.cart.map(i => `<tr><td>${i.n}</td><td style="text-align:center">${i.q} ${i.u}</td><td style="text-align:right">${BRL.format(i.p)}</td><td style="text-align:right; font-weight:700">${BRL.format(i.p*i.q)}</td></tr>`).join('')}</tbody>
             </table>
-
-            <div class="p-total-section p-break-avoid">
-                <div class="p-total-card">
-                    <div class="p-total-label">VALOR TOTAL DO ORÇAMENTO</div>
-                    <div class="p-total-amount">${BRL.format(total)}</div>
-                </div>
-            </div>
-
+            <div class="p-total-section p-break-avoid"><div class="p-total-card"><div class="p-total-label">VALOR TOTAL DO ORÇAMENTO</div><div class="p-total-amount">${BRL.format(total)}</div></div></div>
             ${ep ? `<div class="p-terms p-break-avoid"><div style="font-weight:800; margin-bottom:5px; color:#0f172a">TERMOS E FORMAS DE PAGAMENTO:</div>${ep}</div>` : ''}
-
-            <div class="p-sign-area p-break-avoid">
-                <div class="p-sign-line">ASSINATURA DO RESPONSÁVEL</div>
-                <div class="p-sign-line">DE ACORDO (CLIENTE)</div>
-            </div>
-
+            <div class="p-sign-area p-break-avoid"><div class="p-sign-line">ASSINATURA DO RESPONSÁVEL</div><div class="p-sign-line">DE ACORDO (CLIENTE)</div></div>
             <div class="p-footer">ESTE DOCUMENTO É UMA PROPOSTA COMERCIAL E NÃO POSSUI VALIDADE FISCAL. GERADO ELETRONICAMENTE EM ${new Date().toLocaleString()}.</div>
         `;
         document.getElementById("pdf-box").innerHTML = html;
         document.getElementById("preview").style.display = "flex";
     },
-
     download() {
         const el = document.getElementById("pdf-box");
-        const opt = { 
-            margin: [10, 10, 10, 10], 
-            filename: `Orcamento_${Date.now()}.pdf`, 
-            image: { type: 'jpeg', quality: 0.98 }, 
-            html2canvas: { 
-                scale: 2, 
-                useCORS: true, 
-                letterRendering: true,
-                scrollY: 0, /* CORREÇÃO AQUI */
-            }, 
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-            pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-        };
+        const opt = { margin: [10, 10, 10, 10], filename: `Orcamento_${Date.now()}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollY: 0 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }, pagebreak: { mode: ['avoid-all', 'css', 'legacy'] } };
         html2pdf().set(opt).from(el).save();
     }
 };
 </script>
 </body>
-</html>
+</html>6666666666666666666666222
