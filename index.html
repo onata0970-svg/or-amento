@@ -440,18 +440,18 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
             <div class="input-row" style="grid-template-columns: 1fr; gap:15px; margin-bottom: 20px;">
                 <div>
                     <label>Selecione o Tipo de Operação</label>
-                    <select id="v-doc-type" style="background:#fff; border-color:var(--accent); font-weight:700; color:var(--accent); font-size:16px;">
+                    <select id="v-doc-type" onchange="app.toggleDocMode()" style="background:#fff; border-color:var(--accent); font-weight:700; color:var(--accent); font-size:16px;">
                         <option value="orcamento">📝 Emissão de Orçamento</option>
                         <option value="pedido_venda">📦 Pedido de Venda / Fechamento</option>
                         <option value="pedido_compra">🛒 Pedido de Compra (Fornecedor)</option>
-                        <option value="recibo_simples">🧾 Recibo Oficial / Pagamento</option>
+                        <option value="recibo_simples">🧾 Gerar Recibo Rápido / Fácil</option>
                     </select>
                 </div>
             </div>
 
             <div class="input-row" style="grid-template-columns: 1fr; gap:15px; margin-bottom: 20px;">
                 <div>
-                    <label>Forma de Pagamento (Sai impresso na nota/recibo)</label>
+                    <label>Forma de Pagamento (Sai impresso no PDF)</label>
                     <select id="v-pay-method" style="background:#fff; border-color:var(--border); font-weight:600;">
                         <option value="A Combinar / Não Informado">A Combinar / Não Informado</option>
                         <option value="Dinheiro em Espécie">Dinheiro em Espécie</option>
@@ -473,20 +473,37 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
 
             <div style="margin: 25px 0; border-top: 2px dashed var(--border);"></div>
             
-            <label style="font-size:13px; color:var(--primary)"><i class="fas fa-box"></i> Montar Lista de Itens</label>
-            <button class="btn btn-warning" onclick="app.openMultiSelect()" style="margin-bottom:20px; font-weight:800; padding:18px;">
-                <i class="fas fa-list-ul"></i> SELEÇÃO RÁPIDA DO CATÁLOGO
-            </button>
+            <!-- MODO PADRÃO: CARRINHO -->
+            <div id="v-cart-builder">
+                <label style="font-size:13px; color:var(--primary)"><i class="fas fa-box"></i> Montar Lista de Itens</label>
+                <button class="btn btn-warning" onclick="app.openMultiSelect()" style="margin-bottom:20px; font-weight:800; padding:18px;">
+                    <i class="fas fa-list-ul"></i> SELEÇÃO RÁPIDA DO CATÁLOGO
+                </button>
 
-            <select id="v-saved-items" onchange="app.fillItem(this)" style="background:#eff6ff; border-color:var(--accent); font-weight:600;"><option value="">📂 Buscar item unitário...</option></select>
-            <input id="v-item" placeholder="Ou digite a descrição do produto/serviço livremente...">
-            
-            <div class="input-row">
-                <div><label>Unidade</label><select id="v-un"><option value="un">UN</option><option value="m">Metro</option><option value="kg">KG</option><option value="h">Hora</option><option value="dia">Dia</option><option value="vb">Verba</option></select></div>
-                <div><label>Preço (R$)</label><input type="number" id="v-preco" placeholder="0.00"></div>
-                <div><label>Qtd</label><input type="number" id="v-qtd" value="1"></div>
+                <select id="v-saved-items" onchange="app.fillItem(this)" style="background:#eff6ff; border-color:var(--accent); font-weight:600;"><option value="">📂 Buscar item unitário...</option></select>
+                <input id="v-item" placeholder="Ou digite a descrição do produto/serviço livremente...">
+                
+                <div class="input-row">
+                    <div><label>Unidade</label><select id="v-un"><option value="un">UN</option><option value="m">Metro</option><option value="kg">KG</option><option value="h">Hora</option><option value="dia">Dia</option><option value="vb">Verba</option></select></div>
+                    <div><label>Preço (R$)</label><input type="number" id="v-preco" placeholder="0.00"></div>
+                    <div><label>Qtd</label><input type="number" id="v-qtd" value="1"></div>
+                </div>
+                <button class="btn btn-primary" onclick="app.addItem()"><i class="fas fa-plus"></i> LANÇAR ITEM NO CARRINHO</button>
             </div>
-            <button class="btn btn-primary" onclick="app.addItem()"><i class="fas fa-plus"></i> LANÇAR ITEM</button>
+
+            <!-- MODO RECIBO FÁCIL: BLOCO ISOLADO -->
+            <div id="v-receipt-builder" style="display:none; background:#f0f9ff; padding:25px; border-radius:16px; border:1px solid #bae6fd; margin-bottom:20px;">
+                <h4 style="margin:0 0 15px 0; color:#0369a1; font-size:16px;"><i class="fas fa-receipt"></i> Preenchimento do Recibo Fácil</h4>
+                
+                <label style="color:#0284c7">Especificação (Referente a quê?)</label>
+                <textarea id="vr-desc" rows="2" placeholder="Ex: Pagamento referente aos serviços elétricos prestados na residência, troca de fiação..." style="border-color:#bae6fd; background:#fff; margin-bottom:15px;"></textarea>
+                
+                <label style="color:#0284c7">Valor Recebido (R$)</label>
+                <input type="number" id="vr-val" placeholder="0.00" style="border-color:#bae6fd; background:#fff; font-size:18px; font-weight:bold; color:var(--info); margin-bottom:20px;">
+                
+                <button class="btn btn-info" onclick="app.previewEasyReceipt()" style="font-size:16px; padding:18px;"><i class="fas fa-file-invoice-dollar"></i> REVISAR E GERAR RECIBO</button>
+            </div>
+
         </div>
         
         <div id="cart-list"></div>
@@ -1038,6 +1055,23 @@ const app = {
             item.style.display = text.includes(term) ? 'flex' : 'none';
         });
     },
+
+    // Alternador do layout de Recibo x Orçamento
+    toggleDocMode() {
+        const mode = document.getElementById("v-doc-type").value;
+        if (mode === "recibo_simples") {
+            document.getElementById("v-cart-builder").style.display = "none";
+            document.getElementById("cart-list").style.display = "none";
+            document.getElementById("edit-discount-box").style.display = "none";
+            document.getElementById("btn-gerar").style.display = "none";
+            document.getElementById("v-receipt-builder").style.display = "block";
+        } else {
+            document.getElementById("v-cart-builder").style.display = "block";
+            document.getElementById("cart-list").style.display = "block";
+            document.getElementById("v-receipt-builder").style.display = "none";
+            this.renderCart(); 
+        }
+    },
     
     // --- LÓGICA DO DASHBOARD INTELIGENTE ---
     renderDashboard() {
@@ -1045,7 +1079,7 @@ const app = {
         
         this.docs.forEach(d => {
             if(d.typeTitle === 'ORÇAMENTO') totOrc += d.total;
-            else if(d.typeTitle === 'PEDIDO DE VENDA' || d.typeTitle === 'RECIBO SIMPLES' || d.typeTitle === 'RECIBO OFICIAL') totVen += d.total;
+            else if(d.typeTitle === 'PEDIDO DE VENDA' || d.typeTitle === 'RECIBO OFICIAL') totVen += d.total;
             else if(d.typeTitle === 'PEDIDO DE COMPRA') totComp += d.total;
         });
 
@@ -1151,11 +1185,10 @@ const app = {
             let badgeClass = "badge-orcamento";
             if(d.typeTitle === "PEDIDO DE VENDA") badgeClass = "badge-pedido-venda";
             if(d.typeTitle === "PEDIDO DE COMPRA") badgeClass = "badge-pedido-compra";
-            if(d.typeTitle === "RECIBO SIMPLES" || d.typeTitle === "RECIBO OFICIAL" || d.typeTitle === "RECIBO DE PRESTAÇÃO" || d.typeTitle === "RECIBO DE LOCAÇÃO") badgeClass = "badge-relatorio";
+            if(d.typeTitle === "RECIBO OFICIAL" || d.typeTitle === "RECIBO DE PRESTAÇÃO" || d.typeTitle === "RECIBO DE LOCAÇÃO") badgeClass = "badge-relatorio";
             if(d.typeTitle === "RELATÓRIO DE ALUGUÉIS") badgeClass = "badge-alugueis";
             if(d.typeTitle === "HISTÓRICO DE PAGAMENTOS") badgeClass = "badge-hist-pgto";
             
-            // Link rápido para compartilhamento web
             const textToShare = encodeURIComponent(`Olá, segue o documento ${d.numero} no valor de ${BRL.format(d.total)}.\nEmitido em: ${dataStr}`);
             
             return `
@@ -1194,9 +1227,23 @@ const app = {
             if(doc.payMethod) document.getElementById("v-pay-method").value = doc.payMethod;
             else document.getElementById("v-pay-method").value = "A Combinar / Não Informado";
             
-            document.getElementById("edit-discount-box").style.display = "block";
+            this.toggleDocMode();
+
+            if (doc.docSelect === "recibo_simples") {
+                if(this.cart.length > 0) {
+                    document.getElementById("vr-desc").value = this.cart[0].n;
+                    document.getElementById("vr-val").value = this.cart[0].p;
+                }
+            } else {
+                document.getElementById("edit-discount-box").style.display = "block";
+            }
+            
             document.getElementById("btn-cancel-edit-v").style.display = "block";
-            this.renderCart();
+            
+            if (doc.docSelect !== "recibo_simples") {
+                this.renderCart();
+            }
+            
             ui.toast("Edição liberada! Altere o que precisar.");
         }, 100);
     },
@@ -1212,6 +1259,11 @@ const app = {
         document.getElementById("v-pay-method").value = "A Combinar / Não Informado";
         document.getElementById("edit-discount-box").style.display = "none";
         document.getElementById("btn-cancel-edit-v").style.display = "none";
+        
+        // Limpa campos do recibo facil
+        document.getElementById("vr-desc").value = "";
+        document.getElementById("vr-val").value = "";
+        
         ui.toast("Edição cancelada", "warning");
     },
 
@@ -1710,8 +1762,23 @@ const app = {
         document.getElementById("preview").style.display = "flex";
     },
 
+    // Ação do botão "GERAR RECIBO FÁCIL"
+    previewEasyReceipt() {
+        const desc = document.getElementById("vr-desc").value;
+        const val = parseFloat(document.getElementById("vr-val").value);
+        if(!desc || isNaN(val) || val <= 0) return ui.toast("Preencha a especificação e um valor válido.", "warning");
+        
+        // Cria um carrinho invisível só para padronizar o salvamento e edição
+        this.cart = [{ n: desc, p: val, q: 1, u: "vb" }];
+        this.previewDoc();
+    },
+
     previewDoc() {
-        if(this.cart.length === 0) return ui.toast("Adicione pelo menos 1 item para gerar um documento", "error");
+        const docSelect = document.getElementById("v-doc-type").value;
+        
+        if(docSelect !== "recibo_simples" && this.cart.length === 0) {
+            return ui.toast("Adicione pelo menos 1 item para gerar um documento", "error");
+        }
         
         const c = this.config; const en = c.n || "Sua Empresa"; const ed = c.d || ""; const ec = c.c || ""; const ep = c.p || ""; const logo = c.logo;
         const cliId = document.getElementById("v-cli-select").value;
@@ -1721,7 +1788,6 @@ const app = {
         const total = this.cart.reduce((a,b) => a+(b.p*b.q), 0);
         const payMethod = document.getElementById("v-pay-method").value;
         
-        const docSelect = document.getElementById("v-doc-type").value;
         let docTitle = "ORÇAMENTO"; let docPrefix = "ORC"; let badgeColor = "var(--accent)"; let boxTitle = "DADOS DO CLIENTE";
         
         if (docSelect === "pedido_venda") { docTitle = "PEDIDO DE VENDA"; docPrefix = "PDV"; badgeColor = "var(--success)"; } 
@@ -1743,7 +1809,7 @@ const app = {
 
         let html = "";
         
-        // TEMPLATE 1: RECIBO OFICIAL (DECLARAÇÃO FORMAL)
+        // TEMPLATE 1: RECIBO OFICIAL (DECLARAÇÃO FORMAL - LIMPO E PROFISSIONAL)
         if (docSelect === "recibo_simples") {
             html = `
             <div class="p-header p-break-avoid" style="border-bottom-color: var(--info)">
@@ -1766,7 +1832,7 @@ const app = {
                     <tr><th style="width:70%; background:var(--info)">DESCRIÇÃO DO SERVIÇO / PRODUTO</th><th style="width:30%; text-align:right; background:var(--info)">SUBTOTAL</th></tr>
                 </thead>
                 <tbody>
-                    ${this.cart.map(i => `<tr><td><b>${i.n}</b> (Qtd: ${i.q} ${i.u})</td><td style="text-align:right">${i.p < 0 ? '-' : ''}${BRL.format(Math.abs(i.p*i.q))}</td></tr>`).join('')}
+                    ${this.cart.map(i => `<tr><td style="font-size:12px;">${i.n.replace(/\n/g, '<br>')}</td><td style="text-align:right; font-weight:bold;">${i.p < 0 ? '-' : ''}${BRL.format(Math.abs(i.p*i.q))}</td></tr>`).join('')}
                 </tbody>
             </table>
             
@@ -1857,6 +1923,7 @@ const app = {
         req.onsuccess = () => {
             ui.toast(this.editingDocId ? "Documento atualizado no histórico!" : "Arquivo salvo no banco de dados!");
             if(!this.currentDocState.isReport) {
+                // Reset geral
                 document.getElementById("v-ag-date").value = ""; 
                 document.getElementById("v-ag-time").value = ""; 
                 document.getElementById("v-ag-type").value = ""; 
@@ -1867,6 +1934,10 @@ const app = {
                 this.editingDocId = null;
                 document.getElementById("edit-discount-box").style.display = "none";
                 document.getElementById("btn-cancel-edit-v").style.display = "none";
+                
+                // Reseta recibo
+                document.getElementById("vr-desc").value = "";
+                document.getElementById("vr-val").value = "";
             }
             this.load(); 
             this.downloadJustPDF();
