@@ -295,10 +295,10 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
 
 <div id="toast-container"></div>
 
-<!-- LOADER TELA CHEIA -->
+<!-- LOADER TELA CHEIA (SALVANDO/BAIXANDO PDF) -->
 <div id="global-loader">
     <div class="spinner"></div>
-    <h3 style="margin:0; font-weight:800; letter-spacing:1px; color:#fff" id="loader-text">Processando...</h3>
+    <h3 style="margin:0; font-weight:800; letter-spacing:1px; color:#fff" id="loader-text">Processando PDF...</h3>
     <p style="font-size:13px; color:#cbd5e1; margin-top:10px;">Por favor, aguarde a conclusão.</p>
 </div>
 
@@ -808,7 +808,8 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
         <button class="btn" style="width:auto; background:transparent; color:#fff; font-size:13px; padding:12px 20px; border: 1px solid #64748b;" onclick="ui.close()"><i class="fas fa-arrow-left"></i> VOLTAR</button>
         <div class="preview-title"><i class="fas fa-file-alt"></i> VISUALIZADOR DE DOCUMENTO</div>
         <div style="display:flex; gap:10px">
-            <button id="btn-confirm-save-pdf" class="btn btn-success" style="width:auto; font-size:13px; padding:12px 20px; box-shadow:0 4px 15px rgba(16,185,129,0.3)" onclick="app.confirmAndSaveDoc()">SALVAR E ABRIR PDF <i class="fas fa-external-link-alt"></i></button>
+            <button id="btn-print-pdf" class="btn" style="width:auto; background:#3b82f6; color:#fff; font-size:13px; padding:12px 20px;" onclick="app.printDoc()"><i class="fas fa-print"></i> IMPRIMIR</button>
+            <button id="btn-confirm-save-pdf" class="btn btn-success" style="width:auto; font-size:13px; padding:12px 20px; box-shadow:0 4px 15px rgba(16,185,129,0.3)" onclick="app.confirmAndSaveDoc()">BAIXAR PDF <i class="fas fa-download"></i></button>
         </div>
     </div>
     <div id="pdf-wrapper"><div id="pdf-box" class="mobile-preview-scale"></div></div>
@@ -1136,7 +1137,7 @@ const agenda = {
             document.getElementById("pdf-box").className = "mobile-preview-scale";
             
             const btn = document.getElementById("btn-confirm-save-pdf");
-            btn.innerHTML = 'SALVAR E ABRIR PDF <i class="fas fa-external-link-alt"></i>';
+            btn.innerHTML = 'BAIXAR PDF <i class="fas fa-download"></i>';
             btn.onclick = () => { app.confirmAndSaveDoc(); };
             
             document.getElementById("preview").style.display = "flex";
@@ -1813,17 +1814,17 @@ const app = {
         
         // Ajusta o botão para NÃO gravar no DB de novo
         const btnConfirm = document.getElementById("btn-confirm-save-pdf");
-        btnConfirm.innerHTML = 'ABRIR ARQUIVO <i class="fas fa-external-link-alt"></i>';
-        btnConfirm.onclick = () => { app.openPDF(); };
+        btnConfirm.innerHTML = 'REBAIXAR ARQUIVO <i class="fas fa-download"></i>';
+        btnConfirm.onclick = () => { app.downloadJustPDF(); };
         
         document.getElementById("preview").style.display = "flex";
     },
 
-    // --- NOVA LÓGICA: ABRE A PÁGINA NATIVA (ONDE VOCÊ PODE IMPRIMIR/BAIXAR/COMPARTILHAR) ---
-    openPDF() {
-        ui.showLoading("Gerando Arquivo...");
+    // Ação do Botão IMPRIMIR
+    printDoc() {
+        ui.showLoading("Preparando Impressão...");
         const el = document.getElementById("pdf-box");
-        el.classList.remove("mobile-preview-scale"); // Restaura o tamanho HD para o PDF sair perfeito
+        el.classList.remove("mobile-preview-scale"); // Restaura o tamanho HD
         
         setTimeout(() => {
             const opt = { 
@@ -1837,9 +1838,8 @@ const app = {
                 el.classList.add("mobile-preview-scale");
                 ui.hideLoading();
                 
-                // Isso cria aquela tela nativa do celular/PC com os controles completos de PDF!
-                const newWindow = window.open(pdfUrl, '_blank');
-                if(!newWindow) {
+                const printWindow = window.open(pdfUrl, '_blank');
+                if(!printWindow) {
                     const a = document.createElement('a');
                     a.href = pdfUrl;
                     a.target = '_blank';
@@ -1850,9 +1850,36 @@ const app = {
             }).catch(() => {
                 el.classList.add("mobile-preview-scale");
                 ui.hideLoading();
-                ui.toast("Erro ao processar PDF.", "error");
+                ui.toast("Erro ao preparar impressão.", "error");
             });
         }, 100);
+    },
+
+    // --- LÓGICA DE DOWNLOAD EXATAMENTE COMO NO SEU PRIMEIRO CÓDIGO ---
+    downloadJustPDF() {
+        const el = document.getElementById("pdf-box");
+        
+        // Remove a redução visual do celular para o PDF sair em alta qualidade
+        const hadScale = el.classList.contains("mobile-preview-scale");
+        if (hadScale) el.classList.remove("mobile-preview-scale");
+
+        const badge = el.querySelector('.p-badge');
+        const filename = badge ? `${badge.innerText.replace(' #', '_')}.pdf` : `Documento_${Date.now()}.pdf`;
+        
+        const opt = { 
+            margin: [10, 10, 10, 10], 
+            filename: filename, 
+            image: { type: 'jpeg', quality: 0.98 }, 
+            html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollY: 0 }, 
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }, 
+            pagebreak: { mode: ['avoid-all', 'css', 'legacy'] } 
+        };
+        
+        // Força o download clássico do html2pdf que funcionou no seu app
+        html2pdf().set(opt).from(el).save().then(() => {
+            // Devolve o "zoom" pra tela do celular depois que baixar
+            if (hadScale) el.classList.add("mobile-preview-scale");
+        });
     },
 
     previewRentalReceipt(id) {
@@ -1902,7 +1929,7 @@ const app = {
         document.getElementById("pdf-box").className = "mobile-preview-scale";
         
         const btnConfirm = document.getElementById("btn-confirm-save-pdf");
-        btnConfirm.innerHTML = 'SALVAR E ABRIR PDF <i class="fas fa-external-link-alt"></i>';
+        btnConfirm.innerHTML = 'BAIXAR PDF <i class="fas fa-download"></i>';
         btnConfirm.onclick = () => { app.confirmAndSaveDoc(); };
         
         document.getElementById("preview").style.display = "flex";
@@ -1929,7 +1956,7 @@ const app = {
         document.getElementById("pdf-box").className = "mobile-preview-scale";
         
         const btnConfirm = document.getElementById("btn-confirm-save-pdf");
-        btnConfirm.innerHTML = 'SALVAR E ABRIR PDF <i class="fas fa-external-link-alt"></i>';
+        btnConfirm.innerHTML = 'BAIXAR PDF <i class="fas fa-download"></i>';
         btnConfirm.onclick = () => { app.confirmAndSaveDoc(); };
         
         document.getElementById("preview").style.display = "flex";
@@ -1955,7 +1982,7 @@ const app = {
         document.getElementById("pdf-box").className = "mobile-preview-scale";
         
         const btnConfirm = document.getElementById("btn-confirm-save-pdf");
-        btnConfirm.innerHTML = 'SALVAR E ABRIR PDF <i class="fas fa-external-link-alt"></i>';
+        btnConfirm.innerHTML = 'BAIXAR PDF <i class="fas fa-download"></i>';
         btnConfirm.onclick = () => { app.confirmAndSaveDoc(); };
         
         document.getElementById("preview").style.display = "flex";
@@ -1980,7 +2007,7 @@ const app = {
         document.getElementById("pdf-box").className = "mobile-preview-scale";
         
         const btnConfirm = document.getElementById("btn-confirm-save-pdf");
-        btnConfirm.innerHTML = 'SALVAR E ABRIR PDF <i class="fas fa-external-link-alt"></i>';
+        btnConfirm.innerHTML = 'BAIXAR PDF <i class="fas fa-download"></i>';
         btnConfirm.onclick = () => { app.confirmAndSaveDoc(); };
         
         document.getElementById("preview").style.display = "flex";
@@ -2111,7 +2138,7 @@ const app = {
         document.getElementById("pdf-box").className = "mobile-preview-scale";
         
         const btnConfirm = document.getElementById("btn-confirm-save-pdf");
-        btnConfirm.innerHTML = 'FINALIZAR E ABRIR PDF <i class="fas fa-external-link-alt"></i>';
+        btnConfirm.innerHTML = 'BAIXAR PDF <i class="fas fa-download"></i>';
         btnConfirm.onclick = () => { app.confirmAndSaveDoc(); };
         
         document.getElementById("preview").style.display = "flex";
@@ -2120,7 +2147,7 @@ const app = {
     confirmAndSaveDoc() {
         if (!this.currentDocState) return;
         
-        ui.showLoading("Salvando no Histórico...");
+        ui.showLoading("Salvando e Gerando PDF...");
         
         // Grava os dados da agenda, se houver
         if (this.currentDocState.eventData && !this.currentDocState.isReport) { 
@@ -2163,8 +2190,8 @@ const app = {
             }
             this.load(); 
             
-            // Em vez de forçar o download problemático, abre a aba do PDF nativa
-            this.openPDF();
+            // Chama o download clássico igualzinho ao primeiro código
+            this.downloadJustPDF();
             
             setTimeout(() => { ui.close(); }, 1500);
         };
