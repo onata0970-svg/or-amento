@@ -234,7 +234,7 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
 /* FORMATO A4 FIXO EM PIXELS (ZERA CHANCE DE 2 PÁGINAS SEM MOTIVO) */
 #pdf-box { 
     width: 794px; 
-    min-height: 1122px; /* Proporção exata do A4 a 96DPI */
+    min-height: 1040px; /* Reduzido levemente de 1122px para garantir o fit da 1 página */
     background: #ffffff; 
     padding: 40px; 
     color: #1e293b; 
@@ -808,6 +808,7 @@ select { cursor: pointer; appearance: none; background-image: url("data:image/sv
         <button class="btn" style="width:auto; background:transparent; color:#fff; font-size:13px; padding:12px 20px; border: 1px solid #64748b;" onclick="ui.close()"><i class="fas fa-arrow-left"></i> VOLTAR</button>
         <div class="preview-title"><i class="fas fa-file-alt"></i> VISUALIZADOR DE DOCUMENTO</div>
         <div style="display:flex; gap:10px">
+            <!-- Botão único e seguro focado no Download direto -->
             <button id="btn-confirm-save-pdf" class="btn btn-success" style="width:auto; font-size:13px; padding:12px 20px; box-shadow:0 4px 15px rgba(16,185,129,0.3)" onclick="app.confirmAndSaveDoc()"><i class="fas fa-file-pdf"></i> GERAR PDF</button>
         </div>
     </div>
@@ -1813,7 +1814,7 @@ const app = {
         
         // Ajusta o botão para NÃO gravar no DB de novo
         const btnConfirm = document.getElementById("btn-confirm-save-pdf");
-        btnConfirm.innerHTML = '<i class="fas fa-file-pdf"></i> GERAR PDF';
+        btnConfirm.innerHTML = '<i class="fas fa-file-pdf"></i> BAIXAR PDF';
         btnConfirm.onclick = () => { app.downloadJustPDF(); };
         
         document.getElementById("preview").style.display = "flex";
@@ -1832,24 +1833,26 @@ const app = {
         const filename = badge ? `${badge.innerText.replace(' #', '_')}.pdf` : `Documento_${Date.now()}.pdf`;
         
         const opt = { 
-            margin: [10, 10, 10, 10], 
+            margin: 0, 
             filename: filename, 
             image: { type: 'jpeg', quality: 0.98 }, 
-            html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollY: 0 }, 
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }, 
-            pagebreak: { mode: ['avoid-all', 'css', 'legacy'] } 
+            html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollY: 0, windowWidth: 794 }, 
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
         };
         
-        // Força o download clássico do html2pdf que funcionou no seu app
-        html2pdf().set(opt).from(el).save().then(() => {
-            // Devolve o "zoom" pra tela do celular depois que baixar
-            if (hadScale) el.classList.add("mobile-preview-scale");
-            ui.hideLoading();
-        }).catch(() => {
-            if (hadScale) el.classList.add("mobile-preview-scale");
-            ui.hideLoading();
-            ui.toast("Erro ao gerar o PDF.", "error");
-        });
+        // Força o download clássico do html2pdf
+        setTimeout(() => {
+            html2pdf().set(opt).from(el).save().then(() => {
+                // Devolve o "zoom" pra tela do celular depois que baixar
+                if (hadScale) el.classList.add("mobile-preview-scale");
+                ui.hideLoading();
+                ui.toast("Download finalizado com sucesso!");
+            }).catch(() => {
+                if (hadScale) el.classList.add("mobile-preview-scale");
+                ui.hideLoading();
+                ui.toast("Erro ao gerar o PDF.", "error");
+            });
+        }, 100); // pequeno timeout para dar tempo da tela de loading aparecer no celular
     },
 
     previewRentalReceipt(id) {
@@ -1971,7 +1974,7 @@ const app = {
         const c = this.config; const en = c.n || "Sua Empresa";
         const docNum = `RECIBO-${Math.floor(Math.random() * 8999) + 1000}`;
 
-        const html = `<div class="p-header p-break-avoid" style="border-bottom-color: var(--info)"><div class="p-brand-col"><h1 class="p-title">${en}</h1><p class="p-subtitle">Documento Interno de Pagamento</p></div><div class="p-meta-col"><div class="p-badge" style="background:var(--info); color:#fff">RECIBO RÁPIDO #${docNum}</div><div class="p-meta-row">Emissão: ${new Date().toLocaleDateString()}</div></div></div><div class="p-grid p-break-avoid"><div class="p-box" style="border-color:var(--info); width:48%;"><div class="p-box-head" style="background:#e0f2fe; color:#0369a1; border-color:var(--info)">DADOS DA FICHA</div><div class="p-box-content"><b>${p.nome}</b><br>Função: ${p.funcao}<br>Regime Base: ${p.tipoPgto} (${BRL.format(p.valor)})</div></div></div><table class="p-table" style="margin-top:20px"><thead><tr><th style="width:45%; background:var(--info); border-color:var(--info)">DESCRIÇÃO DA TAREFA / PERÍODO</th><th style="width:10%; text-align:center; background:var(--info); border-color:var(--info)">QTD</th><th style="width:20%; text-align:right; background:var(--info); border-color:var(--info)">VALOR BASE</th><th style="width:25%; text-align:right; background:var(--info); border-color:var(--info)">TOTAL DEVIDO</th></tr></thead><tbody><tr><td>Prestação de serviço calculada sobre ${q} ${labelExtenso.toLowerCase()}.</td><td style="text-align:center; font-weight:bold">${q}</td><td style="text-align:right">${BRL.format(p.valor)}</td><td style="text-align:right; font-weight:900; color:var(--info)">${BRL.format(totalCalc)}</td></tr></tbody></table><div class="p-total-section p-break-avoid"><div class="p-total-card" style="border-color:var(--info); background:#f0f9ff"><div class="p-total-label">VALOR A PAGAR:</div><div class="p-total-amount" style="color:var(--info)">${BRL.format(totalCalc)}</div></div></div><div class="p-sign-area p-break-avoid" style="margin-top:80px"><div class="p-sign-line">ASSINATURA RESPONSÁVEL</div><div class="p-sign-line">RECIBO / ASSINATURA (${p.nome})</div></div>`;
+        const html = `<div class="p-header p-break-avoid" style="border-bottom-color: var(--info)"><div class="p-brand-col"><h1 class="p-title">${en}</h1><p class="p-subtitle">Documento Interno de Payment</p></div><div class="p-meta-col"><div class="p-badge" style="background:var(--info); color:#fff">RECIBO RÁPIDO #${docNum}</div><div class="p-meta-row">Emissão: ${new Date().toLocaleDateString()}</div></div></div><div class="p-grid p-break-avoid"><div class="p-box" style="border-color:var(--info); width:48%;"><div class="p-box-head" style="background:#e0f2fe; color:#0369a1; border-color:var(--info)">DADOS DA FICHA</div><div class="p-box-content"><b>${p.nome}</b><br>Função: ${p.funcao}<br>Regime Base: ${p.tipoPgto} (${BRL.format(p.valor)})</div></div></div><table class="p-table" style="margin-top:20px"><thead><tr><th style="width:45%; background:var(--info); border-color:var(--info)">DESCRIÇÃO DA TAREFA / PERÍODO</th><th style="width:10%; text-align:center; background:var(--info); border-color:var(--info)">QTD</th><th style="width:20%; text-align:right; background:var(--info); border-color:var(--info)">VALOR BASE</th><th style="width:25%; text-align:right; background:var(--info); border-color:var(--info)">TOTAL DEVIDO</th></tr></thead><tbody><tr><td>Prestação de serviço calculada sobre ${q} ${labelExtenso.toLowerCase()}.</td><td style="text-align:center; font-weight:bold">${q}</td><td style="text-align:right">${BRL.format(p.valor)}</td><td style="text-align:right; font-weight:900; color:var(--info)">${BRL.format(totalCalc)}</td></tr></tbody></table><div class="p-total-section p-break-avoid"><div class="p-total-card" style="border-color:var(--info); background:#f0f9ff"><div class="p-total-label">VALOR A PAGAR:</div><div class="p-total-amount" style="color:var(--info)">${BRL.format(totalCalc)}</div></div></div><div class="p-sign-area p-break-avoid" style="margin-top:80px"><div class="p-sign-line">ASSINATURA RESPONSÁVEL</div><div class="p-sign-line">RECIBO / ASSINATURA (${p.nome})</div></div>`;
         this.currentDocState = { id: Date.now(), typeTitle: "RECIBO DE PRESTAÇÃO", numero: docNum, clientName: `Recibo: ${p.nome}`, total: totalCalc, html: html, isReport: true };
         document.getElementById("pdf-box").innerHTML = html;
         document.getElementById("pdf-box").className = "mobile-preview-scale";
