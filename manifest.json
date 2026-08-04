@@ -1,0 +1,22 @@
+{
+  "name": "Gestão de Campo PRO",
+  "short_name": "CampoPRO",
+  "description": "Aplicativo offline para laudos técnicos, agenda e histórico de clientes.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#1e293b",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/6821/6821002.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/6821/6821002.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
