@@ -101,9 +101,11 @@
         #toast.warning { background: #f59e0b; }
         #btn-instalar { display: none; position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); max-width: 300px; z-index: 1999; box-shadow: 0 4px 15px rgba(0,0,0,0.25); border-radius: 50px; white-space: nowrap; }
 
-        /* ESTILO DO PRÉVIEW DO PDF (Renderização nativa no HTML antes de converter) */
+        /* ESTILO DO PRÉVIEW DO PDF - CORRIGIDO O ZOOM */
         #pdf-wrapper { overflow: auto; background: #e2e8f0; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--border); }
-        #pdf-container { width: 794px; min-height: 1123px; background: white; padding: 40px; color: #1e293b; font-family: 'Inter', sans-serif; transform: scale(0.42); transform-origin: top left; margin-bottom: -60%; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .scale-wrapper { transform: scale(0.42); transform-origin: top left; margin-bottom: -60%; }
+        #pdf-container { width: 794px; min-height: 1123px; background: white; padding: 40px; color: #1e293b; font-family: 'Inter', sans-serif; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        
         .pdf-header { border-bottom: 3px solid var(--accent); padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; }
         .pdf-title { font-size: 24px; font-weight: 800; color: var(--primary); }
         .pdf-info-box { background: #f8fafc; border: 1px solid var(--border); padding: 15px; border-radius: 8px; margin-bottom: 20px; }
@@ -297,9 +299,14 @@
             <div style="margin-bottom: 20px; background: #fffbeb; padding: 10px; border-radius: 8px; border: 1px solid #fcd34d; font-size: 12px; color: #b45309;">
                 <i class="fas fa-info-circle"></i> O documento aparecerá abaixo para você conferir. Se estiver tudo certo, clique no botão para gerar o PDF e enviar.
             </div>
+            
+            <!-- AQUI FOI APLICADA A CORREÇÃO DA DIV DE ZOOM -->
             <div id="pdf-wrapper">
-                <div id="pdf-container"></div>
+                <div class="scale-wrapper">
+                    <div id="pdf-container"></div>
+                </div>
             </div>
+            
             <button class="btn btn-success" id="btn-final-pdf" onclick="pdf.executeDownloadOrShare()" style="margin-bottom: 20px;"><i class="fab fa-whatsapp"></i> Gerar e Enviar PDF</button>
         </div>
 
@@ -575,7 +582,6 @@
                     const tx = database.transaction("clientes", "readwrite");
                     const store = tx.objectStore("clientes");
                     
-                    // Só atualiza a tela quando a transação inteira terminar com sucesso
                     tx.oncomplete = () => {
                         ui.changeTab('view-clientes', document.querySelectorAll('.nav-item')[0], 'Clientes'); 
                     };
@@ -870,40 +876,31 @@
             previewEstoque() { this.generateEstoque(); },
 
             executeDownloadOrShare() {
-                ui.toast("Gerando PDF em tamanho real...", false, 3500);
+                ui.toast("Gerando PDF em alta resolução...", false, 3500);
                 
                 const element = document.getElementById('pdf-container');
 
-                const opt = { 
-                    margin: 10, 
-                    filename: this.currentFileName, 
-                    image: { type: 'jpeg', quality: 1 }, 
-                    html2canvas: { 
-                        scale: 2, 
-                        useCORS: true, 
-                        scrollY: 0, 
-                        scrollX: 0,
-                        windowWidth: 794,
-                        onclone: (clonedDoc) => {
-                            const clonedEl = clonedDoc.getElementById('pdf-container');
-                            clonedEl.style.transform = 'none'; 
-                            clonedEl.style.width = '794px';
-                            clonedEl.style.minHeight = '1123px';
-                            clonedEl.style.marginBottom = '0'; // Isso resolve o corte/achatamento do PDF
-                            clonedEl.style.boxShadow = 'none';
-                        }
-                    }, 
-                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
+                const opt = {
+                    margin: 0, 
+                    filename: this.currentFileName,
+                    image: { type: 'jpeg', quality: 1 },
+                    html2canvas: {
+                        scale: 2,
+                        useCORS: true,
+                        scrollY: 0,
+                        scrollX: 0
+                    },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
                 };
-                
+
                 html2pdf().set(opt).from(element).output('blob').then((blob) => {
                     const file = new File([blob], this.currentFileName, { type: 'application/pdf' });
-                    
+
                     if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                        navigator.share({ 
-                            title: 'Documento Técnico', 
-                            text: `Olá ${this.currentClientName || ''}! Segue em anexo o documento gerado pelo sistema.`, 
-                            files: [file] 
+                        navigator.share({
+                            title: 'Documento Técnico',
+                            text: `Olá ${this.currentClientName || ''}! Segue em anexo o documento.`,
+                            files: [file]
                         }).then(() => {
                             ui.toast("Compartilhado com sucesso!");
                         }).catch((err) => {
@@ -958,7 +955,6 @@
                         data[store] = e.target.result;
                         completed++;
                         
-                        // Quando todas as tabelas forem lidas, gera o arquivo
                         if(completed === stores.length) {
                             const blob = new Blob([JSON.stringify(data)], {type: "application/json"}); 
                             const url = URL.createObjectURL(blob);
