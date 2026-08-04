@@ -870,7 +870,7 @@
             previewEstoque() { this.generateEstoque(); },
 
             executeDownloadOrShare() {
-                ui.toast("Renderizando arquivo em alta qualidade...", false, 2000);
+                ui.toast("Gerando PDF de alta qualidade, aguarde...", false, 3500);
                 
                 const workerContainer = document.createElement('div');
                 workerContainer.innerHTML = this.currentHtmlContent;
@@ -879,9 +879,11 @@
                 workerContainer.style.background = 'white';
                 workerContainer.style.color = '#1e293b';
                 workerContainer.style.fontFamily = "'Inter', sans-serif";
+                
                 workerContainer.style.position = 'absolute';
-                workerContainer.style.left = '-9999px';
                 workerContainer.style.top = '0';
+                workerContainer.style.left = '0';
+                workerContainer.style.zIndex = '-9999';
                 document.body.appendChild(workerContainer);
 
                 const opt = { 
@@ -892,17 +894,20 @@
                     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
                 };
                 
-                html2pdf().set(opt).from(workerContainer).outputPdf('blob').then((blob) => {
+                html2pdf().set(opt).from(workerContainer).output('blob').then((blob) => {
                     document.body.removeChild(workerContainer); 
                     
                     const file = new File([blob], this.currentFileName, { type: 'application/pdf' });
                     
-                    if (this.currentClientName && navigator.canShare && navigator.canShare({ files: [file] })) {
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
                         navigator.share({ 
                             title: 'Documento Técnico', 
-                            text: `Olá ${this.currentClientName}! Segue em anexo o documento gerado pelo sistema.`, 
+                            text: `Olá ${this.currentClientName || ''}! Segue em anexo o documento gerado pelo sistema.`, 
                             files: [file] 
-                        }).then(()=>ui.toast("Compartilhado com sucesso!")).catch((err)=> {
+                        }).then(() => {
+                            ui.toast("Compartilhado com sucesso!");
+                        }).catch((err) => {
+                            console.log("Compartilhamento nativo abortado", err);
                             this.forceDownload(blob);
                         });
                     } else {
@@ -910,6 +915,7 @@
                     }
                 }).catch(err => {
                     if(document.body.contains(workerContainer)) document.body.removeChild(workerContainer);
+                    console.error(err);
                     ui.toast("Erro ao processar o arquivo PDF.", true);
                 });
             },
@@ -917,13 +923,18 @@
             forceDownload(blob) {
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
+                a.style.display = 'none';
                 a.href = url;
                 a.download = this.currentFileName;
                 document.body.appendChild(a);
                 a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                ui.toast("PDF baixado no aparelho!");
+                
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 300);
+                
+                ui.toast("PDF baixado no seu aparelho!");
             }
         };
 
