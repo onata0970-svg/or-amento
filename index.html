@@ -291,17 +291,15 @@
             </div>
         </div>
 
-        <!-- TELA: PRÉ-VISUALIZAÇÃO DO PDF (NOVO) -->
+        <!-- TELA: PRÉ-VISUALIZAÇÃO DO PDF -->
         <div id="view-preview" class="view">
             <button class="btn btn-outline" onclick="ui.goBackFromPreview()" style="margin-bottom: 20px; width: auto;"><i class="fas fa-arrow-left"></i> Voltar à Edição</button>
             <div style="margin-bottom: 20px; background: #fffbeb; padding: 10px; border-radius: 8px; border: 1px solid #fcd34d; font-size: 12px; color: #b45309;">
                 <i class="fas fa-info-circle"></i> O documento aparecerá abaixo para você conferir. Se estiver tudo certo, clique no botão para gerar o PDF e enviar.
             </div>
-            
             <div id="pdf-wrapper">
                 <div id="pdf-container"></div>
             </div>
-
             <button class="btn btn-success" id="btn-final-pdf" onclick="pdf.executeDownloadOrShare()" style="margin-bottom: 20px;"><i class="fab fa-whatsapp"></i> Gerar e Enviar PDF</button>
         </div>
 
@@ -336,7 +334,6 @@
 
         <!-- TELA: FINANCEIRO E AJUSTES -->
         <div id="view-financeiro" class="view">
-            
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                 <h3 style="font-size: 15px; color: var(--primary);"><i class="fas fa-calendar-alt"></i> Dashboard do Mês</h3>
                 <input type="month" id="fin-filtro-mes" style="width:auto; margin:0; padding:8px;" onchange="financeiro.renderDash()">
@@ -397,15 +394,9 @@
 
         const ui = {
             previousView: '',
-            changeView(viewId) { 
-                document.querySelectorAll('.view').forEach(el => el.classList.remove('active')); 
-                document.getElementById(viewId).classList.add('active'); 
-                window.scrollTo(0,0); 
-            },
+            changeView(viewId) { document.querySelectorAll('.view').forEach(el => el.classList.remove('active')); document.getElementById(viewId).classList.add('active'); window.scrollTo(0,0); },
             changeTab(viewId, el, title) {
-                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active')); 
-                el.classList.add('active'); document.getElementById('topbar-title').innerText = title; 
-                this.changeView(viewId);
+                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active')); el.classList.add('active'); document.getElementById('topbar-title').innerText = title; this.changeView(viewId);
                 if(viewId === 'view-clientes') app.renderClientes();
                 if(viewId === 'view-agenda') app.renderAgenda();
                 if(viewId === 'view-estoque') estoque.renderMateriais();
@@ -419,9 +410,7 @@
                 }
             },
             toast(msg, isWarning = false, duracao = 3500) { const t = document.getElementById('toast'); t.innerText = msg; t.className = isWarning ? 'warning show' : 'show'; setTimeout(() => t.className = '', duracao); },
-            goBackFromPreview() {
-                this.changeView(this.previousView);
-            }
+            goBackFromPreview() { this.changeView(this.previousView); }
         };
 
         let deferredPrompt; const btnInstalar = document.getElementById('btn-instalar');
@@ -580,6 +569,7 @@
                 if (editId) { tx.get(parseInt(editId)).onsuccess = (e) => { let c = e.target.result; c.nome = nome; c.tel = tel; c.end = end; c.equip = equip; tx.put(c).onsuccess = () => { ui.toast("Cliente atualizado!"); ui.changeTab('view-clientes', document.querySelectorAll('.nav-item')[0], 'Clientes'); }; }; } 
                 else { tx.add({ nome, tel, end, equip, cofre: '' }).onsuccess = () => { ui.toast("Cliente cadastrado!"); ui.changeTab('view-clientes', document.querySelectorAll('.nav-item')[0], 'Clientes'); }; }
             },
+            deleteCliente(id) { if(!confirm("Remover permanentemente?")) return; database.transaction("clientes", "readwrite").objectStore("clientes").delete(id).onsuccess = () => { ui.toast("Removido."); ui.changeTab('view-clientes', document.querySelectorAll('.nav-item')[0], 'Clientes'); }; },
             saveAgendamento() {
                 const clienteId = parseInt(document.getElementById('ag-cliente').value); const data = document.getElementById('ag-data').value; const hora = document.getElementById('ag-hora').value; const desc = document.getElementById('ag-desc').value; const materiais = document.getElementById('ag-materiais').value; const editId = document.getElementById('ag-id-edit').value;
                 if(!clienteId || !data) return ui.toast("Cliente e Data obrigatórios!", true);
@@ -751,13 +741,12 @@
             removePhoto(index) { this.tempPhotos.splice(index, 1); this.renderPhotoPreview(); }
         };
 
-        // --- SISTEMA DE PDF VISÍVEL E COMPARTILHAMENTO ---
         const pdf = {
             currentFileName: '',
             currentClientPhone: '',
             currentClientName: '',
+            currentHtmlContent: '',
             
-            // Orçamento Prévio renderização no Preview
             previewOrcamento(orcId) {
                 ui.previousView = 'view-orcamento';
                 database.transaction(["orcamentos", "clientes"], "readonly").objectStore("orcamentos").get(orcId).onsuccess = (e) => {
@@ -774,15 +763,15 @@
                         
                         const html = `<div class="pdf-header"><div><div class="pdf-title">Proposta Comercial / Orçamento</div><div style="color:#64748b; margin-top:5px;">Serviços Técnicos Profissionais</div></div><div style="text-align:right"><div style="background:var(--info); color:white; padding:5px 10px; border-radius:4px; font-weight:bold; font-size:14px; display:inline-block;">ORC-${Math.floor(Math.random() * 8999) + 1000}</div><div style="font-size:12px; margin-top:5px; color:#64748b;">Data Emissão: ${dataF}</div></div></div><div class="pdf-info-box"><div style="font-size:10px; font-weight:bold; color:var(--info); text-transform:uppercase; margin-bottom:5px;">Emissor</div><div style="font-size:16px; font-weight:bold; color:var(--primary);">${configEmpresa.nome}</div><div style="font-size:13px; color:#334155;">CNPJ/CPF: ${configEmpresa.doc} | Tel: ${configEmpresa.tel}</div></div><div class="pdf-info-box"><div style="font-size:10px; font-weight:bold; color:var(--info); text-transform:uppercase; margin-bottom:5px;">Aos Cuidados de</div><div style="font-size:16px; font-weight:bold; color:var(--primary);">${cliente.nome}</div><div style="font-size:13px; color:#334155; margin-top:5px;">${cliente.end || ''}</div></div><table class="table-pdf"><thead><tr><th>Descrição</th><th style="text-align:center">Qtd</th><th style="text-align:right">Valor Unit.</th><th style="text-align:right">Total</th></tr></thead><tbody>${linhasTabela}</tbody></table><div style="margin-top:20px; text-align:right; font-size:18px; font-weight:900; color:var(--info);">Valor Total do Orçamento: ${BRL.format(orc.total)}</div><div style="margin-top:40px; text-align:center; font-size:11px; color:#64748b; border-top:1px dashed #cbd5e1; padding-top:10px; page-break-inside: avoid;">Validade desta proposta: 15 dias.</div>`;
                         
+                        this.currentHtmlContent = html;
                         document.getElementById('pdf-container').innerHTML = html;
                         document.getElementById('btn-final-pdf').innerHTML = '<i class="fab fa-whatsapp"></i> Gerar PDF e Enviar Orçamento';
                         ui.changeView('view-preview');
                     };
                 };
             },
-            previewOrcamento_by_Id(id) { this.previewOrcamento(id); }, // Helper para a timeline
+            previewOrcamento_by_Id(id) { this.previewOrcamento(id); }, 
             
-            // Laudo renderização no Preview
             previewLaudo(laudoId) {
                 ui.previousView = 'view-novo-laudo';
                 database.transaction(["laudos", "clientes"], "readonly").objectStore("laudos").get(laudoId).onsuccess = (e) => {
@@ -803,12 +792,14 @@
 
                         const html = `<div class="pdf-header"><div><div class="pdf-title">Relatório de Serviço Técnico</div><div style="color:#64748b; margin-top:5px;">Documento de finalização e evidência técnica</div></div><div style="text-align:right"><div style="background:var(--primary); color:white; padding:5px 10px; border-radius:4px; font-weight:bold; font-size:14px; display:inline-block;">OS-${Math.floor(Math.random() * 8999) + 1000}</div><div style="font-size:12px; margin-top:5px; color:#64748b;">Data Execução: ${dataF}</div></div></div><div class="pdf-grid"><div class="pdf-info-box"><div style="font-size:10px; font-weight:bold; color:var(--accent); text-transform:uppercase; margin-bottom:5px;">Empresa / Técnico</div><div style="font-size:16px; font-weight:bold; color:var(--primary);">${configEmpresa.nome}</div><div style="font-size:13px; color:#334155;">CNPJ/CPF: ${configEmpresa.doc}<br>Tel: ${configEmpresa.tel}</div></div><div class="pdf-info-box"><div style="font-size:10px; font-weight:bold; color:var(--accent); text-transform:uppercase; margin-bottom:5px;">Dados do Cliente / Local</div><div style="font-size:16px; font-weight:bold; color:var(--primary);">${cliente.nome}</div><div style="font-size:13px; color:#334155;">${cliente.end || ''}<br>Tel: ${cliente.tel || 'N/A'}</div>${cliente.equip ? `<div style="font-size:12px; color:#64748b; margin-top:5px;"><b>Equip:</b> ${cliente.equip}</div>` : ''}</div></div><div style="font-size:12px; font-weight:bold; color:var(--primary); text-transform:uppercase; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:5px;">Descrição Técnica do Serviço Realizado:</div>${checkHtml}${matHtml}<div style="font-size:13px; line-height:1.6; color:#334155; text-align:justify; white-space:pre-wrap;">${laudo.desc}</div>${valorHtml}${fotosHtml ? `<div style="margin-top:30px; page-break-inside: avoid;"><div style="font-size:12px; font-weight:bold; color:var(--primary); text-transform:uppercase; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:5px;">Evidências Fotográficas:</div><div class="pdf-grid">${fotosHtml}</div></div>` : ''}${assHtml}<div style="margin-top:40px; text-align:center; font-size:10px; color:#94a3b8; border-top:1px dashed #cbd5e1; padding-top:10px; page-break-inside: avoid;">Documento gerado eletronicamente para registro histórico de atendimento.</div>`;
                         
+                        this.currentHtmlContent = html; 
                         document.getElementById('pdf-container').innerHTML = html;
                         document.getElementById('btn-final-pdf').innerHTML = '<i class="fab fa-whatsapp"></i> Gerar PDF e Enviar Laudo';
                         ui.changeView('view-preview');
                     };
                 };
             },
+            previewLaudo_e_Share(id) { this.previewLaudo(id); },
 
             generateEstoque() {
                 ui.previousView = 'view-estoque';
@@ -817,10 +808,11 @@
                     let totalGeral = 0; let linhasTabela = materiais.map(m => { totalGeral += (m.qtd * m.preco); return `<tr><td>${m.nome}</td><td style="text-align:center">${m.qtd}</td><td style="text-align:right">${BRL.format(m.preco)}</td><td style="text-align:right; font-weight:bold;">${BRL.format(m.qtd * m.preco)}</td></tr>`; }).join('');
                     
                     this.currentFileName = `Estoque_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.pdf`;
-                    this.currentClientName = ''; // Nao vai ter zap direto
+                    this.currentClientName = ''; 
                     
                     const html = `<div class="pdf-header"><div><div class="pdf-title">Relatório de Catálogo e Materiais</div><div style="color:#64748b; margin-top:5px;">Controle Interno de Ativos da ${configEmpresa.nome}</div></div><div style="text-align:right"><div style="background:var(--primary); color:white; padding:5px 10px; border-radius:4px; font-weight:bold; font-size:14px; display:inline-block;">INVENTÁRIO</div><div style="font-size:12px; margin-top:5px; color:#64748b;">Data: ${new Date().toLocaleDateString('pt-BR')}</div></div></div><table class="table-pdf"><thead><tr><th>Item / Serviço</th><th style="text-align:center">Qtd</th><th style="text-align:right">Valor Unit.</th><th style="text-align:right">Valor Total</th></tr></thead><tbody>${linhasTabela}</tbody></table><div style="margin-top:20px; text-align:right; font-size:18px; font-weight:900; color:var(--primary);">Total Patrimonial: ${BRL.format(totalGeral)}</div>`;
                     
+                    this.currentHtmlContent = html;
                     document.getElementById('pdf-container').innerHTML = html;
                     document.getElementById('btn-final-pdf').innerHTML = '<i class="fas fa-download"></i> Baixar PDF do Estoque';
                     ui.changeView('view-preview');
@@ -829,19 +821,60 @@
             previewEstoque() { this.generateEstoque(); },
 
             executeDownloadOrShare() {
-                ui.toast("Criando arquivo...", false, 1500);
-                const container = document.getElementById('pdf-container');
-                const opt = { margin: 10, filename: this.currentFileName, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
+                ui.toast("Renderizando arquivo em alta qualidade...", false, 2000);
                 
-                html2pdf().set(opt).from(container).outputPdf('blob').then((blob) => {
+                const workerContainer = document.createElement('div');
+                workerContainer.innerHTML = this.currentHtmlContent;
+                workerContainer.style.width = '794px'; 
+                workerContainer.style.padding = '40px';
+                workerContainer.style.background = 'white';
+                workerContainer.style.color = '#1e293b';
+                workerContainer.style.fontFamily = "'Inter', sans-serif";
+                workerContainer.style.position = 'absolute';
+                workerContainer.style.left = '-9999px';
+                workerContainer.style.top = '0';
+                document.body.appendChild(workerContainer);
+
+                const opt = { 
+                    margin: 10, 
+                    filename: this.currentFileName, 
+                    image: { type: 'jpeg', quality: 0.98 }, 
+                    html2canvas: { scale: 2, useCORS: true, scrollY: 0, scrollX: 0 }, 
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
+                };
+                
+                html2pdf().set(opt).from(workerContainer).outputPdf('blob').then((blob) => {
+                    document.body.removeChild(workerContainer); 
+                    
                     const file = new File([blob], this.currentFileName, { type: 'application/pdf' });
                     
                     if (this.currentClientName && navigator.canShare && navigator.canShare({ files: [file] })) {
-                        navigator.share({ title: 'Documento PDF', text: `Olá ${this.currentClientName}! Segue em anexo o documento gerado pelo sistema.`, files: [file] }).then(()=>ui.toast("Compartilhado!")).catch(()=>html2pdf().set(opt).from(container).save().then(()=>ui.toast("Baixado!")));
+                        navigator.share({ 
+                            title: 'Documento Técnico', 
+                            text: `Olá ${this.currentClientName}! Segue em anexo o documento gerado pelo sistema.`, 
+                            files: [file] 
+                        }).then(()=>ui.toast("Compartilhado com sucesso!")).catch((err)=> {
+                            this.forceDownload(blob);
+                        });
                     } else {
-                        html2pdf().set(opt).from(container).save().then(()=>ui.toast("PDF baixado no aparelho!"));
+                        this.forceDownload(blob);
                     }
+                }).catch(err => {
+                    if(document.body.contains(workerContainer)) document.body.removeChild(workerContainer);
+                    ui.toast("Erro ao processar o arquivo PDF.", true);
                 });
+            },
+
+            forceDownload(blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = this.currentFileName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                ui.toast("PDF baixado no aparelho!");
             }
         };
 
