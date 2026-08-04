@@ -575,6 +575,7 @@
                     const tx = database.transaction("clientes", "readwrite");
                     const store = tx.objectStore("clientes");
                     
+                    // Só atualiza a tela quando a transação inteira terminar com sucesso
                     tx.oncomplete = () => {
                         ui.changeTab('view-clientes', document.querySelectorAll('.nav-item')[0], 'Clientes'); 
                     };
@@ -869,27 +870,27 @@
             previewEstoque() { this.generateEstoque(); },
 
             executeDownloadOrShare() {
-                ui.toast("Gerando PDF de alta qualidade, aguarde...", false, 3500);
+                ui.toast("Gerando PDF em tamanho real...", false, 3500);
                 
-                // Em vez de criar algo escondido, pegamos o elemento exato que está renderizado e visível na tela
                 const element = document.getElementById('pdf-container');
 
                 const opt = { 
                     margin: 10, 
                     filename: this.currentFileName, 
-                    image: { type: 'jpeg', quality: 0.98 }, 
+                    image: { type: 'jpeg', quality: 1 }, 
                     html2canvas: { 
                         scale: 2, 
                         useCORS: true, 
                         scrollY: 0, 
                         scrollX: 0,
-                        // Essa função onclone age na cópia interna que a biblioteca faz para gerar o PDF.
-                        // Aqui mandamos ela ignorar o zoom de escala 0.42 que usamos apenas para a tela do celular.
+                        windowWidth: 794,
                         onclone: (clonedDoc) => {
                             const clonedEl = clonedDoc.getElementById('pdf-container');
                             clonedEl.style.transform = 'none'; 
+                            clonedEl.style.width = '794px';
+                            clonedEl.style.minHeight = '1123px';
+                            clonedEl.style.marginBottom = '0'; // Isso resolve o corte/achatamento do PDF
                             clonedEl.style.boxShadow = 'none';
-                            clonedEl.style.margin = '0';
                         }
                     }, 
                     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
@@ -957,6 +958,7 @@
                         data[store] = e.target.result;
                         completed++;
                         
+                        // Quando todas as tabelas forem lidas, gera o arquivo
                         if(completed === stores.length) {
                             const blob = new Blob([JSON.stringify(data)], {type: "application/json"}); 
                             const url = URL.createObjectURL(blob);
