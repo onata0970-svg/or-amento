@@ -2,125 +2,90 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <!-- Viewport estrito para mobile: proíbe zoom manual e redimensionamento -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Gestão de Campo & Laudos</title>
     
-    <!-- Configurações PWA -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1e293b">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-    <!-- Bibliotecas Necessárias -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
-        :root {
-            --primary: #1e293b;
-            --accent: #2563eb;
-            --success: #16a34a;
-            --danger: #dc2626;
-            --bg: #f8fafc;
-            --card: #ffffff;
-            --text: #334155;
-            --border: #e2e8f0;
-            --app-width: 480px; /* Largura máxima simulando celular */
-        }
-
+        :root { --primary: #1e293b; --accent: #2563eb; --success: #16a34a; --danger: #dc2626; --warning: #f59e0b; --bg: #f8fafc; --card: #ffffff; --text: #334155; --border: #e2e8f0; --app-width: 480px; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        
-        /* Fundo escuro fora do app (para desktop/tablet) */
-        body { 
-            background-color: #cbd5e1; 
-            color: var(--text); 
-            display: flex; 
-            justify-content: center; 
-            min-height: 100vh;
-        }
-
-        /* Container que simula a tela do celular */
-        .app-container {
-            width: 100%;
-            max-width: var(--app-width);
-            background-color: var(--bg);
-            min-height: 100vh;
-            position: relative;
-            padding-top: 60px;
-            padding-bottom: 80px; /* Espaço para o menu inferior */
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-            overflow-x: hidden;
-            word-break: break-word; /* Evita rolagem horizontal */
-        }
-
-        /* Top Bar fixada dentro do app */
+        body { background-color: #cbd5e1; color: var(--text); display: flex; justify-content: center; min-height: 100vh; }
+        .app-container { width: 100%; max-width: var(--app-width); background-color: var(--bg); min-height: 100vh; position: relative; padding-top: 60px; padding-bottom: 80px; box-shadow: 0 0 20px rgba(0,0,0,0.1); overflow-x: hidden; word-break: break-word; }
         .topbar { position: fixed; top: 0; left: 0; right: 0; max-width: var(--app-width); margin: 0 auto; height: 60px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; z-index: 1000; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         
-        /* Bottom Navigation fixada dentro do app */
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; max-width: var(--app-width); margin: 0 auto; height: 65px; background: white; border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 1000; padding-bottom: env(safe-area-inset-bottom); }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: #94a3b8; font-size: 12px; cursor: pointer; width: 33%; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #94a3b8; font-size: 10px; cursor: pointer; width: 20%; }
         .nav-item i { font-size: 20px; margin-bottom: 4px; transition: 0.2s; }
         .nav-item.active { color: var(--accent); font-weight: 600; }
         .nav-item.active i { transform: scale(1.1); }
 
-        /* Containers das Telas */
         .view { display: none; padding: 20px; animation: fadeIn 0.3s ease; }
         .view.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Cards & Botões */
         .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .btn { padding: 14px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; transition: 0.2s; font-size: 15px; -webkit-appearance: none; }
         .btn:active { transform: scale(0.98); }
         .btn-primary { background: var(--accent); color: white; }
         .btn-success { background: var(--success); color: white; }
+        .btn-warning { background: var(--warning); color: white; }
         .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
         
-        /* Inputs otimizados para Mobile (Fonte 16px evita zoom no iOS) */
-        input, select, textarea { 
-            width: 100%; 
-            padding: 14px 12px; 
-            border: 1px solid var(--border); 
-            border-radius: 8px; 
-            margin-bottom: 15px; 
-            font-size: 16px; /* 16px é obrigatório para não dar zoom no iPhone */
-            background: #f8fafc; 
-            outline: none;
-            -webkit-appearance: none; /* Remove estilo nativo estranho do iOS */
-        }
+        input, select, textarea { width: 100%; padding: 14px 12px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 15px; font-size: 16px; background: #f8fafc; outline: none; -webkit-appearance: none; }
         input:focus, select:focus, textarea:focus { border-color: var(--accent); background: #fff; box-shadow: 0 0 0 2px rgba(37,99,235,0.1); }
         label { font-size: 13px; font-weight: 600; margin-bottom: 6px; display: block; color: #64748b; }
-
-        /* Estilo Select específico para aparecer setinha */
         select { background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 10px center; background-size: 16px; }
+        .search-input { background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3ccircle cx='11' cy='11' r='8'%3e%3c/circle%3e%3cline x1='21' y1='21' x2='16.65' y2='16.65'%3e%3c/line%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: left 12px center; background-size: 18px; padding-left: 40px; }
 
-        /* Lists */
         .list-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding: 12px 0; cursor: pointer; }
         .list-row:last-child { border-bottom: none; }
         .title { font-weight: 600; color: var(--primary); font-size: 15px; margin-bottom: 4px; }
         .subtitle { font-size: 12px; color: #64748b; }
         
-        /* Grid de Fotos Mobile */
         .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
         .photo-item { position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
         .photo-item img { width: 100%; height: 100%; object-fit: cover; }
         .btn-remove-photo { position: absolute; top: 4px; right: 4px; background: rgba(220, 38, 38, 0.9); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; }
 
-        /* Timeline do Laudo */
         .timeline-card { border-left: 4px solid var(--accent); background: white; margin-bottom: 15px; padding: 15px; border-radius: 8px; border-top: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
         .timeline-date { font-size: 11px; font-weight: bold; color: var(--accent); margin-bottom: 5px; text-transform: uppercase; }
 
-        /* Toast / Alertas (Centralizados no App Wrapper) */
+        .pill-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
+        .pill { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 8px 12px; border-radius: 50px; font-size: 12px; font-weight: 600; color: #64748b; cursor: pointer; transition: 0.2s; user-select: none; }
+        .pill.active { background: #eff6ff; border-color: var(--accent); color: var(--accent); }
+        
+        .signature-pad { border: 1px dashed var(--accent); background: #f8fafc; border-radius: 8px; width: 100%; height: 150px; touch-action: none; margin-bottom: 10px; }
+        .btn-mic { background: #eff6ff; color: var(--accent); border: none; border-radius: 8px; padding: 8px 12px; font-size: 16px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+        .btn-mic.listening { background: #fee2e2; color: var(--danger); animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
+        /* Termômetro MEI */
+        .mei-bar-bg { width: 100%; height: 16px; background: #e2e8f0; border-radius: 8px; overflow: hidden; margin: 10px 0; }
+        .mei-bar-fill { height: 100%; background: var(--success); width: 0%; transition: width 1s ease-out; }
+
+        /* Biblioteca Técnica (Galeria) */
+        .lib-section { background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
+        .lib-header { padding: 12px 15px; font-weight: 600; color: var(--primary); display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: #fff; }
+        .lib-content { padding: 15px; font-size: 13px; color: var(--text); border-top: 1px solid var(--border); display: none; }
+        .lib-content.show { display: block; }
+        .lib-table { width: 100%; border-collapse: collapse; margin-top: 5px; }
+        .lib-table th { background: var(--primary); color: white; padding: 8px; text-align: left; font-size: 11px; text-transform: uppercase; }
+        .lib-table td { padding: 8px; border-bottom: 1px solid var(--border); font-size: 12px; }
+
         #toast { position: fixed; top: 70px; right: 20px; left: 20px; max-width: calc(var(--app-width) - 40px); margin: 0 auto; background: var(--primary); color: white; padding: 15px; border-radius: 8px; text-align: center; font-weight: 600; z-index: 2000; transform: translateY(-150%); transition: 0.3s; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
         #toast.show { transform: translateY(0); }
         #toast.warning { background: #f59e0b; }
-
-        /* Botão Instalar Centralizado */
         #btn-instalar { display: none; position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); max-width: 300px; z-index: 1999; box-shadow: 0 4px 15px rgba(0,0,0,0.25); border-radius: 50px; white-space: nowrap; }
 
-        /* Estilo Interno do PDF - Mantém 794px fixo (A4) independentemente da tela mobile */
         #pdf-container { position: absolute; left: -9999px; top: 0; width: 794px; background: white; padding: 40px; color: #1e293b; font-family: 'Inter', sans-serif; }
         .pdf-header { border-bottom: 3px solid var(--accent); padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; }
         .pdf-title { font-size: 24px; font-weight: 800; color: var(--primary); }
@@ -128,6 +93,9 @@
         .pdf-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px; page-break-inside: avoid;}
         .pdf-img-box { border: 1px solid var(--border); border-radius: 8px; padding: 5px; text-align: center; }
         .pdf-img-box img { max-width: 100%; height: 250px; object-fit: contain; border-radius: 4px; }
+        .table-pdf { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .table-pdf th { background: var(--primary); color: white; padding: 10px; text-align: left; font-size: 12px; }
+        .table-pdf td { border-bottom: 1px solid var(--border); padding: 10px; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -135,61 +103,86 @@
     <div class="app-container">
 
         <div class="topbar" id="topbar-title">Clientes</div>
-        
         <div id="toast">Notificação</div>
 
-        <!-- BOTÃO DE INSTALAÇÃO FLUTUANTE PWA -->
-        <button id="btn-instalar" class="btn btn-primary">
-            <i class="fas fa-download"></i> Instalar Aplicativo
-        </button>
+        <!-- BOTÃO DE INSTALAÇÃO -->
+        <button id="btn-instalar" class="btn btn-primary"><i class="fas fa-download"></i> Instalar App</button>
 
         <!-- TELA: LISTA DE CLIENTES -->
         <div id="view-clientes" class="view active">
-            <button class="btn btn-primary" onclick="ui.changeView('view-novo-cliente')" style="margin-bottom: 20px;">
-                <i class="fas fa-plus"></i> Novo Cliente
-            </button>
-            <div class="card" style="padding:0">
-                <div id="lista-clientes-container" style="padding: 10px 15px;"></div>
-            </div>
+            <button class="btn btn-primary" onclick="ui.changeView('view-novo-cliente')" style="margin-bottom: 15px;"><i class="fas fa-plus"></i> Novo Cliente</button>
+            <input type="text" id="search-cli" class="search-input" placeholder="Buscar por nome..." oninput="app.buscarCliente()">
+            <div class="card" style="padding:0; margin-top: 5px;"><div id="lista-clientes-container" style="padding: 10px 15px;"></div></div>
         </div>
 
         <!-- TELA: NOVO CLIENTE -->
         <div id="view-novo-cliente" class="view">
             <button class="btn btn-outline" onclick="ui.changeView('view-clientes')" style="margin-bottom: 20px; width: auto;"><i class="fas fa-arrow-left"></i> Voltar</button>
             <div class="card">
-                <label>Nome Completo / Empresa</label>
-                <input type="text" id="cli-nome" placeholder="Ex: João Silva">
-                <label>Telefone / WhatsApp</label>
-                <input type="tel" id="cli-tel" placeholder="(00) 00000-0000" inputmode="numeric">
-                <label>Endereço / Local do Serviço</label>
-                <input type="text" id="cli-end" placeholder="Rua, Número, Bairro">
+                <label>Nome Completo / Empresa</label><input type="text" id="cli-nome" placeholder="Ex: João Silva">
+                <label>Telefone / WhatsApp</label><input type="tel" id="cli-tel" placeholder="(00) 00000-0000" inputmode="numeric" oninput="this.value = app.maskPhone(this.value)">
+                <label>Endereço / Local do Serviço</label><input type="text" id="cli-end" placeholder="Rua, Número, Bairro">
+                <label>Equipamentos no Local (Opcional)</label><textarea id="cli-equip" rows="2" placeholder="Ex: Ar 60k BTUs, Painel Trifásico..."></textarea>
                 <button class="btn btn-primary" onclick="db.saveCliente()">Salvar Cliente</button>
             </div>
         </div>
 
-        <!-- TELA: PERFIL DO CLIENTE (Histórico e Laudos) -->
+        <!-- TELA: PERFIL DO CLIENTE -->
         <div id="view-perfil-cliente" class="view">
             <button class="btn btn-outline" onclick="ui.changeView('view-clientes')" style="margin-bottom: 20px; width: auto;"><i class="fas fa-arrow-left"></i> Voltar</button>
-            <div class="card" id="perfil-header" style="background: var(--primary); color: white;">
-                <!-- Preenchido via JS -->
-            </div>
+            <div class="card" id="perfil-header" style="background: var(--primary); color: white; position: relative;"></div>
             
             <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                <button class="btn btn-success" onclick="app.openNovoAgendamento()"><i class="fas fa-calendar-plus"></i> Agendar</button>
-                <button class="btn btn-primary" onclick="app.openNovoLaudo()"><i class="fas fa-camera"></i> Novo Laudo</button>
+                <button class="btn btn-success" onclick="app.openNovoAgendamento()" style="flex:1"><i class="fas fa-calendar-plus"></i> Agendar</button>
+                <button class="btn btn-primary" onclick="app.openNovoLaudo()" style="flex:1"><i class="fas fa-file-signature"></i> Laudo</button>
+                <div id="btn-whats-container"></div>
             </div>
 
             <h3 style="font-size: 14px; color: var(--text); margin-bottom: 10px; text-transform: uppercase;">Histórico de Serviços</h3>
-            <div id="historico-laudos-container">
-                <!-- Laudos renderizados aqui -->
+            <div id="historico-laudos-container"></div>
+        </div>
+
+        <!-- TELA: ESTOQUE -->
+        <div id="view-estoque" class="view">
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <button class="btn btn-primary" onclick="ui.changeView('view-novo-material')" style="flex:1;"><i class="fas fa-plus"></i> Manual</button>
+                <button class="btn btn-warning" onclick="ui.changeView('view-leitor-nota')" style="flex:1;"><i class="fas fa-camera"></i> Ler Nota</button>
+            </div>
+            <button class="btn btn-outline" style="margin-bottom: 15px; border-color: var(--danger); color: var(--danger);" onclick="pdf.generateEstoque()"><i class="fas fa-file-pdf"></i> Gerar PDF do Estoque</button>
+            <input type="text" id="search-mat" class="search-input" placeholder="Buscar material..." oninput="estoque.buscarMaterial()">
+            <div class="card" style="padding:0; margin-top: 5px;"><div id="lista-materiais-container" style="padding: 10px 15px;"></div></div>
+        </div>
+
+        <!-- TELA: NOVO MATERIAL -->
+        <div id="view-novo-material" class="view">
+            <button class="btn btn-outline" onclick="ui.changeView('view-estoque')" style="margin-bottom: 20px; width: auto;"><i class="fas fa-arrow-left"></i> Cancelar</button>
+            <div class="card">
+                <label>Nome do Material / Ferramenta</label><input type="text" id="mat-nome" placeholder="Ex: Contatora Trifásica, Gás R410a...">
+                <label>Quantidade em Estoque</label><input type="number" id="mat-qtd" placeholder="0" inputmode="numeric">
+                <label>Valor Unitário (R$)</label><input type="number" id="mat-preco" placeholder="0.00" inputmode="decimal">
+                <button class="btn btn-primary" onclick="db.saveMaterial()">Salvar no Estoque</button>
+            </div>
+        </div>
+
+        <!-- TELA: LEITOR NOTA -->
+        <div id="view-leitor-nota" class="view">
+            <button class="btn btn-outline" onclick="ui.changeView('view-estoque')" style="margin-bottom: 20px; width: auto;"><i class="fas fa-arrow-left"></i> Voltar</button>
+            <div class="card" style="border-color: var(--warning);">
+                <h3 style="font-size: 15px; color: var(--warning); margin-bottom: 10px;"><i class="fas fa-robot"></i> Inteligência Artificial</h3>
+                <p style="font-size: 12px; color: #64748b; margin-bottom: 15px;">Tire uma foto bem iluminada da sua nota fiscal. O sistema vai extrair os textos e valores.</p>
+                <input type="file" accept="image/*" capture="environment" onchange="ocr.lerNota(this)" style="background: white; padding: 10px; border-color: var(--warning);">
+                <div id="ocr-loading" style="display: none; text-align: center; padding: 20px; color: var(--warning); font-weight: 600;"><i class="fas fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 10px;"></i><br>Analisando imagem...</div>
+                <div id="ocr-resultados" style="display: none; margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--border);">
+                    <label>Texto Extraído Bruto:</label><textarea id="ocr-raw-text" rows="4" style="font-size: 12px;"></textarea>
+                    <label>Possíveis Itens Encontrados:</label><div id="ocr-itens-list" style="margin-bottom: 15px;"></div>
+                    <button class="btn btn-success" onclick="ocr.salvarItensLidos()"><i class="fas fa-save"></i> Enviar para Estoque</button>
+                </div>
             </div>
         </div>
 
         <!-- TELA: AGENDA -->
         <div id="view-agenda" class="view">
-            <button class="btn btn-primary" onclick="app.openNovoAgendamento(null)" style="margin-bottom: 20px;">
-                <i class="fas fa-plus"></i> Novo Agendamento
-            </button>
+            <button class="btn btn-primary" onclick="app.openNovoAgendamento(null)" style="margin-bottom: 20px;"><i class="fas fa-plus"></i> Novo Agendamento</button>
             <div id="lista-agenda-container"></div>
         </div>
 
@@ -197,44 +190,172 @@
         <div id="view-novo-agendamento" class="view">
             <button class="btn btn-outline" onclick="ui.changeView('view-agenda')" style="margin-bottom: 20px; width: auto;"><i class="fas fa-arrow-left"></i> Cancelar</button>
             <div class="card">
-                <label>Vincular a qual Cliente?</label>
-                <select id="ag-cliente"></select>
-                
-                <label>Data do Serviço</label>
-                <input type="date" id="ag-data">
-                
-                <label>Hora Prevista</label>
-                <input type="time" id="ag-hora">
-                
-                <label>O que será feito? (Breve descrição)</label>
-                <textarea id="ag-desc" rows="2" placeholder="Ex: Manutenção preventiva..."></textarea>
-                
+                <label>Cliente</label><select id="ag-cliente"></select>
+                <label>Data</label><input type="date" id="ag-data">
+                <label>Hora</label><input type="time" id="ag-hora">
+                <label>O que será feito?</label><textarea id="ag-desc" rows="2"></textarea>
+                <label>Ferramentas / Materiais (separados por vírgula)</label><textarea id="ag-materiais" rows="2"></textarea>
                 <button class="btn btn-primary" onclick="db.saveAgendamento()">Confirmar Agendamento</button>
             </div>
         </div>
 
-        <!-- TELA: CRIAR LAUDO (Fotos e Descrição) -->
+        <!-- TELA: CRIAR LAUDO -->
         <div id="view-novo-laudo" class="view">
             <button class="btn btn-outline" onclick="ui.changeView('view-perfil-cliente')" style="margin-bottom: 20px; width: auto;"><i class="fas fa-arrow-left"></i> Cancelar</button>
-            
             <div class="card" style="border-left: 4px solid var(--success);">
-                <input type="hidden" id="laudo-cliente-id">
-                <input type="hidden" id="laudo-agenda-id">
+                <input type="hidden" id="laudo-cliente-id"><input type="hidden" id="laudo-agenda-id">
                 
-                <label>Data da Execução</label>
-                <input type="date" id="laudo-data">
+                <label>Data da Execução</label><input type="date" id="laudo-data">
+
+                <!-- Botão de Pós-Venda -->
+                <div style="background: #fffbeb; border: 1px solid #fcd34d; padding: 10px; border-radius: 8px; margin-bottom: 15px;">
+                    <label style="color: #b45309; margin: 0 0 5px 0;"><i class="fas fa-bell"></i> Agendar Retorno / Preventiva?</label>
+                    <select id="laudo-preventiva" style="margin:0; border-color:#fde68a;">
+                        <option value="0">Não agendar agora</option>
+                        <option value="3">Lembrar em 3 meses</option>
+                        <option value="6">Lembrar em 6 meses</option>
+                        <option value="12">Lembrar em 1 ano</option>
+                    </select>
+                </div>
+
+                <label>Checklist de Serviços</label>
+                <div class="pill-container">
+                    <div class="pill" onclick="this.classList.toggle('active')">Limpeza de Filtros</div>
+                    <div class="pill" onclick="this.classList.toggle('active')">Medição de Pressão</div>
+                    <div class="pill" onclick="this.classList.toggle('active')">Reaperto de Contatos</div>
+                    <div class="pill" onclick="this.classList.toggle('active')">Higienização Geral</div>
+                    <div class="pill" onclick="this.classList.toggle('active')">Troca de Peça</div>
+                    <div class="pill" onclick="this.classList.toggle('active')">Revisão de Quadro</div>
+                </div>
                 
-                <label>Laudo / O que foi realizado?</label>
-                <textarea id="laudo-desc" rows="4" placeholder="Descreva os problemas encontrados, peças trocadas..."></textarea>
-                
-                <label>Evidências Fotográficas (Tire fotos agora)</label>
-                <input type="file" id="camera-input" accept="image/*" capture="environment" multiple onchange="app.processPhotos(this)" style="background: white; padding: 10px;">
-                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                    <label style="margin:0;">Relatório do Problema/Solução</label>
+                    <button class="btn-mic" id="btn-dictation" onclick="dictation.toggle()"><i class="fas fa-microphone"></i> Ditar</button>
+                </div>
+                <textarea id="laudo-desc" rows="4"></textarea>
+
+                <label>Materiais Gastos / Instalados</label><textarea id="laudo-materiais" rows="2"></textarea>
+                <label>Valor do Serviço (R$)</label><input type="number" id="laudo-valor" inputmode="decimal">
+                <label>Evidências Fotográficas</label><input type="file" id="camera-input" accept="image/*" capture="environment" multiple onchange="app.processPhotos(this)" style="background: white; padding: 10px;">
                 <div id="laudo-photo-preview" class="photo-grid"></div>
+
+                <label style="margin-top: 15px;">Assinatura do Cliente</label>
+                <canvas id="signature-pad" class="signature-pad"></canvas>
+                <div style="text-align: right; margin-bottom: 20px;">
+                    <button class="btn-outline" style="padding: 6px 12px; width: auto; font-size: 12px;" onclick="signature.clear()"><i class="fas fa-eraser"></i> Limpar</button>
+                </div>
+                <button class="btn btn-success" onclick="db.saveLaudo()"><i class="fab fa-whatsapp"></i> Salvar e Enviar PDF</button>
+            </div>
+        </div>
+
+        <!-- TELA: FERRAMENTAS E MEI -->
+        <div id="view-ferramentas" class="view">
+            <!-- Dashboard MEI -->
+            <div class="card" style="border-left: 4px solid var(--success);">
+                <h3 style="font-size: 15px; color: var(--primary); margin-bottom: 10px;"><i class="fas fa-chart-line"></i> Termômetro MEI (Anual)</h3>
+                <p style="font-size: 12px; color: #64748b;">Acompanhe seu faturamento de <span id="mei-ano"></span> para não estourar o limite de R$ 81.000,00 da Receita Federal.</p>
+                <div class="mei-bar-bg">
+                    <div id="mei-bar-fill" class="mei-bar-fill"></div>
+                </div>
+                <div id="mei-valor" style="font-weight: 800; color: var(--primary); text-align: right; font-size: 14px;">Calculando...</div>
+            </div>
+
+            <!-- Calculadora Elétrica COM FOTO -->
+            <div class="card" style="border-left: 4px solid var(--warning);">
+                <h3 style="font-size: 15px; color: var(--primary); margin-bottom: 10px;"><i class="fas fa-bolt" style="color: var(--warning)"></i> Dimensionamento Elétrico</h3>
+                <p style="font-size: 12px; color: #64748b; margin-bottom: 15px;">Tire a foto da etiqueta do motor ou ar-condicionado para preencher sozinho!</p>
                 
-                <button class="btn btn-success" style="margin-top: 20px;" onclick="db.saveLaudo()">
-                    <i class="fas fa-save"></i> Salvar Relatório
-                </button>
+                <div style="position: relative; margin-bottom: 15px;">
+                    <input type="file" accept="image/*" capture="environment" id="foto-placa" onchange="ferramentas.lerPlaca(this)" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer; z-index: 10;">
+                    <button class="btn btn-outline" style="border-color: var(--warning); color: var(--warning);"><i class="fas fa-camera"></i> Ler Etiqueta da Máquina (IA)</button>
+                </div>
+                <div id="placa-loading" style="display: none; text-align: center; color: var(--warning); font-size: 12px; margin-bottom: 10px;"><i class="fas fa-spinner fa-spin"></i> Analisando placa...</div>
+
+                <div style="display:flex; gap: 10px;">
+                    <div style="flex:1">
+                        <label>Potência (Watts)</label>
+                        <input type="number" id="calc-w" placeholder="Ex: 5500" inputmode="numeric">
+                    </div>
+                    <div style="flex:1">
+                        <label>Tensão (Volts)</label>
+                        <select id="calc-v">
+                            <option value="220">220V</option>
+                            <option value="127">127V</option>
+                            <option value="380">380V (Trifásico)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary" onclick="ferramentas.calcularEletrica()">Calcular Corrente e Disjuntor</button>
+                <div id="calc-ele-result" style="margin-top: 15px; font-size: 14px; color: var(--primary); padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px dashed var(--border); display: none;"></div>
+            </div>
+
+            <!-- Galeria e Biblioteca Técnica -->
+            <div class="card" style="border-left: 4px solid var(--primary);">
+                <h3 style="font-size: 15px; color: var(--primary); margin-bottom: 15px;"><i class="fas fa-book-open"></i> Biblioteca Técnica (Offline)</h3>
+                
+                <div class="lib-section">
+                    <div class="lib-header" onclick="this.nextElementSibling.classList.toggle('show')">
+                        <span><i class="fas fa-plug"></i> Cabos e Correntes</span> <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="lib-content">
+                        <p style="margin-bottom: 10px;"><b>Tabela Base Engerall (PVC 70ºC)</b> - Valores de referência rápida para instalações aparentes ou embutidas:</p>
+                        <table class="lib-table">
+                            <thead><tr><th>Seção (mm²)</th><th>Corrente (A)</th><th>Disjuntor Padrão</th></tr></thead>
+                            <tbody>
+                                <tr><td>1,5 mm²</td><td>15,5 A</td><td>10A a 16A</td></tr>
+                                <tr><td>2,5 mm²</td><td>21,0 A</td><td>20A</td></tr>
+                                <tr><td>4,0 mm²</td><td>28,0 A</td><td>25A</td></tr>
+                                <tr><td>6,0 mm²</td><td>36,0 A</td><td>32A</td></tr>
+                                <tr><td>10,0 mm²</td><td>50,0 A</td><td>40A a 50A</td></tr>
+                                <tr><td>16,0 mm²</td><td>68,0 A</td><td>63A</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="lib-section">
+                    <div class="lib-header" onclick="this.nextElementSibling.classList.toggle('show')">
+                        <span><i class="fas fa-snowflake" style="color: #0ea5e9;"></i> Pressões Manifold (AC)</span> <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="lib-content">
+                        <p style="margin-bottom: 10px;"><b>Gás R22 (Óleo Mineral):</b></p>
+                        <ul style="padding-left: 20px; margin-bottom: 15px;">
+                            <li>Baixa Pressão (Sucção): 60 a 70 PSI</li>
+                            <li>Alta Pressão (Descarga): 250 a 280 PSI</li>
+                        </ul>
+                        <p style="margin-bottom: 10px;"><b>Gás R410A (Inverter / Óleo Sintético):</b></p>
+                        <ul style="padding-left: 20px;">
+                            <li>Baixa Pressão (Sucção): 110 a 130 PSI</li>
+                            <li>Alta Pressão (Descarga): 400 a 450 PSI</li>
+                            <li style="color: var(--danger); font-weight: bold; margin-top: 5px;">ATENÇÃO: R410A só deve ser adicionado em fase LÍQUIDA (botija de cabeça para baixo).</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="lib-section">
+                    <div class="lib-header" onclick="this.nextElementSibling.classList.toggle('show')">
+                        <span><i class="fas fa-industry"></i> Painel e Comandos</span> <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="lib-content">
+                        <p style="margin-bottom: 10px;"><b>Lista Rápida - Partida Direta:</b></p>
+                        <ul style="padding-left: 20px; margin-bottom: 15px;">
+                            <li>Disjuntor Motor ou Fusíveis (Proteção Geral)</li>
+                            <li>Contatora K1 (Potência e Comando)</li>
+                            <li>Relé Térmico (Proteção de Sobrecarga)</li>
+                            <li>Botoeira NF (Desliga) + Botoeira NA (Liga c/ Selo)</li>
+                        </ul>
+                        <p style="margin-bottom: 10px;"><b>Lista Rápida - Estrela-Triângulo:</b></p>
+                        <ul style="padding-left: 20px;">
+                            <li>Disjuntor Geral</li>
+                            <li>K1 (Rede), K2 (Triângulo), K3 (Estrela)</li>
+                            <li>Relé Temporizador (Ajuste de comutação)</li>
+                            <li>Relé Térmico (Abaixo de K1)</li>
+                            <li style="color: var(--accent); margin-top: 5px;">Regra: K3 fecha primeiro. Depois K1. K3 abre e K2 fecha no tempo programado.</li>
+                        </ul>
+                    </div>
+                </div>
+
             </div>
         </div>
 
@@ -243,12 +364,8 @@
             <div class="card" style="text-align: center; padding: 30px 15px;">
                 <i class="fas fa-shield-alt" style="font-size: 40px; color: var(--accent); margin-bottom: 15px;"></i>
                 <h2 style="font-size: 18px; margin-bottom: 10px;">Segurança dos Dados</h2>
-                <p style="font-size: 14px; color: #64748b; margin-bottom: 20px; line-height: 1.5;">O sistema funciona offline no seu aparelho. Faça backup constante para não perder os laudos e históricos de serviços.</p>
-                
-                <button class="btn btn-primary" onclick="backup.download()">
-                    <i class="fas fa-download"></i> Gerar Arquivo de Backup
-                </button>
-                
+                <p style="font-size: 14px; color: #64748b; margin-bottom: 20px; line-height: 1.5;">O sistema funciona offline. Faça backup constante.</p>
+                <button class="btn btn-primary" onclick="backup.download()"><i class="fas fa-download"></i> Gerar Arquivo de Backup</button>
                 <div style="margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px;">
                     <label style="text-align: left; color: var(--danger);">Restaurar Backup Antigo</label>
                     <input type="file" id="restore-input" accept=".json" style="background: white;" onchange="backup.restore(this)">
@@ -256,474 +373,356 @@
             </div>
         </div>
 
-        <!-- NAV INFERIOR -->
+        <!-- BOTTOM NAV ATUALIZADO COM 5 ITENS -->
         <nav class="bottom-nav">
-            <div class="nav-item active" onclick="ui.changeTab('view-clientes', this, 'Clientes')">
-                <i class="fas fa-users"></i>
-                <span>Clientes</span>
-            </div>
-            <div class="nav-item" onclick="ui.changeTab('view-agenda', this, 'Agenda')">
-                <i class="fas fa-calendar-alt"></i>
-                <span>Agenda</span>
-            </div>
-            <div class="nav-item" onclick="ui.changeTab('view-ajustes', this, 'Ajustes')">
-                <i class="fas fa-cog"></i>
-                <span>Ajustes</span>
-            </div>
+            <div class="nav-item active" onclick="ui.changeTab('view-clientes', this, 'Clientes')"><i class="fas fa-users"></i><span>Clientes</span></div>
+            <div class="nav-item" onclick="ui.changeTab('view-estoque', this, 'Estoque')"><i class="fas fa-boxes"></i><span>Estoque</span></div>
+            <div class="nav-item" onclick="ui.changeTab('view-agenda', this, 'Agenda')"><i class="fas fa-calendar-alt"></i><span>Agenda</span></div>
+            <div class="nav-item" onclick="ui.changeTab('view-ferramentas', this, 'Ferramentas')"><i class="fas fa-toolbox"></i><span>Técnico</span></div>
+            <div class="nav-item" onclick="ui.changeTab('view-ajustes', this, 'Segurança')"><i class="fas fa-cog"></i><span>Ajustes</span></div>
         </nav>
 
-        <!-- TEMPLATE OCULTO PARA GERAÇÃO DO PDF -->
         <div id="pdf-container"></div>
 
-    </div> <!-- Fim do .app-container -->
+    </div> 
 
     <script>
-        // CONTROLE DE INTERFACE
+        const BRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+
         const ui = {
-            changeView(viewId) {
-                document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-                document.getElementById(viewId).classList.add('active');
-                window.scrollTo(0,0);
-            },
+            changeView(viewId) { document.querySelectorAll('.view').forEach(el => el.classList.remove('active')); document.getElementById(viewId).classList.add('active'); window.scrollTo(0,0); },
             changeTab(viewId, el, title) {
-                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-                el.classList.add('active');
-                document.getElementById('topbar-title').innerText = title;
-                this.changeView(viewId);
+                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active')); el.classList.add('active'); document.getElementById('topbar-title').innerText = title; this.changeView(viewId);
                 if(viewId === 'view-clientes') app.renderClientes();
                 if(viewId === 'view-agenda') app.renderAgenda();
+                if(viewId === 'view-estoque') estoque.renderMateriais();
+                if(viewId === 'view-ferramentas') ferramentas.renderMEI();
             },
-            toast(msg, isWarning = false) {
-                const t = document.getElementById('toast');
-                t.innerText = msg;
-                t.className = isWarning ? 'warning show' : 'show';
-                setTimeout(() => t.className = '', 3500);
+            toast(msg, isWarning = false, duracao = 3500) { const t = document.getElementById('toast'); t.innerText = msg; t.className = isWarning ? 'warning show' : 'show'; setTimeout(() => t.className = '', duracao); }
+        };
+
+        let deferredPrompt; const btnInstalar = document.getElementById('btn-instalar');
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; btnInstalar.style.display = 'flex'; });
+        btnInstalar.addEventListener('click', async () => { if (deferredPrompt) { deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; btnInstalar.style.display = 'none'; } });
+        window.addEventListener('appinstalled', () => { btnInstalar.style.display = 'none'; ui.toast("Instalado com sucesso!"); });
+
+        const dictation = {
+            recognition: null, isListening: false,
+            init() {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (SpeechRecognition) { this.recognition = new SpeechRecognition(); this.recognition.continuous = false; this.recognition.interimResults = false; this.recognition.lang = 'pt-BR'; this.recognition.onresult = (e) => { const transcript = e.results[0][0].transcript; const desc = document.getElementById('laudo-desc'); desc.value += (desc.value ? ' ' : '') + transcript + '.'; this.stop(); }; this.recognition.onerror = () => this.stop(); this.recognition.onend = () => this.stop(); }
+            },
+            toggle() { if(!this.recognition) return ui.toast("Seu navegador não suporta ditado.", true); if(this.isListening) { this.recognition.stop(); } else { this.recognition.start(); this.isListening = true; document.getElementById('btn-dictation').classList.add('listening'); ui.toast("🎤 Pode falar..."); } },
+            stop() { this.isListening = false; document.getElementById('btn-dictation').classList.remove('listening'); }
+        };
+
+        const signature = {
+            canvas: null, ctx: null, drawing: false,
+            init() {
+                this.canvas = document.getElementById('signature-pad'); if(!this.canvas) return; this.ctx = this.canvas.getContext('2d'); this.canvas.width = this.canvas.offsetWidth; this.canvas.height = this.canvas.offsetHeight; this.ctx.lineWidth = 2; this.ctx.strokeStyle = "#1e293b";
+                const start = (e) => { this.drawing = true; this.ctx.beginPath(); this.ctx.moveTo(this.getX(e), this.getY(e)); e.preventDefault(); }; const move = (e) => { if(!this.drawing) return; this.ctx.lineTo(this.getX(e), this.getY(e)); this.ctx.stroke(); e.preventDefault(); }; const stop = () => { this.drawing = false; this.ctx.closePath(); };
+                this.canvas.addEventListener('touchstart', start, {passive: false}); this.canvas.addEventListener('touchmove', move, {passive: false}); this.canvas.addEventListener('touchend', stop); this.canvas.addEventListener('mousedown', start); this.canvas.addEventListener('mousemove', move); this.canvas.addEventListener('mouseup', stop); this.canvas.addEventListener('mouseout', stop);
+            },
+            getX(e) { const rect = this.canvas.getBoundingClientRect(); return (e.touches ? e.touches[0].clientX : e.clientX) - rect.left; }, getY(e) { const rect = this.canvas.getBoundingClientRect(); return (e.touches ? e.touches[0].clientY : e.clientY) - rect.top; },
+            clear() { this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); }, isEmpty() { const blank = document.createElement('canvas'); blank.width = this.canvas.width; blank.height = this.canvas.height; return this.canvas.toDataURL() === blank.toDataURL(); }, getData() { return this.isEmpty() ? null : this.canvas.toDataURL(); }
+        };
+
+        // Ferramentas Rápidas (MEI, Calculadora e OCR de Placa)
+        const ferramentas = {
+            renderMEI() {
+                const anoAtual = new Date().getFullYear();
+                document.getElementById('mei-ano').innerText = anoAtual;
+                database.transaction("laudos", "readonly").objectStore("laudos").getAll().onsuccess = (e) => {
+                    const laudos = e.target.result; let totalAno = 0;
+                    laudos.forEach(l => { if (l.data && l.data.startsWith(anoAtual) && l.valor) { totalAno += l.valor; } });
+                    const limiteMEI = 81000;
+                    const pct = Math.min((totalAno / limiteMEI) * 100, 100);
+                    document.getElementById('mei-valor').innerText = `${BRL.format(totalAno)} / ${BRL.format(limiteMEI)}`;
+                    document.getElementById('mei-bar-fill').style.width = pct + '%';
+                    if(pct > 80) document.getElementById('mei-bar-fill').style.backgroundColor = 'var(--danger)';
+                    else if(pct > 50) document.getElementById('mei-bar-fill').style.backgroundColor = 'var(--warning)';
+                    else document.getElementById('mei-bar-fill').style.backgroundColor = 'var(--success)';
+                };
+            },
+            async lerPlaca(input) {
+                if(!input.files.length) return; 
+                const file = input.files[0]; 
+                document.getElementById('placa-loading').style.display = 'block';
+                ui.toast("Lendo etiqueta da máquina... Mantenha o app aberto.", false, 4000);
+                
+                try {
+                    const result = await Tesseract.recognize(file, 'por');
+                    const texto = result.data.text.toLowerCase();
+                    document.getElementById('placa-loading').style.display = 'none';
+                    
+                    // Regex para encontrar Watts e Volts na imagem
+                    const matchWatts = texto.match(/(\d+)\s*(?:w|watts|potência)/);
+                    const matchVolts = texto.match(/(\d+)\s*(?:v|volts|tensão)/);
+                    const matchBTUs = texto.match(/(\d+)\s*(?:btu|btus)/);
+
+                    let encontrouAlgo = false;
+
+                    if (matchWatts) { document.getElementById('calc-w').value = matchWatts[1]; encontrouAlgo = true; }
+                    else if (matchBTUs) {
+                        // Conversão de BTU para Watts (Elétrico estimado) -> Aprox. 1 BTU = 0.293 W térmico, mas depende do COP. Vamos estimar elétrico simples.
+                        // Para simplificar: Pega os BTUs e avisa.
+                        ui.toast(`Encontramos ${matchBTUs[1]} BTUs, preencha o consumo elétrico exato (W) para o disjuntor.`, true);
+                    }
+
+                    if (matchVolts) { 
+                        let v = parseInt(matchVolts[1]);
+                        if (v >= 110 && v <= 130) document.getElementById('calc-v').value = "127";
+                        else if (v >= 200 && v <= 240) document.getElementById('calc-v').value = "220";
+                        else if (v >= 380) document.getElementById('calc-v').value = "380";
+                        encontrouAlgo = true;
+                    }
+
+                    if (encontrouAlgo) {
+                        ui.toast("Valores capturados com sucesso!");
+                        if(document.getElementById('calc-w').value) this.calcularEletrica();
+                    } else {
+                        ui.toast("A inteligência não encontrou valores legíveis. Tente outra foto.", true);
+                    }
+                } catch(e) {
+                    document.getElementById('placa-loading').style.display = 'none';
+                    ui.toast("Erro ao analisar a imagem.", true);
+                }
+                input.value = '';
+            },
+            calcularEletrica() {
+                const w = parseFloat(document.getElementById('calc-w').value); const v = parseFloat(document.getElementById('calc-v').value);
+                if(!w || !v) return ui.toast("Preencha a Potência (W)", true);
+                
+                // Cálculo Trifásico vs Monofásico/Bifásico
+                let amperes = 0;
+                if (v == 380) { amperes = w / (v * 1.732 * 0.85); } // Fórmula básica Trifásica assumindo FP 0.85
+                else { amperes = w / v; } // Fórmula Mono/Bifásica
+
+                let disjuntor = 10;
+                if(amperes > 10) disjuntor = 16; if(amperes > 16) disjuntor = 20; if(amperes > 20) disjuntor = 25; if(amperes > 25) disjuntor = 32; if(amperes > 32) disjuntor = 40; if(amperes > 40) disjuntor = 50; if(amperes > 50) disjuntor = 63;
+                const resultBox = document.getElementById('calc-ele-result');
+                resultBox.style.display = 'block';
+                resultBox.innerHTML = `Corrente Estimada: <b style="color:var(--danger)">${amperes.toFixed(2)} A</b><br>Disjuntor DIN Sugerido: <b style="color:var(--success)">${disjuntor} A (Curva C)</b><br><span style="font-size:10px; color:#64748b">*Cálculo base. Considere distância e F.P. na prática.</span>`;
             }
         };
 
-        // LÓGICA DO BOTÃO DE INSTALAÇÃO PWA
-        let deferredPrompt;
-        const btnInstalar = document.getElementById('btn-instalar');
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            btnInstalar.style.display = 'flex';
-        });
-
-        btnInstalar.addEventListener('click', async () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    console.log('Usuário aceitou a instalação');
-                }
-                deferredPrompt = null;
-                btnInstalar.style.display = 'none';
-            }
-        });
-
-        window.addEventListener('appinstalled', () => {
-            btnInstalar.style.display = 'none';
-            ui.toast("Aplicativo instalado com sucesso!");
-        });
-
-        // BANCO DE DADOS INDEXEDDB
         let database;
         const db = {
             init() {
-                const request = indexedDB.open("FieldServiceApp", 1);
+                const request = indexedDB.open("FieldServiceApp", 4);
                 request.onupgradeneeded = (e) => {
                     const d = e.target.result;
                     if (!d.objectStoreNames.contains("clientes")) d.createObjectStore("clientes", {keyPath: "id", autoIncrement:true});
                     if (!d.objectStoreNames.contains("agendamentos")) d.createObjectStore("agendamentos", {keyPath: "id", autoIncrement:true});
                     if (!d.objectStoreNames.contains("laudos")) d.createObjectStore("laudos", {keyPath: "id", autoIncrement:true});
+                    if (!d.objectStoreNames.contains("materiais")) d.createObjectStore("materiais", {keyPath: "id", autoIncrement:true});
                 };
-                request.onsuccess = (e) => {
-                    database = e.target.result;
-                    app.renderClientes();
-                    backup.checkWeekly();
-                };
+                request.onsuccess = (e) => { database = e.target.result; app.renderClientes(); backup.checkWeekly(); };
             },
             saveCliente() {
-                const nome = document.getElementById('cli-nome').value;
-                const tel = document.getElementById('cli-tel').value;
-                const end = document.getElementById('cli-end').value;
+                const nome = document.getElementById('cli-nome').value; const tel = document.getElementById('cli-tel').value; const end = document.getElementById('cli-end').value; const equip = document.getElementById('cli-equip').value;
                 if(!nome) return ui.toast("Nome é obrigatório!", true);
-
-                const tx = database.transaction("clientes", "readwrite").objectStore("clientes");
-                tx.add({ nome, tel, end }).onsuccess = () => {
-                    ui.toast("Cliente cadastrado com sucesso!");
-                    document.getElementById('cli-nome').value = '';
-                    document.getElementById('cli-tel').value = '';
-                    document.getElementById('cli-end').value = '';
-                    ui.changeTab('view-clientes', document.querySelectorAll('.nav-item')[0], 'Clientes');
-                };
+                database.transaction("clientes", "readwrite").objectStore("clientes").add({ nome, tel, end, equip }).onsuccess = () => { ui.toast("Cliente cadastrado com sucesso!"); document.getElementById('cli-nome').value = ''; document.getElementById('cli-tel').value = ''; document.getElementById('cli-end').value = ''; document.getElementById('cli-equip').value = ''; ui.changeTab('view-clientes', document.querySelectorAll('.nav-item')[0], 'Clientes'); };
             },
+            deleteCliente(id) { if(!confirm("Remover o cliente permanentemente?")) return; database.transaction("clientes", "readwrite").objectStore("clientes").delete(id).onsuccess = () => { ui.toast("Removido."); ui.changeTab('view-clientes', document.querySelectorAll('.nav-item')[0], 'Clientes'); }; },
             saveAgendamento() {
-                const clienteId = parseInt(document.getElementById('ag-cliente').value);
-                const data = document.getElementById('ag-data').value;
-                const hora = document.getElementById('ag-hora').value;
-                const desc = document.getElementById('ag-desc').value;
-                
+                const clienteId = parseInt(document.getElementById('ag-cliente').value); const data = document.getElementById('ag-data').value; const hora = document.getElementById('ag-hora').value; const desc = document.getElementById('ag-desc').value; const materiais = document.getElementById('ag-materiais').value;
                 if(!clienteId || !data) return ui.toast("Cliente e Data são obrigatórios!", true);
-
-                const tx = database.transaction("agendamentos", "readwrite").objectStore("agendamentos");
-                tx.add({ clienteId, data, hora, desc, status: 'Pendente' }).onsuccess = () => {
-                    ui.toast("Agendamento salvo!");
-                    document.getElementById('ag-desc').value = '';
-                    ui.changeTab('view-agenda', document.querySelectorAll('.nav-item')[1], 'Agenda');
-                };
+                database.transaction("agendamentos", "readwrite").objectStore("agendamentos").add({ clienteId, data, hora, desc, materiais, status: 'Pendente' }).onsuccess = () => { ui.toast("Agendamento salvo!"); document.getElementById('ag-desc').value = ''; document.getElementById('ag-materiais').value = ''; ui.changeTab('view-agenda', document.querySelectorAll('.nav-item')[2], 'Agenda'); };
             },
+            deleteAgendamento(id) { if(!confirm("Cancelar e remover agendamento?")) return; database.transaction("agendamentos", "readwrite").objectStore("agendamentos").delete(id).onsuccess = () => { ui.toast("Cancelado."); app.renderAgenda(); }; },
             saveLaudo() {
-                const clienteId = parseInt(document.getElementById('laudo-cliente-id').value);
-                const agendaId = document.getElementById('laudo-agenda-id').value;
-                const data = document.getElementById('laudo-data').value;
-                const desc = document.getElementById('laudo-desc').value;
-                
-                if(!desc) return ui.toast("Escreva o que foi feito no serviço!", true);
+                const clienteId = parseInt(document.getElementById('laudo-cliente-id').value); const agendaId = document.getElementById('laudo-agenda-id').value; const data = document.getElementById('laudo-data').value; const desc = document.getElementById('laudo-desc').value; const materiaisUtilizados = document.getElementById('laudo-materiais').value; const valorStr = document.getElementById('laudo-valor').value; const valor = valorStr ? parseFloat(valorStr) : 0;
+                const pills = document.querySelectorAll('.pill.active'); let checklist = []; pills.forEach(p => checklist.push(p.innerText));
+                const assBase64 = signature.getData();
+                if(!desc && checklist.length === 0) return ui.toast("Escreva ou marque o checklist!", true);
+
+                // Lógica da Manutenção Preventiva
+                const mesesPrev = parseInt(document.getElementById('laudo-preventiva').value);
+                if (mesesPrev > 0) {
+                    let dataPrev = new Date(data + 'T12:00:00'); dataPrev.setMonth(dataPrev.getMonth() + mesesPrev);
+                    database.transaction("agendamentos", "readwrite").objectStore("agendamentos").add({ clienteId: clienteId, data: dataPrev.toISOString().split('T')[0], hora: '09:00', desc: '[PÓS-VENDA AUTOMÁTICA] Entrar em contato para oferecer manutenção preventiva periódica.', materiais: '', status: 'Pendente' });
+                }
 
                 const tx = database.transaction("laudos", "readwrite").objectStore("laudos");
-                tx.add({ clienteId, data, desc, fotos: app.tempPhotos }).onsuccess = () => {
-                    if(agendaId) {
-                        const agTx = database.transaction("agendamentos", "readwrite").objectStore("agendamentos");
-                        agTx.get(parseInt(agendaId)).onsuccess = (e) => {
-                            let ag = e.target.result;
-                            ag.status = 'Realizado';
-                            agTx.put(ag);
-                        };
-                    }
-                    ui.toast("Laudo Técnico salvo com fotos!");
-                    app.tempPhotos = [];
-                    document.getElementById('laudo-desc').value = '';
-                    document.getElementById('laudo-photo-preview').innerHTML = '';
-                    app.openClientProfile(clienteId); 
+                const request = tx.add({ clienteId, data, desc, materiaisUtilizados, checklist, valor, assinatura: assBase64, fotos: app.tempPhotos });
+                
+                request.onsuccess = (e) => {
+                    const novoLaudoId = e.target.result; 
+                    if(agendaId) { const agTx = database.transaction("agendamentos", "readwrite").objectStore("agendamentos"); agTx.get(parseInt(agendaId)).onsuccess = (ev) => { let ag = ev.target.result; ag.status = 'Realizado'; agTx.put(ag); }; }
+                    
+                    ui.toast("Salvo! Gerando arquivo PDF...");
+                    app.tempPhotos = []; document.getElementById('laudo-desc').value = ''; document.getElementById('laudo-materiais').value = ''; document.getElementById('laudo-valor').value = ''; document.getElementById('laudo-photo-preview').innerHTML = ''; document.getElementById('laudo-preventiva').value = "0"; pills.forEach(p => p.classList.remove('active')); signature.clear();
+                    app.openClientProfile(clienteId); setTimeout(() => { pdf.generateLaudo_e_Share(novoLaudoId); }, 800);
                 };
+            },
+            saveMaterial() {
+                const nome = document.getElementById('mat-nome').value; const qtd = document.getElementById('mat-qtd').value || 0; const preco = document.getElementById('mat-preco').value || 0;
+                if(!nome) return ui.toast("O nome do material é obrigatório!", true);
+                database.transaction("materiais", "readwrite").objectStore("materiais").add({ nome, qtd: parseFloat(qtd), preco: parseFloat(preco) }).onsuccess = () => { ui.toast("Material salvo!"); document.getElementById('mat-nome').value = ''; document.getElementById('mat-qtd').value = ''; document.getElementById('mat-preco').value = ''; ui.changeTab('view-estoque', document.querySelectorAll('.nav-item')[1], 'Estoque'); };
+            },
+            deleteMaterial(id) { if(!confirm("Remover material do estoque?")) return; database.transaction("materiais", "readwrite").objectStore("materiais").delete(id).onsuccess = () => { ui.toast("Material excluído."); estoque.renderMateriais(); }; }
+        };
+
+        const estoque = {
+            itensLidosOCR: [],
+            renderMateriais() {
+                database.transaction("materiais", "readonly").objectStore("materiais").getAll().onsuccess = (e) => {
+                    const materiais = e.target.result; const cont = document.getElementById('lista-materiais-container');
+                    if(materiais.length === 0) { cont.innerHTML = '<div style="text-align:center; padding:20px; color:#94a3b8">Estoque vazio.</div>'; return; }
+                    cont.innerHTML = materiais.map(m => `<div class="list-row mat-row"><div style="flex:1"><div class="title">${m.nome}</div><div class="subtitle">Quantidade: <b style="color:var(--primary)">${m.qtd}</b> • Unitário: ${BRL.format(m.preco)}</div></div><button onclick="db.deleteMaterial(${m.id})" style="background: none; border: none; color: #f87171; font-size: 16px; cursor: pointer; padding: 10px;"><i class="fas fa-trash"></i></button></div>`).join('');
+                };
+            },
+            buscarMaterial() { const termo = document.getElementById('search-mat').value.toLowerCase(); document.querySelectorAll('#lista-materiais-container .mat-row').forEach(card => { card.style.display = card.innerText.toLowerCase().includes(termo) ? 'flex' : 'none'; }); }
+        };
+
+        const ocr = {
+            async lerNota(input) {
+                if(!input.files.length) return; const file = input.files[0]; document.getElementById('ocr-loading').style.display = 'block'; document.getElementById('ocr-resultados').style.display = 'none'; ui.toast("Lendo nota... Aguarde.", false, 5000);
+                try {
+                    const result = await Tesseract.recognize(file, 'por'); const texto = result.data.text; document.getElementById('ocr-raw-text').value = texto;
+                    const linhas = texto.split('\n'); estoque.itensLidosOCR = []; const regexPreco = /\b\d{1,3}(?:\.\d{3})*,\d{2}\b/;
+                    linhas.forEach(linha => { if(linha.trim().length > 3 && regexPreco.test(linha)) { let precoMatch = linha.match(regexPreco)[0]; let nome = linha.replace(precoMatch, '').replace(/[^\w\s-]/g, ' ').trim(); let preco = parseFloat(precoMatch.replace('.', '').replace(',', '.')); if(nome && !isNaN(preco)) { estoque.itensLidosOCR.push({ nome: nome.substring(0,30), preco, selecionado: true }); } } });
+                    this.renderRevisao(); document.getElementById('ocr-loading').style.display = 'none'; document.getElementById('ocr-resultados').style.display = 'block'; ui.toast("Análise concluída!");
+                } catch (err) { document.getElementById('ocr-loading').style.display = 'none'; ui.toast("Erro ao ler imagem.", true); }
+            },
+            renderRevisao() {
+                const cont = document.getElementById('ocr-itens-list'); if(estoque.itensLidosOCR.length === 0) { cont.innerHTML = '<div style="font-size:12px; color:var(--danger)">A IA não achou preços. Ajuste manualmente.</div>'; return; }
+                cont.innerHTML = estoque.itensLidosOCR.map((item, idx) => `<div style="display:flex; gap:10px; margin-bottom:10px; align-items:center; background:#f8fafc; padding:10px; border-radius:8px; border:1px solid var(--border);"><input type="checkbox" checked onchange="estoque.itensLidosOCR[${idx}].selecionado = this.checked" style="width:20px; height:20px; margin:0;"><input type="text" value="${item.nome}" onchange="estoque.itensLidosOCR[${idx}].nome = this.value" style="margin:0; font-size:13px; padding:8px;"><input type="number" value="${item.preco}" onchange="estoque.itensLidosOCR[${idx}].preco = parseFloat(this.value)" style="margin:0; width:100px; font-size:13px; padding:8px;" inputmode="decimal"></div>`).join('');
+            },
+            salvarItensLidos() {
+                const itensSalvar = estoque.itensLidosOCR.filter(i => i.selecionado && i.nome); if(itensSalvar.length === 0) return ui.toast("Nenhum item válido para salvar.", true);
+                const tx = database.transaction("materiais", "readwrite").objectStore("materiais"); itensSalvar.forEach(item => { tx.add({ nome: item.nome, qtd: 1, preco: item.preco }); });
+                tx.transaction.oncomplete = () => { ui.toast(`${itensSalvar.length} itens salvos!`); document.getElementById('ocr-resultados').style.display = 'none'; ui.changeTab('view-estoque', document.querySelectorAll('.nav-item')[1], 'Estoque'); };
             }
         };
 
-        // LÓGICA DO APLICATIVO
         const app = {
-            tempPhotos: [],
-            currentClientId: null,
-
+            tempPhotos: [], currentClientId: null,
+            maskPhone(val) { return val.replace(/\D/g, '').replace(/^(\d{2})(\d)/g, '($1) $2').replace(/(\d)(\d{4})$/, '$1-$2'); },
+            buscarCliente() { const termo = document.getElementById('search-cli').value.toLowerCase(); document.querySelectorAll('#lista-clientes-container .list-row').forEach(card => { card.style.display = card.innerText.toLowerCase().includes(termo) ? 'flex' : 'none'; }); },
             renderClientes() {
-                database.transaction("clientes", "readonly").objectStore("clientes").getAll().onsuccess = (e) => {
-                    const clientes = e.target.result;
-                    const cont = document.getElementById('lista-clientes-container');
+                document.getElementById('search-cli').value = ''; database.transaction("clientes", "readonly").objectStore("clientes").getAll().onsuccess = (e) => {
+                    const clientes = e.target.result; const cont = document.getElementById('lista-clientes-container');
                     if(clientes.length === 0) { cont.innerHTML = '<div style="text-align:center; padding:20px; color:#94a3b8">Nenhum cliente cadastrado.</div>'; return; }
-                    
-                    cont.innerHTML = clientes.map(c => `
-                        <div class="list-row" onclick="app.openClientProfile(${c.id})">
-                            <div>
-                                <div class="title">${c.nome}</div>
-                                <div class="subtitle">${c.tel || 'Sem telefone'} • ${c.end || 'Sem endereço'}</div>
-                            </div>
-                            <i class="fas fa-chevron-right" style="color:var(--border)"></i>
-                        </div>
-                    `).join('');
+                    cont.innerHTML = clientes.map(c => `<div class="list-row" onclick="app.openClientProfile(${c.id})"><div><div class="title">${c.nome}</div><div class="subtitle">${c.tel || 'Sem telefone'} • ${c.end || 'Sem endereço'}</div></div><i class="fas fa-chevron-right" style="color:var(--border)"></i></div>`).join('');
                 };
             },
-
             openClientProfile(id) {
-                this.currentClientId = id;
-                ui.changeView('view-perfil-cliente');
-                document.getElementById('topbar-title').innerText = "Ficha Técnica";
-
+                this.currentClientId = id; ui.changeView('view-perfil-cliente'); document.getElementById('topbar-title').innerText = "Ficha Técnica";
                 database.transaction("clientes", "readonly").objectStore("clientes").get(id).onsuccess = (e) => {
-                    const c = e.target.result;
-                    document.getElementById('perfil-header').innerHTML = `
-                        <h2 style="margin-bottom:5px; font-size:18px;">${c.nome}</h2>
-                        <div style="font-size:13px; opacity:0.9"><i class="fas fa-map-marker-alt"></i> ${c.end || 'N/A'}</div>
-                        <div style="font-size:13px; opacity:0.9; margin-top:4px"><i class="fas fa-phone"></i> ${c.tel || 'N/A'}</div>
-                    `;
+                    const c = e.target.result; let numLimpo = c.tel ? c.tel.replace(/\D/g, '') : '';
+                    document.getElementById('btn-whats-container').innerHTML = numLimpo.length >= 10 ? `<a href="https://wa.me/55${numLimpo}" target="_blank" class="btn btn-outline" style="border-color: #16a34a; background: #dcfce7; color: #16a34a; padding: 14px; width: 50px;"><i class="fab fa-whatsapp" style="font-size: 20px;"></i></a>` : '';
+                    document.getElementById('perfil-header').innerHTML = `<button onclick="db.deleteCliente(${c.id})" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: #f87171; font-size: 16px; cursor: pointer;"><i class="fas fa-trash"></i></button><h2 style="margin-bottom:5px; font-size:18px; padding-right: 25px;">${c.nome}</h2><div style="font-size:13px; opacity:0.9"><i class="fas fa-map-marker-alt"></i> ${c.end || 'N/A'}</div><div style="font-size:13px; opacity:0.9; margin-top:4px"><i class="fas fa-phone"></i> ${c.tel || 'N/A'}</div>${c.equip ? `<div style="margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.2); font-size:12px"><b>Equipamentos:</b> ${c.equip}</div>` : ''}`;
                 };
-
                 database.transaction("laudos", "readonly").objectStore("laudos").getAll().onsuccess = (e) => {
-                    const laudos = e.target.result.filter(l => l.clienteId === id).sort((a,b) => new Date(b.data) - new Date(a.data));
-                    const cont = document.getElementById('historico-laudos-container');
-                    
+                    const laudos = e.target.result.filter(l => l.clienteId === id).sort((a,b) => new Date(b.data) - new Date(a.data)); const cont = document.getElementById('historico-laudos-container');
                     if(laudos.length === 0) { cont.innerHTML = '<p style="font-size:13px; color:#94a3b8; text-align:center; padding: 15px 0;">Nenhum serviço realizado ainda.</p>'; return; }
-
                     cont.innerHTML = laudos.map(l => {
-                        let fotosHtml = l.fotos.map(f => `<div class="photo-item"><img src="${f}"></div>`).join('');
-                        let dataFormatada = new Date(l.data + 'T12:00:00').toLocaleDateString('pt-BR');
-                        return `
-                            <div class="timeline-card">
-                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                                    <div class="timeline-date" style="margin:0;">${dataFormatada}</div>
-                                    <button class="btn-outline" style="padding:6px 10px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer;" onclick="pdf.generateLaudo(${l.id})"><i class="fas fa-file-pdf" style="color:#dc2626"></i> Gerar PDF</button>
-                                </div>
-                                <div style="font-size:14px; line-height:1.6; color:var(--text); margin-bottom:12px;">${l.desc.replace(/\n/g, '<br>')}</div>
-                                ${fotosHtml ? `<div class="photo-grid">${fotosHtml}</div>` : ''}
-                            </div>
-                        `;
+                        let fotosHtml = l.fotos && l.fotos.length ? l.fotos.map(f => `<div class="photo-item"><img src="${f}"></div>`).join('') : '';
+                        let check = l.checklist && l.checklist.length ? `<div style="font-size:11px; color:var(--accent); font-weight:bold; margin-bottom:5px">${l.checklist.join(' • ')}</div>` : '';
+                        let matHtml = l.materiaisUtilizados ? `<div style="font-size:12px; color:#64748b; margin-top:8px;"><b>Materiais Utilizados:</b> ${l.materiaisUtilizados}</div>` : '';
+                        let valorStr = l.valor ? `<div style="font-size:14px; font-weight:bold; color:var(--success); margin-top:5px;">Valor: ${BRL.format(l.valor)}</div>` : '';
+                        return `<div class="timeline-card"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;"><div class="timeline-date" style="margin:0;">${new Date(l.data + 'T12:00:00').toLocaleDateString('pt-BR')}</div><button class="btn-outline" style="padding:6px 10px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer;" onclick="pdf.generateLaudo_e_Share(${l.id})"><i class="fas fa-file-pdf" style="color:#dc2626"></i> Enviar</button></div>${check}<div style="font-size:14px; line-height:1.6; color:var(--text);">${l.desc.replace(/\n/g, '<br>')}</div>${matHtml}${valorStr}${fotosHtml ? `<div class="photo-grid" style="margin-top:10px;">${fotosHtml}</div>` : ''}</div>`;
                     }).join('');
                 };
             },
-
             renderAgenda() {
-                database.transaction("clientes", "readonly").objectStore("clientes").getAll().onsuccess = (e) => {
-                    const sel = document.getElementById('ag-cliente');
-                    sel.innerHTML = '<option value="">Selecione...</option>' + e.target.result.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
-                };
-
+                database.transaction("clientes", "readonly").objectStore("clientes").getAll().onsuccess = (e) => { document.getElementById('ag-cliente').innerHTML = '<option value="">Selecione...</option>' + e.target.result.map(c => `<option value="${c.id}">${c.nome}</option>`).join(''); };
                 database.transaction(["agendamentos", "clientes"], "readonly").objectStore("agendamentos").getAll().onsuccess = (e) => {
-                    const agendamentos = e.target.result.filter(a => a.status === 'Pendente').sort((a,b) => new Date(a.data) - new Date(b.data));
-                    const cont = document.getElementById('lista-agenda-container');
-                    
+                    const agendamentos = e.target.result.filter(a => a.status === 'Pendente').sort((a,b) => new Date(a.data) - new Date(b.data)); const cont = document.getElementById('lista-agenda-container');
                     if(agendamentos.length === 0) { cont.innerHTML = '<div style="text-align:center; padding:20px; color:#94a3b8">Nenhum agendamento pendente.</div>'; return; }
-
-                    const tx = database.transaction("clientes", "readonly").objectStore("clientes");
-                    tx.getAll().onsuccess = (ev) => {
+                    database.transaction("clientes", "readonly").objectStore("clientes").getAll().onsuccess = (ev) => {
                         const clientes = ev.target.result;
                         cont.innerHTML = agendamentos.map(ag => {
                             const cliente = clientes.find(c => c.id === ag.clienteId);
-                            const nomeCli = cliente ? cliente.nome : 'Cliente Deletado';
-                            const dataF = new Date(ag.data + 'T12:00:00').toLocaleDateString('pt-BR');
-                            
-                            return `
-                                <div class="card" style="border-left: 4px solid var(--accent);">
-                                    <div style="display:flex; justify-content:space-between; margin-bottom:10px; align-items:center;">
-                                        <div style="font-size:13px; font-weight:bold; color:var(--accent);"><i class="far fa-clock"></i> ${dataF} às ${ag.hora}</div>
-                                        <button class="btn-success" style="padding:6px 12px; border-radius:6px; font-size:12px; border:none; cursor:pointer;" onclick="app.convertAgendaToLaudo(${ag.id}, ${ag.clienteId})"><i class="fas fa-check"></i> Concluir</button>
-                                    </div>
-                                    <div class="title">${nomeCli}</div>
-                                    <div class="subtitle" style="margin-bottom:10px;"><i class="fas fa-map-marker-alt"></i> ${cliente ? cliente.end : ''}</div>
-                                    <div style="font-size:14px; background:#f1f5f9; padding:10px; border-radius:8px; border:1px solid var(--border); line-height:1.5;">${ag.desc}</div>
-                                </div>
-                            `;
+                            let materiaisHtml = ''; if(ag.materiais && ag.materiais.trim() !== '') { let lista = ag.materiais.split(',').map(m => m.trim()).filter(m => m !== ''); if(lista.length > 0) { materiaisHtml = `<div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border);"><div style="font-size: 11px; font-weight: bold; color: #64748b; margin-bottom: 5px; text-transform: uppercase;">Checklist de Embarque:</div>${lista.map(item => `<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 13px; color: var(--primary); cursor: pointer;" onclick="this.querySelector('i').classList.toggle('fa-square'); this.querySelector('i').classList.toggle('fa-check-square'); this.querySelector('i').style.color = this.querySelector('i').classList.contains('fa-check-square') ? 'var(--success)' : '#cbd5e1'; this.style.textDecoration = this.querySelector('i').classList.contains('fa-check-square') ? 'line-through' : 'none';"><i class="far fa-square" style="color: #cbd5e1; font-size: 16px; transition: 0.2s;"></i> ${item}</div>`).join('')}</div>`; } }
+                            return `<div class="card" style="border-left: 4px solid var(--accent); position: relative;"><button onclick="db.deleteAgendamento(${ag.id})" style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: #94a3b8; font-size: 16px; cursor: pointer;"><i class="fas fa-trash"></i></button><div style="font-size:13px; font-weight:bold; color:var(--accent); margin-bottom: 10px;"><i class="far fa-clock"></i> ${new Date(ag.data + 'T12:00:00').toLocaleDateString('pt-BR')} às ${ag.hora}</div><div class="title" style="padding-right: 25px;">${cliente ? cliente.nome : 'Excluído'}</div><div class="subtitle" style="margin-bottom:10px;"><i class="fas fa-map-marker-alt"></i> ${cliente ? cliente.end : ''}</div><div style="font-size:14px; background:#f1f5f9; padding:10px; border-radius:8px; border:1px solid var(--border); line-height:1.5; margin-bottom: 10px;">${ag.desc}</div>${materiaisHtml}<button class="btn-success" style="width: 100%; margin-top: 10px;" onclick="app.convertAgendaToLaudo(${ag.id}, ${ag.clienteId})"><i class="fas fa-check"></i> Executar Serviço</button></div>`;
                         }).join('');
                     };
                 };
             },
-
-            openNovoAgendamento(clienteIdContexto) {
-                document.getElementById('ag-data').value = new Date().toISOString().split('T')[0];
-                ui.changeView('view-novo-agendamento');
-                document.getElementById('topbar-title').innerText = "Novo Agendamento";
-                if(clienteIdContexto) document.getElementById('ag-cliente').value = clienteIdContexto;
-                else if(this.currentClientId) document.getElementById('ag-cliente').value = this.currentClientId;
-            },
-
-            openNovoLaudo() {
-                this.tempPhotos = [];
-                document.getElementById('laudo-photo-preview').innerHTML = '';
-                document.getElementById('laudo-data').value = new Date().toISOString().split('T')[0];
-                document.getElementById('laudo-cliente-id').value = this.currentClientId;
-                document.getElementById('laudo-agenda-id').value = ""; 
-                ui.changeView('view-novo-laudo');
-                document.getElementById('topbar-title').innerText = "Registro de Serviço";
-            },
-
-            convertAgendaToLaudo(agendaId, clienteId) {
-                this.currentClientId = clienteId;
-                this.openNovoLaudo();
-                document.getElementById('laudo-agenda-id').value = agendaId;
-            },
-
-            processPhotos(input) {
-                if(!input.files) return;
-                ui.toast("Comprimindo fotos...");
-                
-                Array.from(input.files).forEach(file => {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        const img = new Image();
-                        img.src = e.target.result;
-                        img.onload = () => {
-                            const canvas = document.createElement('canvas');
-                            const MAX_WIDTH = 800; 
-                            const scaleSize = MAX_WIDTH / img.width;
-                            canvas.width = MAX_WIDTH;
-                            canvas.height = img.height * scaleSize;
-                            
-                            const ctx = canvas.getContext('2d');
-                            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                            
-                            const base64Comprimida = canvas.toDataURL('image/jpeg', 0.7);
-                            this.tempPhotos.push(base64Comprimida);
-                            this.renderPhotoPreview();
-                        }
-                    };
-                    reader.readAsDataURL(file);
-                });
-                input.value = ''; 
-            },
-
-            renderPhotoPreview() {
-                const cont = document.getElementById('laudo-photo-preview');
-                cont.innerHTML = this.tempPhotos.map((foto, index) => `
-                    <div class="photo-item">
-                        <img src="${foto}">
-                        <button class="btn-remove-photo" onclick="app.removePhoto(${index})"><i class="fas fa-times"></i></button>
-                    </div>
-                `).join('');
-            },
-
-            removePhoto(index) {
-                this.tempPhotos.splice(index, 1);
-                this.renderPhotoPreview();
-            }
+            openNovoAgendamento(clienteIdContexto) { document.getElementById('ag-data').value = new Date().toISOString().split('T')[0]; document.getElementById('ag-materiais').value = ''; ui.changeView('view-novo-agendamento'); document.getElementById('topbar-title').innerText = "Novo Agendamento"; if(clienteIdContexto) document.getElementById('ag-cliente').value = clienteIdContexto; else if(this.currentClientId) document.getElementById('ag-cliente').value = this.currentClientId; },
+            openNovoLaudo() { this.tempPhotos = []; document.getElementById('laudo-photo-preview').innerHTML = ''; document.getElementById('laudo-data').value = new Date().toISOString().split('T')[0]; document.getElementById('laudo-cliente-id').value = this.currentClientId; document.getElementById('laudo-agenda-id').value = ""; document.getElementById('laudo-materiais').value = ""; document.getElementById('laudo-valor').value = ""; document.querySelectorAll('.pill.active').forEach(p => p.classList.remove('active')); signature.clear(); ui.changeView('view-novo-laudo'); document.getElementById('topbar-title').innerText = "Registro de Serviço"; setTimeout(() => signature.init(), 300); },
+            convertAgendaToLaudo(agendaId, clienteId) { this.currentClientId = clienteId; this.openNovoLaudo(); document.getElementById('laudo-agenda-id').value = agendaId; },
+            processPhotos(input) { if(!input.files) return; ui.toast("Comprimindo fotos..."); Array.from(input.files).forEach(file => { const reader = new FileReader(); reader.onload = (e) => { const img = new Image(); img.src = e.target.result; img.onload = () => { const canvas = document.createElement('canvas'); const MAX_WIDTH = 800; const scaleSize = MAX_WIDTH / img.width; canvas.width = MAX_WIDTH; canvas.height = img.height * scaleSize; canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height); this.tempPhotos.push(canvas.toDataURL('image/jpeg', 0.7)); this.renderPhotoPreview(); } }; reader.readAsDataURL(file); }); input.value = ''; },
+            renderPhotoPreview() { document.getElementById('laudo-photo-preview').innerHTML = this.tempPhotos.map((foto, idx) => `<div class="photo-item"><img src="${foto}"><button class="btn-remove-photo" onclick="app.removePhoto(${idx})"><i class="fas fa-times"></i></button></div>`).join(''); },
+            removePhoto(index) { this.tempPhotos.splice(index, 1); this.renderPhotoPreview(); }
         };
 
-        // GERAÇÃO DE PDF
         const pdf = {
-            generateLaudo(laudoId) {
-                ui.toast("Preparando PDF...");
-                
+            generateLaudo_e_Share(laudoId) {
+                ui.toast("Criando arquivo...");
                 database.transaction(["laudos", "clientes"], "readonly").objectStore("laudos").get(laudoId).onsuccess = (e) => {
                     const laudo = e.target.result;
-                    database.transaction("clientes", "readonly").objectStore("clientes").get(laudo.clienteId).onsuccess = (ev) => {
-                        const cliente = ev.target.result;
-                        this.buildAndPrint(laudo, cliente);
-                    };
+                    database.transaction("clientes", "readonly").objectStore("clientes").get(laudo.clienteId).onsuccess = (ev) => { this.buildAndPrint(laudo, ev.target.result); };
                 };
             },
-            
-            buildAndPrint(laudo, cliente) {
-                const container = document.getElementById('pdf-container');
-                const dataF = new Date(laudo.data + 'T12:00:00').toLocaleDateString('pt-BR');
-                const laudoNum = `OS-${Math.floor(Math.random() * 8999) + 1000}`;
-
-                let fotosHtml = laudo.fotos.map(f => `<div class="pdf-img-box"><img src="${f}"></div>`).join('');
-
-                container.innerHTML = `
-                    <div class="pdf-header">
-                        <div>
-                            <div class="pdf-title">Relatório de Serviço Técnico</div>
-                            <div style="color:#64748b; margin-top:5px;">Documento de finalização e evidência técnica</div>
-                        </div>
-                        <div style="text-align:right">
-                            <div style="background:var(--primary); color:white; padding:5px 10px; border-radius:4px; font-weight:bold; font-size:14px; display:inline-block;">${laudoNum}</div>
-                            <div style="font-size:12px; margin-top:5px; color:#64748b;">Data Execução: ${dataF}</div>
-                        </div>
-                    </div>
-
-                    <div class="pdf-info-box">
-                        <div style="font-size:10px; font-weight:bold; color:var(--accent); text-transform:uppercase; margin-bottom:5px;">Dados do Cliente / Local</div>
-                        <div style="font-size:16px; font-weight:bold; color:var(--primary);">${cliente.nome}</div>
-                        <div style="font-size:13px; color:#334155; margin-top:5px;">${cliente.end || 'Endereço não registrado'}</div>
-                        <div style="font-size:13px; color:#334155;">Telefone: ${cliente.tel || 'N/A'}</div>
-                    </div>
-
-                    <div style="font-size:12px; font-weight:bold; color:var(--primary); text-transform:uppercase; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:5px;">Descrição Técnica do Serviço Realizado:</div>
-                    <div style="font-size:13px; line-height:1.6; color:#334155; text-align:justify; white-space:pre-wrap;">${laudo.desc}</div>
-
-                    ${fotosHtml ? `
-                    <div style="margin-top:30px; page-break-inside: avoid;">
-                        <div style="font-size:12px; font-weight:bold; color:var(--primary); text-transform:uppercase; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:5px;">Evidências Fotográficas:</div>
-                        <div class="pdf-grid">${fotosHtml}</div>
-                    </div>` : ''}
-                    
-                    <div style="margin-top:50px; text-align:center; font-size:10px; color:#94a3b8; border-top:1px dashed #cbd5e1; padding-top:10px; page-break-inside: avoid;">
-                        Documento gerado eletronicamente para registro histórico de atendimento.
-                    </div>
-                `;
-
-                const opt = {
-                    margin: 10,
-                    filename: `Laudo_${cliente.nome.replace(/\s+/g, '_')}_${dataF.replace(/\//g, '-')}.pdf`,
-                    image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: { scale: 2, useCORS: true },
-                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            generateEstoque() {
+                ui.toast("Gerando PDF do Estoque...");
+                database.transaction("materiais", "readonly").objectStore("materiais").getAll().onsuccess = (e) => {
+                    const materiais = e.target.result; if(materiais.length === 0) return ui.toast("O estoque está vazio.", true);
+                    let totalGeral = 0; let linhasTabela = materiais.map(m => { totalGeral += (m.qtd * m.preco); return `<tr><td>${m.nome}</td><td style="text-align:center">${m.qtd}</td><td style="text-align:right">${BRL.format(m.preco)}</td><td style="text-align:right; font-weight:bold;">${BRL.format(m.qtd * m.preco)}</td></tr>`; }).join('');
+                    const container = document.getElementById('pdf-container');
+                    container.innerHTML = `<div class="pdf-header"><div><div class="pdf-title">Relatório de Estoque e Materiais</div><div style="color:#64748b; margin-top:5px;">Controle Interno de Ativos</div></div><div style="text-align:right"><div style="background:var(--primary); color:white; padding:5px 10px; border-radius:4px; font-weight:bold; font-size:14px; display:inline-block;">INVENTÁRIO</div><div style="font-size:12px; margin-top:5px; color:#64748b;">Data: ${new Date().toLocaleDateString('pt-BR')}</div></div></div><table class="table-pdf"><thead><tr><th>Item / Material</th><th style="text-align:center">Qtd</th><th style="text-align:right">Valor Unit.</th><th style="text-align:right">Valor Total</th></tr></thead><tbody>${linhasTabela}</tbody></table><div style="margin-top:20px; text-align:right; font-size:18px; font-weight:900; color:var(--primary);">Total Patrimonial: ${BRL.format(totalGeral)}</div>`;
+                    container.style.left = '0'; container.style.zIndex = '-1';
+                    html2pdf().set({ margin: 10, filename: `Estoque_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }).from(container).save().then(() => { container.style.left = '-9999px'; ui.toast("PDF gerado!"); });
                 };
+            },
+            buildAndPrint(laudo, cliente) {
+                const container = document.getElementById('pdf-container'); const dataF = new Date(laudo.data + 'T12:00:00').toLocaleDateString('pt-BR'); const fileName = `Laudo_${cliente.nome.replace(/\s+/g, '_')}_${dataF.replace(/\//g, '-')}.pdf`;
+                let fotosHtml = laudo.fotos && laudo.fotos.length ? laudo.fotos.map(f => `<div class="pdf-img-box"><img src="${f}"></div>`).join('') : ''; let checkHtml = laudo.checklist && laudo.checklist.length ? `<div style="margin-bottom:15px"><b>Serviços Verificados:</b><ul style="margin-top:5px; padding-left:20px; font-size:12px; color:#334155;">${laudo.checklist.map(c => `<li>${c}</li>`).join('')}</ul></div>` : ''; let matHtml = laudo.materiaisUtilizados ? `<div style="margin-bottom:15px"><b>Materiais Utilizados:</b><br><div style="font-size:12px; color:#334155; margin-top:5px;">${laudo.materiaisUtilizados}</div></div>` : ''; let valorHtml = laudo.valor ? `<div style="background:#f0fdf4; border:1px solid #16a34a; padding:15px; border-radius:8px; margin-top:20px; display:flex; justify-content:space-between; align-items:center;"><span style="color:#16a34a; font-weight:bold; font-size:12px; text-transform:uppercase;">Valor Total Cobrado / Recebido</span><span style="font-size:20px; font-weight:900; color:#166534;">${BRL.format(laudo.valor)}</span></div>` : ''; let assHtml = laudo.assinatura ? `<div style="margin-top:40px; text-align:center; page-break-inside: avoid;"><img src="${laudo.assinatura}" style="height:80px; border-bottom:1px solid var(--text); padding-bottom:10px; margin-bottom:5px;"><div style="font-size:12px; font-weight:bold;">ASSINATURA DO CLIENTE (${cliente.nome})</div></div>` : '';
 
-                container.style.left = '0';
-                container.style.zIndex = '-1';
+                container.innerHTML = `<div class="pdf-header"><div><div class="pdf-title">Relatório de Serviço Técnico</div><div style="color:#64748b; margin-top:5px;">Documento de finalização e evidência técnica</div></div><div style="text-align:right"><div style="background:var(--primary); color:white; padding:5px 10px; border-radius:4px; font-weight:bold; font-size:14px; display:inline-block;">OS-${Math.floor(Math.random() * 8999) + 1000}</div><div style="font-size:12px; margin-top:5px; color:#64748b;">Data Execução: ${dataF}</div></div></div><div class="pdf-info-box"><div style="font-size:10px; font-weight:bold; color:var(--accent); text-transform:uppercase; margin-bottom:5px;">Dados do Cliente / Local</div><div style="font-size:16px; font-weight:bold; color:var(--primary);">${cliente.nome}</div><div style="font-size:13px; color:#334155; margin-top:5px;">${cliente.end || 'Endereço não registrado'}</div><div style="font-size:13px; color:#334155;">Telefone: ${cliente.tel || 'N/A'}</div>${cliente.equip ? `<div style="font-size:12px; color:#64748b; margin-top:5px;"><b>Equipamentos:</b> ${cliente.equip}</div>` : ''}</div><div style="font-size:12px; font-weight:bold; color:var(--primary); text-transform:uppercase; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:5px;">Descrição Técnica do Serviço Realizado:</div>${checkHtml}${matHtml}<div style="font-size:13px; line-height:1.6; color:#334155; text-align:justify; white-space:pre-wrap;">${laudo.desc}</div>${valorHtml}${fotosHtml ? `<div style="margin-top:30px; page-break-inside: avoid;"><div style="font-size:12px; font-weight:bold; color:var(--primary); text-transform:uppercase; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:5px;">Evidências Fotográficas:</div><div class="pdf-grid">${fotosHtml}</div></div>` : ''}${assHtml}<div style="margin-top:40px; text-align:center; font-size:10px; color:#94a3b8; border-top:1px dashed #cbd5e1; padding-top:10px; page-break-inside: avoid;">Documento gerado eletronicamente para registro histórico de atendimento.</div>`;
+                container.style.left = '0'; container.style.zIndex = '-1';
                 
-                html2pdf().set(opt).from(container).save().then(() => {
+                const opt = { margin: 10, filename: fileName, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
+                
+                // MÁGICA DO WHATSAPP AQUI (Web Share API)
+                html2pdf().set(opt).from(container).outputPdf('blob').then((blob) => {
                     container.style.left = '-9999px';
-                    ui.toast("PDF gerado com sucesso!");
-                }).catch(() => {
-                    container.style.left = '-9999px';
-                    ui.toast("Erro ao gerar o PDF.", true);
+                    const file = new File([blob], fileName, { type: 'application/pdf' });
+                    
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        navigator.share({
+                            title: 'Laudo Técnico de Serviço',
+                            text: `Olá ${cliente.nome}! Tudo bem? Segue em anexo o relatório técnico e as fotos do serviço realizado.`,
+                            files: [file]
+                        }).then(() => ui.toast("Enviado com sucesso!"))
+                          .catch((err) => { html2pdf().set(opt).from(container).save(); }); // Se ele cancelar a tela, baixa na memória normal.
+                    } else {
+                        html2pdf().set(opt).from(container).save().then(() => ui.toast("PDF baixado no aparelho!"));
+                    }
                 });
             }
         };
 
-        // SISTEMA DE BACKUP SEMANAL
         const backup = {
-            checkWeekly() {
-                const lastBackup = localStorage.getItem('fieldapp_last_backup');
-                const now = new Date().getTime();
-                const sevenDays = 7 * 24 * 60 * 60 * 1000;
-
-                if (!lastBackup || (now - parseInt(lastBackup)) > sevenDays) {
-                    setTimeout(() => {
-                        ui.toast("Aviso de Segurança: Faça o backup do sistema nos Ajustes!", true);
-                    }, 2000);
-                }
-            },
-
+            checkWeekly() { const lastBackup = localStorage.getItem('fieldapp_last_backup'); if (!lastBackup || (new Date().getTime() - parseInt(lastBackup)) > 7*24*60*60*1000) setTimeout(() => ui.toast("Aviso: Faça backup nos Ajustes!", true), 2000); },
             async download() {
-                ui.toast("Gerando arquivo de segurança...");
-                const tx = database.transaction(['clientes', 'agendamentos', 'laudos'], 'readonly');
-                
-                const data = {
-                    clientes: await new Promise(r => tx.objectStore('clientes').getAll().onsuccess = e => r(e.target.result)),
-                    agendamentos: await new Promise(r => tx.objectStore('agendamentos').getAll().onsuccess = e => r(e.target.result)),
-                    laudos: await new Promise(r => tx.objectStore('laudos').getAll().onsuccess = e => r(e.target.result)),
-                    timestamp: new Date().toISOString()
-                };
-
-                const blob = new Blob([JSON.stringify(data)], {type: "application/json"});
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `Backup_Servicos_${new Date().toLocaleDateString().replace(/\//g,'-')}.json`;
-                a.click();
-                URL.revokeObjectURL(url);
-
-                localStorage.setItem('fieldapp_last_backup', new Date().getTime().toString());
-                ui.toast("Backup baixado! Salve em um local seguro.");
+                ui.toast("Gerando arquivo..."); const tx = database.transaction(['clientes', 'agendamentos', 'laudos', 'materiais'], 'readonly');
+                const data = { clientes: await new Promise(r => tx.objectStore('clientes').getAll().onsuccess = e => r(e.target.result)), agendamentos: await new Promise(r => tx.objectStore('agendamentos').getAll().onsuccess = e => r(e.target.result)), laudos: await new Promise(r => tx.objectStore('laudos').getAll().onsuccess = e => r(e.target.result)), materiais: await new Promise(r => tx.objectStore('materiais').getAll().onsuccess = e => r(e.target.result)), timestamp: new Date().toISOString() };
+                const blob = new Blob([JSON.stringify(data)], {type: "application/json"}); const url = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = url; a.download = `Backup_Servicos_${new Date().toLocaleDateString().replace(/\//g,'-')}.json`; a.click(); URL.revokeObjectURL(url);
+                localStorage.setItem('fieldapp_last_backup', new Date().getTime().toString()); ui.toast("Backup baixado! Salve em local seguro.");
             },
-
             restore(input) {
-                const file = input.files[0];
-                if(!file) return;
-                if(!confirm("Atenção: Isso vai APAGAR os dados atuais e substituir pelo backup. Continuar?")) { input.value = ''; return; }
-                
+                if(!input.files[0] || !confirm("APAGAR dados atuais e substituir pelo backup?")) { input.value = ''; return; }
                 const reader = new FileReader();
                 reader.onload = async (e) => {
                     try {
-                        const data = JSON.parse(e.target.result);
-                        const tx = database.transaction(['clientes', 'agendamentos', 'laudos'], 'readwrite');
-                        
-                        await new Promise(r => tx.objectStore('clientes').clear().onsuccess = r);
-                        await new Promise(r => tx.objectStore('agendamentos').clear().onsuccess = r);
-                        await new Promise(r => tx.objectStore('laudos').clear().onsuccess = r);
-
-                        if(data.clientes) data.clientes.forEach(i => tx.objectStore('clientes').add(i));
-                        if(data.agendamentos) data.agendamentos.forEach(i => tx.objectStore('agendamentos').add(i));
-                        if(data.laudos) data.laudos.forEach(i => tx.objectStore('laudos').add(i));
-                        
-                        tx.oncomplete = () => { 
-                            ui.toast("Sistema restaurado com sucesso!"); 
-                            setTimeout(() => location.reload(), 1500); 
-                        };
-                    } catch(err) {
-                        ui.toast("Arquivo inválido!", true);
-                        input.value = '';
-                    }
-                };
-                reader.readAsText(file);
+                        const data = JSON.parse(e.target.result); const tx = database.transaction(['clientes', 'agendamentos', 'laudos', 'materiais'], 'readwrite');
+                        await new Promise(r => tx.objectStore('clientes').clear().onsuccess = r); await new Promise(r => tx.objectStore('agendamentos').clear().onsuccess = r); await new Promise(r => tx.objectStore('laudos').clear().onsuccess = r); if (database.objectStoreNames.contains("materiais")) await new Promise(r => tx.objectStore('materiais').clear().onsuccess = r);
+                        if(data.clientes) data.clientes.forEach(i => tx.objectStore('clientes').add(i)); if(data.agendamentos) data.agendamentos.forEach(i => tx.objectStore('agendamentos').add(i)); if(data.laudos) data.laudos.forEach(i => tx.objectStore('laudos').add(i)); if(data.materiais && database.objectStoreNames.contains("materiais")) data.materiais.forEach(i => tx.objectStore('materiais').add(i));
+                        tx.oncomplete = () => { ui.toast("Restaurado com sucesso!"); setTimeout(() => location.reload(), 1500); };
+                    } catch(err) { ui.toast("Arquivo inválido!", true); input.value = ''; }
+                }; reader.readAsText(input.files[0]);
             }
         };
 
-        // INICIALIZAÇÃO E REGISTRO DO SERVICE WORKER (PWA)
         window.onload = () => {
-            db.init();
-
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(registration => {
-                        console.log('PWA instalado com sucesso! Escopo:', registration.scope);
-                    })
-                    .catch(err => {
-                        console.log('Erro na instalação do PWA:', err);
-                    });
-            }
+            db.init(); dictation.init();
+            if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js').catch(err => console.log('Erro no PWA:', err)); }
         };
     </script>
 </body>
