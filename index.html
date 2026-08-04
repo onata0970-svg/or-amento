@@ -575,7 +575,6 @@
                     const tx = database.transaction("clientes", "readwrite");
                     const store = tx.objectStore("clientes");
                     
-                    // Só atualiza a tela quando a transação inteira terminar com sucesso
                     tx.oncomplete = () => {
                         ui.changeTab('view-clientes', document.querySelectorAll('.nav-item')[0], 'Clientes'); 
                     };
@@ -872,31 +871,31 @@
             executeDownloadOrShare() {
                 ui.toast("Gerando PDF de alta qualidade, aguarde...", false, 3500);
                 
-                const workerContainer = document.createElement('div');
-                workerContainer.innerHTML = this.currentHtmlContent;
-                workerContainer.style.width = '794px'; 
-                workerContainer.style.padding = '40px';
-                workerContainer.style.background = 'white';
-                workerContainer.style.color = '#1e293b';
-                workerContainer.style.fontFamily = "'Inter', sans-serif";
-                
-                workerContainer.style.position = 'absolute';
-                workerContainer.style.top = '0';
-                workerContainer.style.left = '0';
-                workerContainer.style.zIndex = '-9999';
-                document.body.appendChild(workerContainer);
+                // Em vez de criar algo escondido, pegamos o elemento exato que está renderizado e visível na tela
+                const element = document.getElementById('pdf-container');
 
                 const opt = { 
                     margin: 10, 
                     filename: this.currentFileName, 
                     image: { type: 'jpeg', quality: 0.98 }, 
-                    html2canvas: { scale: 2, useCORS: true, scrollY: 0, scrollX: 0 }, 
+                    html2canvas: { 
+                        scale: 2, 
+                        useCORS: true, 
+                        scrollY: 0, 
+                        scrollX: 0,
+                        // Essa função onclone age na cópia interna que a biblioteca faz para gerar o PDF.
+                        // Aqui mandamos ela ignorar o zoom de escala 0.42 que usamos apenas para a tela do celular.
+                        onclone: (clonedDoc) => {
+                            const clonedEl = clonedDoc.getElementById('pdf-container');
+                            clonedEl.style.transform = 'none'; 
+                            clonedEl.style.boxShadow = 'none';
+                            clonedEl.style.margin = '0';
+                        }
+                    }, 
                     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
                 };
                 
-                html2pdf().set(opt).from(workerContainer).output('blob').then((blob) => {
-                    document.body.removeChild(workerContainer); 
-                    
+                html2pdf().set(opt).from(element).output('blob').then((blob) => {
                     const file = new File([blob], this.currentFileName, { type: 'application/pdf' });
                     
                     if (navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -914,7 +913,6 @@
                         this.forceDownload(blob);
                     }
                 }).catch(err => {
-                    if(document.body.contains(workerContainer)) document.body.removeChild(workerContainer);
                     console.error(err);
                     ui.toast("Erro ao processar o arquivo PDF.", true);
                 });
@@ -959,7 +957,6 @@
                         data[store] = e.target.result;
                         completed++;
                         
-                        // Quando todas as tabelas forem lidas, gera o arquivo
                         if(completed === stores.length) {
                             const blob = new Blob([JSON.stringify(data)], {type: "application/json"}); 
                             const url = URL.createObjectURL(blob);
