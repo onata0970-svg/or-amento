@@ -1,5 +1,5 @@
 // Alterar a versão (v2, v3...) obriga o celular dos usuários a baixar as atualizações do HTML
-const CACHE_NAME = 'campo-pro-v2';
+const CACHE_NAME = 'campo-pro-v3';
 
 const urlsToCache = [
   './',
