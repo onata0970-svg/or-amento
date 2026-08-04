@@ -563,11 +563,44 @@
                 database.transaction("config", "readwrite").objectStore("config").put(configEmpresa).onsuccess = () => { ui.toast("Dados da Empresa Salvos!"); };
             },
             saveCliente() {
-                const nome = document.getElementById('cli-nome').value; const tel = document.getElementById('cli-tel').value; const end = document.getElementById('cli-end').value; const equip = document.getElementById('cli-equip').value; const editId = document.getElementById('cli-id-edit').value;
+                const nome = document.getElementById('cli-nome').value.trim(); 
+                const tel = document.getElementById('cli-tel').value; 
+                const end = document.getElementById('cli-end').value; 
+                const equip = document.getElementById('cli-equip').value; 
+                const editId = document.getElementById('cli-id-edit').value;
+                
                 if(!nome) return ui.toast("Nome é obrigatório!", true);
-                const tx = database.transaction("clientes", "readwrite").objectStore("clientes");
-                if (editId) { tx.get(parseInt(editId)).onsuccess = (e) => { let c = e.target.result; c.nome = nome; c.tel = tel; c.end = end; c.equip = equip; tx.put(c).onsuccess = () => { ui.toast("Cliente atualizado!"); ui.changeTab('view-clientes', document.querySelectorAll('.nav-item')[0], 'Clientes'); }; }; } 
-                else { tx.add({ nome, tel, end, equip, cofre: '' }).onsuccess = () => { ui.toast("Cliente cadastrado!"); ui.changeTab('view-clientes', document.querySelectorAll('.nav-item')[0], 'Clientes'); }; }
+                
+                try {
+                    const tx = database.transaction("clientes", "readwrite");
+                    const store = tx.objectStore("clientes");
+                    
+                    // Só atualiza a tela quando a transação inteira terminar com sucesso
+                    tx.oncomplete = () => {
+                        ui.changeTab('view-clientes', document.querySelectorAll('.nav-item')[0], 'Clientes'); 
+                    };
+                    
+                    tx.onerror = (e) => {
+                        ui.toast("Erro ao salvar cliente.", true);
+                        console.error("Erro no banco:", e);
+                    };
+
+                    if (editId) { 
+                        store.get(parseInt(editId)).onsuccess = (e) => { 
+                            let c = e.target.result; 
+                            if(c) {
+                                c.nome = nome; c.tel = tel; c.end = end; c.equip = equip; 
+                                store.put(c).onsuccess = () => ui.toast("Cliente atualizado!"); 
+                            }
+                        }; 
+                    } else { 
+                        store.add({ nome, tel, end, equip, cofre: '' }).onsuccess = () => { 
+                            ui.toast("Cliente cadastrado!"); 
+                        }; 
+                    }
+                } catch(err) {
+                    ui.toast("Erro ao conectar no banco de dados.", true);
+                }
             },
             deleteCliente(id) { if(!confirm("Remover permanentemente?")) return; database.transaction("clientes", "readwrite").objectStore("clientes").delete(id).onsuccess = () => { ui.toast("Removido."); ui.changeTab('view-clientes', document.querySelectorAll('.nav-item')[0], 'Clientes'); }; },
             saveAgendamento() {
@@ -680,11 +713,27 @@
                 database.transaction("clientes", "readonly").objectStore("clientes").get(id).onsuccess = (e) => { const c = e.target.result; document.getElementById('cli-id-edit').value = c.id; document.getElementById('cli-nome').value = c.nome; document.getElementById('cli-tel').value = c.tel; document.getElementById('cli-end').value = c.end; document.getElementById('cli-equip').value = c.equip || ''; document.getElementById('btn-save-cli').innerText = "Atualizar Cadastro"; ui.changeView('view-novo-cliente'); };
             },
             renderClientes() {
-                document.getElementById('search-cli').value = ''; database.transaction("clientes", "readonly").objectStore("clientes").getAll().onsuccess = (e) => {
-                    const clientes = e.target.result; const cont = document.getElementById('lista-clientes-container');
-                    if(clientes.length === 0) { cont.innerHTML = '<div style="text-align:center; padding:20px; color:#94a3b8">Nenhum cliente cadastrado.</div>'; return; }
-                    cont.innerHTML = clientes.map(c => `<div class="list-row"><div style="flex:1" onclick="app.openClientProfile(${c.id})"><div class="title">${c.nome}</div><div class="subtitle">${c.tel || 'Sem telefone'} • ${c.end || 'Sem endereço'}</div></div><div class="action-btns"><button class="btn-edit" onclick="app.editCliente(${c.id})"><i class="fas fa-pen"></i></button></div></div>`).join('');
-                };
+                document.getElementById('search-cli').value = ''; 
+                try {
+                    const tx = database.transaction("clientes", "readonly");
+                    tx.objectStore("clientes").getAll().onsuccess = (e) => {
+                        const clientes = e.target.result; 
+                        const cont = document.getElementById('lista-clientes-container');
+                        
+                        if(clientes.length === 0) { 
+                            cont.innerHTML = '<div style="text-align:center; padding:20px; color:#94a3b8">Nenhum cliente cadastrado.</div>'; 
+                            return; 
+                        }
+                        
+                        cont.innerHTML = clientes.map(c => `<div class="list-row"><div style="flex:1" onclick="app.openClientProfile(${c.id})"><div class="title">${c.nome}</div><div class="subtitle">${c.tel || 'Sem telefone'} • ${c.end || 'Sem endereço'}</div></div><div class="action-btns"><button class="btn-edit" onclick="app.editCliente(${c.id})"><i class="fas fa-pen"></i></button></div></div>`).join('');
+                    };
+                    
+                    tx.onerror = () => {
+                        document.getElementById('lista-clientes-container').innerHTML = '<div style="text-align:center; padding:20px; color:var(--danger)">Erro ao carregar clientes.</div>';
+                    };
+                } catch(err) {
+                    console.error("Erro ao renderizar tela inicial:", err);
+                }
             },
             salvarCofre() { const tx = database.transaction("clientes", "readwrite").objectStore("clientes"); tx.get(this.currentClientId).onsuccess = (e) => { let c = e.target.result; c.cofre = document.getElementById('cli-cofre').value; tx.put(c).onsuccess = () => ui.toast("Cofre atualizado!"); }; },
             openClientProfile(id) {
@@ -879,34 +928,82 @@
         };
 
         const backup = {
-            checkWeekly() { const lastBackup = localStorage.getItem('fieldapp_last_backup'); if (!lastBackup || (new Date().getTime() - parseInt(lastBackup)) > 7*24*60*60*1000) setTimeout(() => ui.toast("Aviso: Faça backup na aba Financeiro!", true), 2000); },
-            async download() {
-                ui.toast("Gerando arquivo..."); const tx = database.transaction(['clientes', 'agendamentos', 'laudos', 'materiais', 'orcamentos', 'despesas', 'config'], 'readonly');
-                const data = { 
-                    clientes: await new Promise(r => tx.objectStore('clientes').getAll().onsuccess = e => r(e.target.result)), 
-                    agendamentos: await new Promise(r => tx.objectStore('agendamentos').getAll().onsuccess = e => r(e.target.result)), 
-                    laudos: await new Promise(r => tx.objectStore('laudos').getAll().onsuccess = e => r(e.target.result)), 
-                    materiais: await new Promise(r => tx.objectStore('materiais').getAll().onsuccess = e => r(e.target.result)), 
-                    orcamentos: await new Promise(r => tx.objectStore('orcamentos').getAll().onsuccess = e => r(e.target.result)), 
-                    despesas: await new Promise(r => tx.objectStore('despesas').getAll().onsuccess = e => r(e.target.result)), 
-                    config: await new Promise(r => tx.objectStore('config').getAll().onsuccess = e => r(e.target.result)),
-                    timestamp: new Date().toISOString() 
-                };
-                const blob = new Blob([JSON.stringify(data)], {type: "application/json"}); const url = URL.createObjectURL(blob);
-                const a = document.createElement('a'); a.href = url; a.download = `Backup_Servicos_${new Date().toLocaleDateString().replace(/\//g,'-')}.json`; a.click(); URL.revokeObjectURL(url);
-                localStorage.setItem('fieldapp_last_backup', new Date().getTime().toString()); ui.toast("Backup baixado! Salve em local seguro.");
+            checkWeekly() { 
+                const lastBackup = localStorage.getItem('fieldapp_last_backup'); 
+                if (!lastBackup || (new Date().getTime() - parseInt(lastBackup)) > 7*24*60*60*1000) 
+                    setTimeout(() => ui.toast("Aviso: Faça backup na aba Financeiro!", true), 2000); 
             },
+            
+            download() {
+                ui.toast("Gerando arquivo de backup..."); 
+                const stores = ['clientes', 'agendamentos', 'laudos', 'materiais', 'orcamentos', 'despesas', 'config'];
+                const tx = database.transaction(stores, 'readonly');
+                
+                const data = { timestamp: new Date().toISOString() };
+                let completed = 0;
+
+                stores.forEach(store => {
+                    const req = tx.objectStore(store).getAll();
+                    req.onsuccess = (e) => {
+                        data[store] = e.target.result;
+                        completed++;
+                        
+                        // Quando todas as tabelas forem lidas, gera o arquivo
+                        if(completed === stores.length) {
+                            const blob = new Blob([JSON.stringify(data)], {type: "application/json"}); 
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a'); 
+                            a.href = url; 
+                            a.download = `Backup_Servicos_${new Date().toLocaleDateString().replace(/\//g,'-')}.json`; 
+                            a.click(); 
+                            URL.revokeObjectURL(url);
+                            localStorage.setItem('fieldapp_last_backup', new Date().getTime().toString()); 
+                            ui.toast("Backup baixado! Salve em local seguro.");
+                        }
+                    };
+                });
+                
+                tx.onerror = () => ui.toast("Erro ao gerar o backup.", true);
+            },
+            
             restore(input) {
                 if(!input.files[0] || !confirm("APAGAR dados atuais e substituir pelo backup?")) { input.value = ''; return; }
                 const reader = new FileReader();
-                reader.onload = async (e) => {
+                
+                reader.onload = (e) => {
                     try {
-                        const data = JSON.parse(e.target.result); const tx = database.transaction(['clientes', 'agendamentos', 'laudos', 'materiais', 'orcamentos', 'despesas', 'config'], 'readwrite');
-                        await new Promise(r => tx.objectStore('clientes').clear().onsuccess = r); await new Promise(r => tx.objectStore('agendamentos').clear().onsuccess = r); await new Promise(r => tx.objectStore('laudos').clear().onsuccess = r); if (database.objectStoreNames.contains("materiais")) await new Promise(r => tx.objectStore('materiais').clear().onsuccess = r); if (database.objectStoreNames.contains("orcamentos")) await new Promise(r => tx.objectStore('orcamentos').clear().onsuccess = r); if (database.objectStoreNames.contains("despesas")) await new Promise(r => tx.objectStore('despesas').clear().onsuccess = r); if (database.objectStoreNames.contains("config")) await new Promise(r => tx.objectStore('config').clear().onsuccess = r);
-                        if(data.clientes) data.clientes.forEach(i => tx.objectStore('clientes').add(i)); if(data.agendamentos) data.agendamentos.forEach(i => tx.objectStore('agendamentos').add(i)); if(data.laudos) data.laudos.forEach(i => tx.objectStore('laudos').add(i)); if(data.materiais && database.objectStoreNames.contains("materiais")) data.materiais.forEach(i => tx.objectStore('materiais').add(i)); if(data.orcamentos && database.objectStoreNames.contains("orcamentos")) data.orcamentos.forEach(i => tx.objectStore('orcamentos').add(i)); if(data.despesas && database.objectStoreNames.contains("despesas")) data.despesas.forEach(i => tx.objectStore('despesas').add(i)); if(data.config && database.objectStoreNames.contains("config")) data.config.forEach(i => tx.objectStore('config').add(i));
-                        tx.oncomplete = () => { ui.toast("Restaurado com sucesso!"); setTimeout(() => location.reload(), 1500); };
-                    } catch(err) { ui.toast("Arquivo inválido!", true); input.value = ''; }
-                }; reader.readAsText(input.files[0]);
+                        const data = JSON.parse(e.target.result); 
+                        const stores = ['clientes', 'agendamentos', 'laudos', 'materiais', 'orcamentos', 'despesas', 'config'];
+                        
+                        const tx = database.transaction(stores, 'readwrite');
+                        
+                        stores.forEach(store => {
+                            if (database.objectStoreNames.contains(store)) {
+                                tx.objectStore(store).clear(); // Limpa tabela
+                                if(data[store]) {
+                                    // Insere os dados recuperados
+                                    data[store].forEach(item => tx.objectStore(store).add(item));
+                                }
+                            }
+                        });
+                        
+                        tx.oncomplete = () => { 
+                            ui.toast("Backup restaurado com sucesso!"); 
+                            setTimeout(() => location.reload(), 1500); 
+                        };
+                        
+                        tx.onerror = () => { 
+                            ui.toast("Erro ao restaurar banco de dados.", true); 
+                            input.value = ''; 
+                        };
+                        
+                    } catch(err) { 
+                        ui.toast("Arquivo de backup inválido ou corrompido!", true); 
+                        input.value = ''; 
+                    }
+                }; 
+                
+                reader.readAsText(input.files[0]);
             }
         };
 
