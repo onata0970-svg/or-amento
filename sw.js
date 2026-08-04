@@ -1,52 +1,53 @@
-// Alterar a versão (v2, v3...) obriga o celular dos usuários a baixar as atualizações do HTML
-const CACHE_NAME = 'campo-pro-v4';
+const CACHE_NAME = 'campo-pro-auto-v1';
 
+// Arquivos leves de suporte offline (bibliotecas externas)
 const urlsToCache = [
   './',
-  './index.html',
-  './manifest.json',
-  // Cache das bibliotecas que geram o PDF e os Ícones
   'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
+  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap'
 ];
 
-// Instala o App e salva os arquivos no celular
+// Instala o Service Worker e cacheia apenas as bibliotecas estáticas
 self.addEventListener('install', event => {
+  self.skipWaiting(); // Força o SW a assumir o controle imediatamente
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Arquivos em cache offline salvos com sucesso.');
         return cache.addAll(urlsToCache);
       })
   );
 });
 
-// Faz o celular abrir a versão offline se a internet cair
-self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        if (response) {
-          return response; // Retorna rápido do cache local
-        }
-        return fetch(event.request); // Tenta buscar da internet se não tiver no cache
-      })
-  );
-});
-
-// Remove versões velhas quando você atualiza o código
+// Ativa e limpa caches antigos automaticamente
 self.addEventListener('activate', event => {
-  const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
+          if (cacheName !== CACHE_NAME) {
             return caches.delete(cacheName);
           }
         })
       );
-    })
+    }).then(() => self.clients.claim()) // Assume o controle das abas abertas na hora
+  );
+});
+
+// Estratégia "Network First" para o index.html e arquivos locais:
+// Tenta buscar a versão mais nova na web. Se estiver sem internet, usa o cache.
+self.addEventListener('fetch', event => {
+  if (event.request.method !== 'GET') return;
+
+  event.respondWith(
+    fetch(event.request)
+      .then(response => {
+        // Se encontrou na rede, atualiza o cache silenciosamente e retorna
+        return response;
+      })
+      .catch(() => {
+        // Se estiver sem internet (offline), busca no cache local do celular
+        return caches.match(event.request);
+      })
   );
 });
