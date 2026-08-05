@@ -367,12 +367,59 @@
             
             <div id="pdf-wrapper">
                 <div class="scale-wrapper">
-                    <!-- O id pdf-container-view é apenas visual -->
                     <div id="pdf-container-view" class="pdf-page-container"></div>
                 </div>
             </div>
             
             <button class="btn btn-success" id="btn-final-pdf" onclick="pdf.executeDownloadOrShare()" style="margin-bottom: 20px;"><i class="fab fa-whatsapp"></i> Gerar e Enviar PDF</button>
+        </div>
+
+        <!-- NOVA TELA: ANÁLISE DE PROJETO IA -->
+        <div id="view-analise-projeto" class="view">
+            <button class="btn-back" onclick="ui.changeView('view-ferramentas')"><i class="fas fa-chevron-left"></i> Voltar</button>
+            <div class="card" style="border-left: 4px solid var(--purple);">
+                <h3 style="font-size: 17px; color: var(--primary); margin-bottom: 15px;"><i class="fas fa-brain" style="color: var(--purple)"></i> Visão Computacional (IA)</h3>
+                
+                <div id="ia-loading-overlay" style="text-align: center; padding: 40px 20px; color: var(--purple);">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 30px; margin-bottom: 15px;"></i>
+                    <p style="font-size: 14px; font-weight: 600;">Lendo projeto... Isso pode levar alguns segundos dependendo do arquivo.</p>
+                </div>
+                
+                <div id="ia-canvas-wrapper" style="display:none;">
+                    <p style="font-size:12px; color:var(--ios-gray); margin-bottom:10px;">Os pontos encontrados pela IA estão marcados na imagem abaixo:</p>
+                    
+                    <!-- Canvas interativo -->
+                    <div style="overflow: auto; max-height: 400px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 15px;">
+                        <canvas id="ia-canvas" style="max-width: 100%; height: auto; display: block;"></canvas>
+                    </div>
+                    
+                    <!-- Placar de Contagem -->
+                    <div class="dash-grid" style="gap: 8px; margin-bottom: 15px;">
+                        <div class="dash-box" style="padding: 10px; background: rgba(52, 199, 89, 0.1);"><div style="font-size:10px; font-weight:bold; color:var(--success);">TOMADAS</div><div id="ia-count-tomada" style="font-size:18px; font-weight:800; color:var(--primary);">0</div></div>
+                        <div class="dash-box" style="padding: 10px; background: rgba(255, 149, 0, 0.1);"><div style="font-size:10px; font-weight:bold; color:var(--warning);">ILUMINAÇÃO</div><div id="ia-count-iluminacao" style="font-size:18px; font-weight:800; color:var(--primary);">0</div></div>
+                        <div class="dash-box" style="padding: 10px; background: rgba(90, 200, 250, 0.1);"><div style="font-size:10px; font-weight:bold; color:var(--info);">INTERRUPTORES</div><div id="ia-count-interruptor" style="font-size:18px; font-weight:800; color:var(--primary);">0</div></div>
+                        <div class="dash-box" style="padding: 10px; background: rgba(175, 82, 222, 0.1);"><div style="font-size:10px; font-weight:bold; color:var(--purple);">DISJUNTORES</div><div id="ia-count-disjuntor" style="font-size:18px; font-weight:800; color:var(--primary);">0</div></div>
+                    </div>
+
+                    <!-- Sistema de Ensino da IA -->
+                    <div style="background: var(--ios-input-bg); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                        <label style="color: var(--primary); font-size:13px;"><i class="fas fa-graduation-cap"></i> A IA errou algo na legenda?</label>
+                        <p style="font-size: 11px; color:var(--ios-gray); margin-bottom:10px; text-transform:none;">Ensine uma nova palavra e ela fará a recontagem da imagem automaticamente.</p>
+                        <div style="display:flex; gap:10px; margin-top:5px;">
+                            <input type="text" id="ia-nova-palavra" placeholder="Ex: arandela" style="margin:0; flex:1; background:white; font-size:14px; padding:10px;">
+                            <select id="ia-nova-categoria" style="margin:0; flex:1; background-color:white; font-size:14px; padding:10px;">
+                                <option value="tomada">Tomada</option>
+                                <option value="iluminacao">Iluminação</option>
+                                <option value="interruptor">Interruptor</option>
+                                <option value="disjuntor">Disjuntor</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-purple" style="margin-top: 10px; padding: 10px;" onclick="ferramentas.ensinarIA()"><i class="fas fa-sync-alt"></i> Aprender e Reanalisar</button>
+                    </div>
+                    
+                    <button class="btn btn-success" onclick="ferramentas.gerarOrcamentoDoProjeto()">Avançar para Orçamento <i class="fas fa-arrow-right"></i></button>
+                </div>
+            </div>
         </div>
 
         <!-- TELA: FERRAMENTAS TÉCNICAS -->
@@ -381,17 +428,11 @@
             <!-- LEITOR DE PROJETO ELÉTRICO HÍBRIDO (FOTO OU PDF) -->
             <div class="card" style="border-left: 4px solid var(--purple);">
                 <h3 style="font-size: 17px; color: var(--primary); margin-bottom: 10px;"><i class="fas fa-brain" style="color: var(--purple)"></i> Leitor de Projetos (IA)</h3>
-                <p style="font-size: 14px; color: var(--ios-gray); margin-bottom: 16px;">Tire uma foto ou faça upload do <b>PDF do Projeto Elétrico</b>. A IA vai contar os pontos.</p>
+                <p style="font-size: 14px; color: var(--ios-gray); margin-bottom: 16px;">Faça upload do <b>PDF ou Foto da Legenda</b>. A IA vai analisar a imagem e contar os pontos elétricos.</p>
                 
-                <div style="position: relative; margin-bottom: 16px;">
-                    <input type="file" accept="image/*, application/pdf" id="projeto-file" onchange="ferramentas.analisarProjeto(this)" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer; z-index: 10;">
+                <div style="position: relative; margin-bottom: 5px;">
+                    <input type="file" accept="image/*, application/pdf" id="projeto-file" onchange="ferramentas.iniciarAnaliseVisiva(this)" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer; z-index: 10;">
                     <button class="btn btn-purple"><i class="fas fa-file-upload"></i> Escanear (Foto ou PDF)</button>
-                </div>
-                
-                <div id="projeto-loading" style="display: none; text-align: center; color: var(--purple); font-size: 13px; margin-bottom: 10px;"><i class="fas fa-spinner fa-spin"></i> Lendo arquivo e legendas...</div>
-                <div id="projeto-result" style="display: none; margin-top: 15px; padding-top: 15px; border-top: 0.5px solid var(--border);">
-                    <div id="projeto-itens-encontrados" style="margin-bottom: 16px; font-size:14px; color:var(--text);"></div>
-                    <button class="btn btn-success" onclick="ferramentas.gerarOrcamentoDoProjeto()">Gerar Orçamento Automático <i class="fas fa-arrow-right"></i></button>
                 </div>
             </div>
 
@@ -531,6 +572,34 @@
         btnInstalar.addEventListener('click', async () => { if (deferredPrompt) { deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; btnInstalar.style.display = 'none'; } });
         window.addEventListener('appinstalled', () => { btnInstalar.style.display = 'none'; ui.toast("Instalado com sucesso!"); });
 
+        // BANCO DE DADOS DE INTELIGÊNCIA ARTIFICIAL E CORES DAS CAIXAS
+        const iaConfig = {
+            dicionario: {
+                tomada: ['tomada', 'tug', 'tue', 'pt', 'pto'],
+                iluminacao: ['ilumina', 'lâmpada', 'lampada', 'luminária', 'luminaria', 'led', 'w', 'arandela'],
+                interruptor: ['interruptor', 'tecla', 'seção', 'secao'],
+                disjuntor: ['disjuntor', 'qdc', 'quadro', 'dpm', 'dps', 'dr', 'dj']
+            },
+            cores: {
+                tomada: 'rgba(52, 199, 89, 0.4)', // Verde
+                iluminacao: 'rgba(255, 149, 0, 0.4)', // Laranja
+                interruptor: 'rgba(90, 200, 250, 0.4)', // Azul claro
+                disjuntor: 'rgba(175, 82, 222, 0.4)' // Roxo
+            },
+            load() {
+                const saved = localStorage.getItem('ia_dict_custom');
+                if(saved) {
+                    const parsed = JSON.parse(saved);
+                    for(let cat in parsed) {
+                        this.dicionario[cat] = [...new Set([...this.dicionario[cat], ...parsed[cat]])];
+                    }
+                }
+            },
+            save() {
+                localStorage.setItem('ia_dict_custom', JSON.stringify(this.dicionario));
+            }
+        };
+
         const dictation = {
             recognition: null, isListening: false,
             init() { const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition; if (SpeechRecognition) { this.recognition = new SpeechRecognition(); this.recognition.continuous = false; this.recognition.interimResults = false; this.recognition.lang = 'pt-BR'; this.recognition.onresult = (e) => { const transcript = e.results[0][0].transcript; const desc = document.getElementById('laudo-desc'); desc.value += (desc.value ? ' ' : '') + transcript + '.'; this.stop(); }; this.recognition.onerror = () => this.stop(); this.recognition.onend = () => this.stop(); } },
@@ -603,101 +672,176 @@
         };
 
         const ferramentas = {
-            projetoLido: [],
+            projetoLido: { tomada:0, iluminacao:0, interruptor:0, disjuntor:0 },
+            lastImgData: null,
+            lastWords: [],
             
-            // LÓGICA DE LEITURA HÍBRIDA (PDF + IMAGEM)
-            async analisarProjeto(input) {
+            // LÓGICA DE VISÃO COMPUTACIONAL (PDF + FOTO + BOXES)
+            async iniciarAnaliseVisiva(input) {
                 if(!input.files.length) return;
+                
+                ui.changeView('view-analise-projeto');
+                document.getElementById('ia-canvas-wrapper').style.display = 'none';
+                document.getElementById('ia-loading-overlay').style.display = 'block';
+                
                 const file = input.files[0];
-                document.getElementById('projeto-loading').style.display = 'block';
-                document.getElementById('projeto-result').style.display = 'none';
-                ui.toast("Analisando projeto... Aguarde.", false, 4000);
+                let imgDataUrl = '';
 
                 try {
-                    let texto = "";
-                    
-                    // Se for PDF, usamos a biblioteca oficial da Mozilla para ler as camadas de texto
+                    // SE FOR PDF: Transforma a primeira página numa imagem para poder desenhar em cima
                     if (file.type === "application/pdf") {
                         const arrayBuffer = await file.arrayBuffer();
                         const pdfjsLib = window['pdfjs-dist/build/pdf'] || window.pdfjsLib;
                         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
                         
                         const pdfDoc = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
+                        const page = await pdfDoc.getPage(1);
                         
-                        for(let i = 1; i <= pdfDoc.numPages; i++) {
-                            const page = await pdfDoc.getPage(i);
-                            const textContent = await page.getTextContent();
-                            texto += textContent.items.map(item => item.str).join(' ') + " ";
-                        }
-                        texto = texto.toLowerCase();
+                        const viewport = page.getViewport({scale: 2.0});
+                        const tempCanvas = document.createElement('canvas');
+                        tempCanvas.width = viewport.width; 
+                        tempCanvas.height = viewport.height;
+                        
+                        await page.render({canvasContext: tempCanvas.getContext('2d'), viewport}).promise;
+                        imgDataUrl = tempCanvas.toDataURL('image/jpeg');
                     } 
-                    // Se for Foto/Imagem, usamos a Inteligência Artificial (OCR)
+                    // SE FOR IMAGEM: Usa direto
                     else {
-                        const result = await Tesseract.recognize(file, 'por');
-                        texto = result.data.text.toLowerCase();
+                        imgDataUrl = await new Promise((resolve) => {
+                            const reader = new FileReader();
+                            reader.onload = e => resolve(e.target.result);
+                            reader.readAsDataURL(file);
+                        });
                     }
 
-                    document.getElementById('projeto-loading').style.display = 'none';
-                    this.projetoLido = [];
-
-                    // Contagem Inteligente de Arquitetura/Elétrica
-                    const tomadas = (texto.match(/(tomada|tug|tue|\bpt\b|\bpto\b)/g) || []).length;
-                    const iluminacao = (texto.match(/(ilumina|lâmpada|lampada|luminária|luminaria|led|\bw\b)/g) || []).length;
-                    const interruptores = (texto.match(/(interruptor|tecla|seção|secao)/g) || []).length;
-                    const disjuntores = (texto.match(/(disjuntor|qdc|quadro|dpm|dps|dr)/g) || []).length;
-
-                    if(tomadas === 0 && iluminacao === 0 && interruptores === 0 && disjuntores === 0) {
-                        ui.toast("Não foi possível identificar pontos. Verifique o arquivo.", true);
-                        return;
-                    }
-
-                    if (tomadas > 0) this.projetoLido.push({ nome: 'Ponto de Tomada (TUG/TUE)', qtd: tomadas, preco: 45.00 });
-                    if (iluminacao > 0) this.projetoLido.push({ nome: 'Ponto de Iluminação', qtd: iluminacao, preco: 35.00 });
-                    if (interruptores > 0) this.projetoLido.push({ nome: 'Instalação de Interruptor', qtd: interruptores, preco: 25.00 });
-                    if (disjuntores > 0) this.projetoLido.push({ nome: 'Montagem de Disjuntor (QDC)', qtd: disjuntores, preco: 50.00 });
-
-                    let html = '<b style="color:var(--primary);">Pontos Identificados:</b><br><ul style="margin-top:10px; padding-left:20px; line-height:1.6; color:var(--text);">';
-                    this.projetoLido.forEach(i => { html += `<li><b class="avoid-break">${i.qtd}x</b> ${i.nome}</li>`; });
-                    html += '</ul><p style="font-size:12px; color:var(--ios-gray); margin-top:10px;" class="avoid-break">*Valores base de mercado. Podem ser editados a seguir.</p>';
+                    // Prepara a imagem nativa e inicia a leitura
+                    const img = new Image();
+                    img.src = imgDataUrl;
                     
-                    document.getElementById('projeto-itens-encontrados').innerHTML = html;
-                    document.getElementById('projeto-result').style.display = 'block';
-                    ui.toast("Análise Concluída!");
+                    img.onload = async () => {
+                        this.lastImgData = img; // Salva para redesenhar rápido quando ensinar algo novo
+                        
+                        const result = await Tesseract.recognize(imgDataUrl, 'por');
+                        this.lastWords = result.data.words; // Salva o banco de palavras extraído
+                        
+                        document.getElementById('ia-loading-overlay').style.display = 'none';
+                        document.getElementById('ia-canvas-wrapper').style.display = 'block';
+                        
+                        // Desenha as caixas na tela
+                        this.renderizarBBoxesIA();
+                        ui.toast("Análise Concluída!");
+                    };
 
                 } catch(err) {
                     console.error(err);
-                    document.getElementById('projeto-loading').style.display = 'none';
                     ui.toast("Erro ao ler o arquivo.", true);
+                    ui.changeView('view-ferramentas');
                 }
                 input.value = '';
             },
-            
-            gerarOrcamentoDoProjeto() {
-                if(this.projetoLido.length === 0) return;
-                orcamento.itens = [...this.projetoLido];
+
+            // DESENHA AS CAIXAS NA TELA E ATUALIZA PLACAR
+            renderizarBBoxesIA() {
+                if(!this.lastImgData || !this.lastWords) return;
                 
-                if(!app.currentClientId) {
-                    ui.toast("Aviso: Como não há cliente selecionado, o orçamento será gerado avulso.", true);
+                const canvas = document.getElementById('ia-canvas');
+                const ctx = canvas.getContext('2d');
+                
+                // Configura o canvas do exato tamanho do projeto/foto original
+                canvas.width = this.lastImgData.width;
+                canvas.height = this.lastImgData.height;
+                
+                // Desenha a imagem pura no fundo
+                ctx.drawImage(this.lastImgData, 0, 0);
+                
+                // Zera contadores
+                this.projetoLido = { tomada:0, iluminacao:0, interruptor:0, disjuntor:0 };
+                
+                // Varre as palavras e compara com o Dicionário da IA
+                this.lastWords.forEach(w => {
+                    const text = w.text.toLowerCase().replace(/[^a-z0-9áéíóúãõç]/g, '');
+                    if(!text || text.length < 2) return;
+                    
+                    let foundCat = null;
+                    for (const cat in iaConfig.dicionario) {
+                        // Verifica se a palavra da imagem contém algum termo do dicionário
+                        if (iaConfig.dicionario[cat].some(termo => text.includes(termo))) {
+                            foundCat = cat;
+                            break;
+                        }
+                    }
+                    
+                    // Se achou, desenha o retângulo translúcido e a borda grossa
+                    if(foundCat) {
+                        this.projetoLido[foundCat]++;
+                        const width = w.bbox.x1 - w.bbox.x0;
+                        const height = w.bbox.y1 - w.bbox.y0;
+                        
+                        ctx.fillStyle = iaConfig.cores[foundCat];
+                        ctx.fillRect(w.bbox.x0, w.bbox.y0, width, height);
+                        
+                        ctx.strokeStyle = iaConfig.cores[foundCat].replace('0.4', '1'); // Cor sólida para borda
+                        ctx.lineWidth = 3;
+                        ctx.strokeRect(w.bbox.x0, w.bbox.y0, width, height);
+                    }
+                });
+                
+                // Atualiza o painel da tela
+                document.getElementById('ia-count-tomada').innerText = this.projetoLido.tomada;
+                document.getElementById('ia-count-iluminacao').innerText = this.projetoLido.iluminacao;
+                document.getElementById('ia-count-interruptor').innerText = this.projetoLido.interruptor;
+                document.getElementById('ia-count-disjuntor').innerText = this.projetoLido.disjuntor;
+            },
+
+            // FUNÇÃO PARA O USUÁRIO ENSINAR E CORRIGIR A IA
+            ensinarIA() {
+                const palavra = document.getElementById('ia-nova-palavra').value.toLowerCase().trim();
+                const categoria = document.getElementById('ia-nova-categoria').value;
+                
+                if(!palavra) return ui.toast("Digite o termo que faltou!", true);
+                
+                if(!iaConfig.dicionario[categoria].includes(palavra)) {
+                    iaConfig.dicionario[categoria].push(palavra);
+                    iaConfig.save(); // Salva no cérebro
+                    ui.toast("A IA memorizou! Refazendo a análise...");
                 }
+                
+                document.getElementById('ia-nova-palavra').value = '';
+                
+                // Redesenha a imagem com o dicionário atualizado instantaneamente
+                this.renderizarBBoxesIA();
+            },
+            
+            // TRANSFORMA OS PONTOS ACHADOS EM ORÇAMENTO
+            gerarOrcamentoDoProjeto() {
+                const p = this.projetoLido;
+                const itens = [];
+                
+                if(p.tomada > 0) itens.push({ nome: 'Ponto de Tomada (TUG/TUE)', qtd: p.tomada, preco: 45.00 });
+                if(p.iluminacao > 0) itens.push({ nome: 'Ponto de Iluminação', qtd: p.iluminacao, preco: 35.00 });
+                if(p.interruptor > 0) itens.push({ nome: 'Instalação de Interruptor', qtd: p.interruptor, preco: 25.00 });
+                if(p.disjuntor > 0) itens.push({ nome: 'Montagem de Disjuntor (QDC)', qtd: p.disjuntor, preco: 50.00 });
+                
+                if(itens.length === 0) return ui.toast("Nenhum ponto contabilizado. Não há o que orçar.", true);
+                
+                orcamento.itens = itens;
+                
+                if(!app.currentClientId) ui.toast("Como não há cliente selecionado, o orçamento ficará avulso.", true);
                 
                 orcamento.renderLista();
                 ui.changeView('view-orcamento');
-                document.getElementById('topbar-title').innerText = "Orçamento do Projeto";
+                document.getElementById('topbar-title').innerText = "Orçamento por IA";
             },
 
             calcularSuperaquecimento() {
                 const tSuc = parseFloat(document.getElementById('calc-tsuc').value);
                 const tEvap = parseFloat(document.getElementById('calc-tevap').value);
-                
                 if (isNaN(tSuc) || isNaN(tEvap)) return ui.toast("Preencha as temperaturas", true);
-                
                 const superaquecimento = tSuc - tEvap;
                 let diag = ""; let color = "";
-                
                 if (superaquecimento < 5) { diag = "EXCESSO de Fluido (Risco de quebra do compressor)"; color = "var(--danger)"; } 
                 else if (superaquecimento > 7) { diag = "FALTA de Fluido (Ou obstrução/filtro sujo)"; color = "var(--warning)"; } 
                 else { diag = "CARGA IDEAL"; color = "var(--success)"; }
-                
                 const res = document.getElementById('calc-super-result');
                 res.style.display = 'block';
                 res.innerHTML = `Superaquecimento: <b>${superaquecimento.toFixed(1)} K</b><br><span style="color:${color}; font-weight:700; font-size:16px; display:inline-block; margin-top:5px;">${diag}</span>`;
@@ -707,15 +851,11 @@
                 const cv = parseFloat(document.getElementById('calc-motor-cv').value);
                 const v = parseInt(document.getElementById('calc-motor-v').value);
                 if(!cv) return ui.toast("Preencha a Potência", true);
-                
                 let In = 0;
                 if (v === 220) { In = cv * 2.6; } else { In = cv * 1.5; }
-                
                 let releMin = In * 1.0; let releMax = In * 1.25;
-                
                 let contator = 9;
                 if(In * 1.15 > 9) contator = 12; if(In * 1.15 > 12) contator = 18; if(In * 1.15 > 18) contator = 25; if(In * 1.15 > 25) contator = 32; if(In * 1.15 > 32) contator = 40; if(In * 1.15 > 40) contator = 50; if(In * 1.15 > 50) contator = 65;
-
                 const res = document.getElementById('calc-motor-result');
                 res.style.display = 'block';
                 res.innerHTML = `Corrente Nominal Média: <b>${In.toFixed(1)} A</b><br>Regulagem Relé Térmico: <b style="color:var(--danger)">${releMin.toFixed(1)}A a ${releMax.toFixed(1)}A</b><br>Contator Recomendado: <b style="color:var(--success)">Acima de ${contator}A (AC-3)</b>`;
@@ -1054,9 +1194,9 @@
                         this.currentClientPhone = cliente.tel ? cliente.tel.replace(/\D/g, '') : '';
                         this.currentClientName = cliente.nome;
 
-                        let linhasTabela = orc.itens.map(i => `<tr><td>${i.nome}</td><td style="text-align:center">${i.qtd}</td><td style="text-align:right">${BRL.format(i.preco)}</td><td style="text-align:right; font-weight:bold;">${BRL.format(i.qtd * i.preco)}</td></tr>`).join('');
+                        let linhasTabela = orc.itens.map(i => `<tr class="avoid-break"><td>${i.nome}</td><td style="text-align:center">${i.qtd}</td><td style="text-align:right">${BRL.format(i.preco)}</td><td style="text-align:right; font-weight:bold;">${BRL.format(i.qtd * i.preco)}</td></tr>`).join('');
                         
-                        const html = `<div class="pdf-page-container"><div class="pdf-header"><div><div class="pdf-title">Proposta Comercial / Orçamento</div><div style="color:#64748b; margin-top:5px;">Serviços Técnicos Profissionais</div></div><div style="text-align:right"><div style="background:#0ea5e9; color:white; padding:5px 10px; border-radius:4px; font-weight:bold; font-size:14px; display:inline-block;">ORC-${Math.floor(Math.random() * 8999) + 1000}</div><div style="font-size:12px; margin-top:5px; color:#64748b;">Data Emissão: ${dataF}</div></div></div><div class="pdf-info-box"><div style="font-size:10px; font-weight:bold; color:#0ea5e9; text-transform:uppercase; margin-bottom:5px;">Emissor</div><div style="font-size:16px; font-weight:bold; color:#1e293b;">${configEmpresa.nome}</div><div style="font-size:13px; color:#334155;">CNPJ/CPF: ${configEmpresa.doc} | Tel: ${configEmpresa.tel}</div></div><div class="pdf-info-box"><div style="font-size:10px; font-weight:bold; color:#0ea5e9; text-transform:uppercase; margin-bottom:5px;">Aos Cuidados de</div><div style="font-size:16px; font-weight:bold; color:#1e293b;">${cliente.nome}</div><div style="font-size:13px; color:#334155; margin-top:5px;">${cliente.end || ''}</div></div><table class="table-pdf"><thead><tr><th>Descrição</th><th style="text-align:center">Qtd</th><th style="text-align:right">Valor Unit.</th><th style="text-align:right">Total</th></tr></thead><tbody>${linhasTabela}</tbody></table><div style="margin-top:20px; text-align:right; font-size:18px; font-weight:900; color:#0ea5e9;" class="avoid-break">Valor Total do Orçamento: ${BRL.format(orc.total)}</div><div style="margin-top:40px; text-align:center; font-size:11px; color:#64748b; border-top:1px dashed #cbd5e1; padding-top:10px;" class="avoid-break">Validade desta proposta: 15 dias.</div></div>`;
+                        const html = `<div class="pdf-page-container"><div class="pdf-header avoid-break"><div><div class="pdf-title">Proposta Comercial / Orçamento</div><div style="color:#64748b; margin-top:5px;">Serviços Técnicos Profissionais</div></div><div style="text-align:right"><div style="background:#0ea5e9; color:white; padding:5px 10px; border-radius:4px; font-weight:bold; font-size:14px; display:inline-block;">ORC-${Math.floor(Math.random() * 8999) + 1000}</div><div style="font-size:12px; margin-top:5px; color:#64748b;">Data Emissão: ${dataF}</div></div></div><div class="pdf-info-box avoid-break"><div style="font-size:10px; font-weight:bold; color:#0ea5e9; text-transform:uppercase; margin-bottom:5px;">Emissor</div><div style="font-size:16px; font-weight:bold; color:#1e293b;">${configEmpresa.nome}</div><div style="font-size:13px; color:#334155;">CNPJ/CPF: ${configEmpresa.doc} | Tel: ${configEmpresa.tel}</div></div><div class="pdf-info-box avoid-break"><div style="font-size:10px; font-weight:bold; color:#0ea5e9; text-transform:uppercase; margin-bottom:5px;">Aos Cuidados de</div><div style="font-size:16px; font-weight:bold; color:#1e293b;">${cliente.nome}</div><div style="font-size:13px; color:#334155; margin-top:5px;">${cliente.end || ''}</div></div><table class="table-pdf"><thead><tr class="avoid-break"><th>Descrição</th><th style="text-align:center">Qtd</th><th style="text-align:right">Valor Unit.</th><th style="text-align:right">Total</th></tr></thead><tbody>${linhasTabela}</tbody></table><div style="margin-top:20px; text-align:right; font-size:18px; font-weight:900; color:#0ea5e9;" class="avoid-break">Valor Total do Orçamento: ${BRL.format(orc.total)}</div><div style="margin-top:40px; text-align:center; font-size:11px; color:#64748b; border-top:1px dashed #cbd5e1; padding-top:10px;" class="avoid-break">Validade desta proposta: 15 dias.</div></div>`;
                         
                         this.currentHtmlContent = html;
                         document.getElementById('pdf-container-view').innerHTML = html;
@@ -1079,13 +1219,13 @@
                         this.currentClientPhone = cliente.tel ? cliente.tel.replace(/\D/g, '') : '';
                         this.currentClientName = cliente.nome;
 
-                        let fotosHtml = laudo.fotos && laudo.fotos.length ? laudo.fotos.map(f => `<div class="pdf-img-box"><img src="${f}"></div>`).join('') : '';
+                        let fotosHtml = laudo.fotos && laudo.fotos.length ? laudo.fotos.map(f => `<div class="pdf-img-box avoid-break"><img src="${f}"></div>`).join('') : '';
                         let checkHtml = laudo.checklist && laudo.checklist.length ? `<div style="margin-bottom:15px" class="avoid-break"><b>Serviços Verificados:</b><ul style="margin-top:5px; padding-left:20px; font-size:12px; color:#334155;">${laudo.checklist.map(c => `<li>${c}</li>`).join('')}</ul></div>` : '';
                         let matHtml = laudo.materiaisUtilizados ? `<div style="margin-bottom:15px" class="avoid-break"><b>Materiais Utilizados:</b><br><div style="font-size:12px; color:#334155; margin-top:5px;">${laudo.materiaisUtilizados}</div></div>` : '';
                         let valorHtml = laudo.valor ? `<div style="background:#f0fdf4; border:1px solid #16a34a; padding:15px; border-radius:8px; margin-top:20px; display:flex; justify-content:space-between; align-items:center;" class="avoid-break"><span style="color:#16a34a; font-weight:bold; font-size:12px; text-transform:uppercase;">Valor Total Cobrado / Recebido</span><span style="font-size:20px; font-weight:900; color:#166534;">${BRL.format(laudo.valor)}</span></div>` : '';
                         let assHtml = laudo.assinatura ? `<div style="margin-top:40px; text-align:center;" class="avoid-break"><img src="${laudo.assinatura}" style="height:80px; border-bottom:1px solid #1e293b; padding-bottom:10px; margin-bottom:5px;"><div style="font-size:12px; font-weight:bold; color:#1e293b;">ASSINATURA DO CLIENTE (${cliente.nome})</div></div>` : '';
 
-                        const html = `<div class="pdf-page-container"><div class="pdf-header"><div><div class="pdf-title">Relatório de Serviço Técnico</div><div style="color:#64748b; margin-top:5px;">Documento de finalização e evidência técnica</div></div><div style="text-align:right"><div style="background:#2563eb; color:white; padding:5px 10px; border-radius:4px; font-weight:bold; font-size:14px; display:inline-block;">OS-${Math.floor(Math.random() * 8999) + 1000}</div><div style="font-size:12px; margin-top:5px; color:#64748b;">Data Execução: ${dataF}</div></div></div><div class="pdf-grid"><div class="pdf-info-box"><div style="font-size:10px; font-weight:bold; color:#2563eb; text-transform:uppercase; margin-bottom:5px;">Empresa / Técnico</div><div style="font-size:16px; font-weight:bold; color:#1e293b;">${configEmpresa.nome}</div><div style="font-size:13px; color:#334155;">CNPJ/CPF: ${configEmpresa.doc}<br>Tel: ${configEmpresa.tel}</div></div><div class="pdf-info-box"><div style="font-size:10px; font-weight:bold; color:#2563eb; text-transform:uppercase; margin-bottom:5px;">Dados do Cliente / Local</div><div style="font-size:16px; font-weight:bold; color:#1e293b;">${cliente.nome}</div><div style="font-size:13px; color:#334155;">${cliente.end || ''}<br>Tel: ${cliente.tel || 'N/A'}</div>${cliente.equip ? `<div style="font-size:12px; color:#64748b; margin-top:5px;"><b>Equip:</b> ${cliente.equip}</div>` : ''}</div></div><div style="font-size:12px; font-weight:bold; color:#1e293b; text-transform:uppercase; margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:5px;">Descrição Técnica do Serviço Realizado:</div>${checkHtml}${matHtml}<div style="font-size:13px; line-height:1.6; color:#334155; text-align:justify; white-space:pre-wrap; margin-bottom:15px;">${laudo.desc}</div>${valorHtml}${fotosHtml ? `<div style="margin-top:30px;" class="avoid-break"><div style="font-size:12px; font-weight:bold; color:#1e293b; text-transform:uppercase; margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:5px;">Evidências Fotográficas:</div><div class="pdf-grid">${fotosHtml}</div></div>` : ''}${assHtml}<div style="margin-top:40px; text-align:center; font-size:10px; color:#94a3b8; border-top:1px dashed #cbd5e1; padding-top:10px;" class="avoid-break">Documento gerado eletronicamente para registro histórico de atendimento.</div></div>`;
+                        const html = `<div class="pdf-page-container"><div class="pdf-header avoid-break"><div><div class="pdf-title">Relatório de Serviço Técnico</div><div style="color:#64748b; margin-top:5px;">Documento de finalização e evidência técnica</div></div><div style="text-align:right"><div style="background:#2563eb; color:white; padding:5px 10px; border-radius:4px; font-weight:bold; font-size:14px; display:inline-block;">OS-${Math.floor(Math.random() * 8999) + 1000}</div><div style="font-size:12px; margin-top:5px; color:#64748b;">Data Execução: ${dataF}</div></div></div><div class="pdf-grid avoid-break"><div class="pdf-info-box"><div style="font-size:10px; font-weight:bold; color:#2563eb; text-transform:uppercase; margin-bottom:5px;">Empresa / Técnico</div><div style="font-size:16px; font-weight:bold; color:#1e293b;">${configEmpresa.nome}</div><div style="font-size:13px; color:#334155;">CNPJ/CPF: ${configEmpresa.doc}<br>Tel: ${configEmpresa.tel}</div></div><div class="pdf-info-box"><div style="font-size:10px; font-weight:bold; color:#2563eb; text-transform:uppercase; margin-bottom:5px;">Dados do Cliente / Local</div><div style="font-size:16px; font-weight:bold; color:#1e293b;">${cliente.nome}</div><div style="font-size:13px; color:#334155;">${cliente.end || ''}<br>Tel: ${cliente.tel || 'N/A'}</div>${cliente.equip ? `<div style="font-size:12px; color:#64748b; margin-top:5px;"><b>Equip:</b> ${cliente.equip}</div>` : ''}</div></div><div style="font-size:12px; font-weight:bold; color:#1e293b; text-transform:uppercase; margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:5px;" class="avoid-break">Descrição Técnica do Serviço Realizado:</div>${checkHtml}${matHtml}<div style="font-size:13px; line-height:1.6; color:#334155; text-align:justify; white-space:pre-wrap; margin-bottom:15px;">${laudo.desc}</div>${valorHtml}${fotosHtml ? `<div style="margin-top:30px;" class="avoid-break"><div style="font-size:12px; font-weight:bold; color:#1e293b; text-transform:uppercase; margin-bottom:10px; border-bottom:1px solid #e2e8f0; padding-bottom:5px;">Evidências Fotográficas:</div><div class="pdf-grid">${fotosHtml}</div></div>` : ''}${assHtml}<div style="margin-top:40px; text-align:center; font-size:10px; color:#94a3b8; border-top:1px dashed #cbd5e1; padding-top:10px;" class="avoid-break">Documento gerado eletronicamente para registro histórico de atendimento.</div></div>`;
                         
                         this.currentHtmlContent = html; 
                         document.getElementById('pdf-container-view').innerHTML = html;
@@ -1100,12 +1240,12 @@
                 ui.previousView = 'view-estoque';
                 database.transaction("materiais", "readonly").objectStore("materiais").getAll().onsuccess = (e) => {
                     const materiais = e.target.result; if(materiais.length === 0) return ui.toast("O estoque está vazio.", true);
-                    let totalGeral = 0; let linhasTabela = materiais.map(m => { totalGeral += (m.qtd * m.preco); return `<tr><td>${m.nome}</td><td style="text-align:center">${m.qtd}</td><td style="text-align:right">${BRL.format(m.preco)}</td><td style="text-align:right; font-weight:bold;">${BRL.format(m.qtd * m.preco)}</td></tr>`; }).join('');
+                    let totalGeral = 0; let linhasTabela = materiais.map(m => { totalGeral += (m.qtd * m.preco); return `<tr class="avoid-break"><td>${m.nome}</td><td style="text-align:center">${m.qtd}</td><td style="text-align:right">${BRL.format(m.preco)}</td><td style="text-align:right; font-weight:bold;">${BRL.format(m.qtd * m.preco)}</td></tr>`; }).join('');
                     
                     this.currentFileName = `Estoque_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.pdf`;
                     this.currentClientName = ''; 
                     
-                    const html = `<div class="pdf-page-container"><div class="pdf-header"><div><div class="pdf-title">Relatório de Catálogo e Materiais</div><div style="color:#64748b; margin-top:5px;">Controle Interno de Ativos da ${configEmpresa.nome}</div></div><div style="text-align:right"><div style="background:#1e293b; color:white; padding:5px 10px; border-radius:4px; font-weight:bold; font-size:14px; display:inline-block;">INVENTÁRIO</div><div style="font-size:12px; margin-top:5px; color:#64748b;">Data: ${new Date().toLocaleDateString('pt-BR')}</div></div></div><table class="table-pdf"><thead><tr><th>Item / Serviço</th><th style="text-align:center">Qtd</th><th style="text-align:right">Valor Unit.</th><th style="text-align:right">Valor Total</th></tr></thead><tbody>${linhasTabela}</tbody></table><div style="margin-top:20px; text-align:right; font-size:18px; font-weight:900; color:#1e293b;" class="avoid-break">Total Patrimonial: ${BRL.format(totalGeral)}</div></div>`;
+                    const html = `<div class="pdf-page-container"><div class="pdf-header avoid-break"><div><div class="pdf-title">Relatório de Catálogo e Materiais</div><div style="color:#64748b; margin-top:5px;">Controle Interno de Ativos da ${configEmpresa.nome}</div></div><div style="text-align:right"><div style="background:#1e293b; color:white; padding:5px 10px; border-radius:4px; font-weight:bold; font-size:14px; display:inline-block;">INVENTÁRIO</div><div style="font-size:12px; margin-top:5px; color:#64748b;">Data: ${new Date().toLocaleDateString('pt-BR')}</div></div></div><table class="table-pdf"><thead><tr class="avoid-break"><th>Item / Serviço</th><th style="text-align:center">Qtd</th><th style="text-align:right">Valor Unit.</th><th style="text-align:right">Valor Total</th></tr></thead><tbody>${linhasTabela}</tbody></table><div style="margin-top:20px; text-align:right; font-size:18px; font-weight:900; color:#1e293b;" class="avoid-break">Total Patrimonial: ${BRL.format(totalGeral)}</div></div>`;
                     
                     this.currentHtmlContent = html;
                     document.getElementById('pdf-container-view').innerHTML = html;
@@ -1116,9 +1256,9 @@
             previewEstoque() { this.generateEstoque(); },
 
             executeDownloadOrShare() {
-                ui.toast("Gerando arquivo de alta qualidade...", false, 3000);
+                ui.toast("Gerando PDF sem cortes... Aguarde.", false, 3500);
                 
-                // Cria o clone invisível no tamanho real para burlar qualquer corte
+                // Criação do clone invisível que não tem CSS atrapalhando
                 const workerContainer = document.createElement('div');
                 workerContainer.innerHTML = this.currentHtmlContent;
                 
@@ -1128,6 +1268,7 @@
                 workerContainer.style.zIndex = '-9999';
                 document.body.appendChild(workerContainer);
 
+                // Configurações exatas para evitar quebras de texto
                 const opt = { 
                     margin: [10, 0, 10, 0], 
                     filename: this.currentFileName, 
@@ -1181,7 +1322,7 @@
                     URL.revokeObjectURL(url);
                 }, 300);
                 
-                ui.toast("Baixado no seu aparelho!");
+                ui.toast("Arquivo baixado com sucesso!");
             }
         };
 
@@ -1264,7 +1405,7 @@
         };
 
         window.onload = () => {
-            db.init(); dictation.init();
+            db.init(); dictation.init(); iaConfig.load();
             if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js').catch(err => console.log('Erro no PWA:', err)); }
         };
     </script>
