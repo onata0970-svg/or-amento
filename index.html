@@ -10,43 +10,23 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
-    <!-- Bibliotecas Necessárias: PDF, OCR (IA de Imagem) e Leitor PDF.js -->
+    <!-- Bibliotecas: PDF, OCR para notas fiscais e Leitor PDF.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
     <style>
-        /* DESIGN SYSTEM DO iOS (Apple) */
+        /* DESIGN SYSTEM DO iOS */
         :root { 
-            --primary: #000000; 
-            --accent: #007aff; 
-            --success: #34c759; 
-            --danger: #ff3b30; 
-            --warning: #ff9500; 
-            --info: #5ac8fa; 
-            --purple: #af52de; 
-            --cyan: #32ade6; 
-            --bg: #f2f2f7; 
-            --card: #ffffff; 
-            --text: #1c1c1e; 
-            --border: rgba(60, 60, 67, 0.13); 
-            --ios-gray: #8e8e93;
-            --ios-input-bg: rgba(118, 118, 128, 0.08);
-            --app-width: 480px; 
+            --primary: #000000; --accent: #007aff; --success: #34c759; --danger: #ff3b30; 
+            --warning: #ff9500; --info: #5ac8fa; --purple: #af52de; --cyan: #32ade6; 
+            --bg: #f2f2f7; --card: #ffffff; --text: #1c1c1e; --border: rgba(60, 60, 67, 0.13); 
+            --ios-gray: #8e8e93; --ios-input-bg: rgba(118, 118, 128, 0.08); --app-width: 480px; 
         }
         
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            background-color: #000; 
-            color: var(--text); 
-            display: flex; justify-content: center; min-height: 100vh; 
-            -webkit-font-smoothing: antialiased;
-        }
-        
+        body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #000; color: var(--text); display: flex; justify-content: center; min-height: 100vh; -webkit-font-smoothing: antialiased; }
         .app-container { width: 100%; max-width: var(--app-width); background-color: var(--bg); min-height: 100vh; position: relative; padding-top: 60px; padding-bottom: 90px; box-shadow: 0 0 20px rgba(0,0,0,0.2); overflow-x: hidden; word-break: break-word; }
         
         .topbar { position: fixed; top: 0; left: 0; right: 0; max-width: var(--app-width); margin: 0 auto; height: 60px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 0.5px solid var(--border); color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 17px; z-index: 1000; }
@@ -72,7 +52,6 @@
         .btn-purple { background: var(--purple); color: white; }
         .btn-cyan { background: var(--cyan); color: white; }
         .btn-outline { background: rgba(0, 122, 255, 0.1); color: var(--accent); border: none; }
-        
         .btn-back { background: transparent; color: var(--accent); border: none; padding: 0; display: inline-flex; align-items: center; font-size: 17px; font-weight: 400; cursor: pointer; margin-bottom: 20px; width: auto; }
         .btn-back i { font-size: 20px; margin-right: 6px; font-weight: 300; }
 
@@ -135,11 +114,9 @@
         #toast.warning { background: rgba(255, 149, 0, 0.9); color: #000; }
         #btn-instalar { display: none; position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); max-width: 300px; z-index: 1999; box-shadow: 0 10px 20px rgba(0,122,255,0.3); border-radius: 30px; white-space: nowrap; padding: 12px 24px;}
 
-        /* ESTILO DO PRÉVIEW DO PDF COM CORREÇÃO DE QUEBRA E ZOOM */
+        /* PREVIEW PDF A4 */
         #pdf-wrapper { overflow: auto; background: var(--border); padding: 20px; border-radius: 12px; margin-bottom: 20px; }
         .scale-wrapper { transform: scale(0.42); transform-origin: top left; margin-bottom: -60%; }
-        
-        /* CLASSES PARA A IMPRESSÃO SEGURA DO DOCUMENTO */
         .pdf-page-container { width: 794px; min-height: 1123px; background: white; padding: 40px; color: #1e293b; font-family: 'Inter', sans-serif; box-sizing: border-box; }
         .pdf-info-box, .timeline-card, table tr, .pdf-img-box, .avoid-break { page-break-inside: avoid !important; break-inside: avoid !important; }
         .pdf-header { border-bottom: 3px solid #2563eb; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; }
@@ -152,7 +129,7 @@
         .table-pdf th { background: #1e293b; color: white; padding: 10px; text-align: left; font-size: 12px; }
         .table-pdf td { border-bottom: 1px solid #e2e8f0; padding: 10px; font-size: 12px; }
         
-        /* ESTILO DO CANVAS DE VISÃO COMPUTACIONAL IA */
+        /* CANVAS DA IA */
         .ia-canvas-container { position: relative; overflow: auto; max-height: 400px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 15px; background: #fff; }
         #ia-canvas { display: block; max-width: 100%; height: auto; }
     </style>
@@ -368,7 +345,6 @@
             
             <div id="pdf-wrapper">
                 <div class="scale-wrapper">
-                    <!-- O id pdf-container-view é apenas visual -->
                     <div id="pdf-container-view" class="pdf-page-container"></div>
                 </div>
             </div>
@@ -376,23 +352,21 @@
             <button class="btn btn-success" id="btn-final-pdf" onclick="pdf.executeDownloadOrShare()" style="margin-bottom: 20px;"><i class="fab fa-whatsapp"></i> Gerar e Enviar PDF</button>
         </div>
 
-        <!-- NOVA TELA: ANÁLISE DE PROJETO IA -->
+        <!-- NOVA TELA: ANÁLISE DE PROJETO IA AVANÇADA -->
         <div id="view-analise-projeto" class="view">
             <button class="btn-back" onclick="ui.changeView('view-ferramentas')"><i class="fas fa-chevron-left"></i> Cancelar Análise</button>
             <div class="card" style="border-left: 4px solid var(--purple);">
-                <h3 style="font-size: 17px; color: var(--primary); margin-bottom: 15px;"><i class="fas fa-brain" style="color: var(--purple)"></i> Visão Computacional (IA)</h3>
+                <h3 style="font-size: 17px; color: var(--primary); margin-bottom: 15px;"><i class="fas fa-brain" style="color: var(--purple)"></i> IA Avançada do Google (Gemini)</h3>
                 
                 <div id="ia-loading-overlay" style="text-align: center; padding: 40px 20px; color: var(--purple);">
                     <i class="fas fa-spinner fa-spin" style="font-size: 30px; margin-bottom: 15px;"></i>
-                    <p style="font-size: 14px; font-weight: 600;">Lendo projeto... Isso pode levar alguns segundos dependendo do arquivo.</p>
+                    <p style="font-size: 14px; font-weight: 600;">O cérebro do Google está processando seu projeto...</p>
                 </div>
                 
                 <div id="ia-canvas-wrapper" style="display:none;">
-                    <p style="font-size:12px; color:var(--ios-gray); margin-bottom:10px;">Os pontos encontrados pela IA estão marcados na imagem abaixo:</p>
-                    
-                    <!-- Canvas interativo -->
-                    <div class="ia-canvas-container">
-                        <canvas id="ia-canvas"></canvas>
+                    <!-- Apenas mostra a imagem original processada pelo Gemini -->
+                    <div style="overflow: auto; max-height: 300px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 15px; text-align:center;">
+                        <img id="ia-imagem-preview" style="max-width: 100%; height: auto; display: block; margin: 0 auto;">
                     </div>
                     
                     <!-- Placar de Contagem -->
@@ -404,21 +378,12 @@
                         <div class="dash-box" style="padding: 10px; background: rgba(255, 45, 85, 0.1); grid-column: span 2; text-align:center;"><div style="font-size:10px; font-weight:bold; color:#ff2d55;">INFRAESTRUTURA / CFTV</div><div id="ia-count-infra" style="font-size:18px; font-weight:800; color:var(--primary);">0</div></div>
                     </div>
 
-                    <!-- Sistema de Ensino da IA -->
+                    <!-- Sistema de Ensino da IA (Linguagem Natural) -->
                     <div style="background: var(--ios-input-bg); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
-                        <label style="color: var(--primary); font-size:13px; text-transform:none;"><i class="fas fa-graduation-cap"></i> Faltou alguma coisa?</label>
-                        <p style="font-size: 11px; color:var(--ios-gray); margin-bottom:10px; text-transform:none; font-weight:400;">Ensine como o projetista chamou o item na planta (ex: "arandela", "100W", "T.U.G") e a IA refará a contagem.</p>
-                        <div style="display:flex; gap:10px; margin-top:5px;">
-                            <input type="text" id="ia-nova-palavra" placeholder="Digite o termo..." style="margin:0; flex:1; background:white; font-size:14px; padding:10px;">
-                            <select id="ia-nova-categoria" style="margin:0; flex:1; background-color:white; font-size:14px; padding:10px;">
-                                <option value="tomada">Tomada</option>
-                                <option value="iluminacao">Iluminação</option>
-                                <option value="interruptor">Interruptor</option>
-                                <option value="disjuntor">Disjuntor/QDC</option>
-                                <option value="infraestrutura">Infra / Câmera</option>
-                            </select>
-                        </div>
-                        <button class="btn btn-purple" style="margin-top: 10px; padding: 10px; font-size:14px;" onclick="ferramentas.ensinarIA()"><i class="fas fa-sync-alt"></i> Aprender e Reanalisar</button>
+                        <label style="color: var(--primary); font-size:13px; text-transform:none;"><i class="fas fa-graduation-cap"></i> A IA ignorou algum símbolo?</label>
+                        <p style="font-size: 11px; color:var(--ios-gray); margin-bottom:10px; text-transform:none; font-weight:400;">Dê uma ordem direta para ela. Ex: "Considere a palavra ARANDELA como iluminação" ou "Considere quadrados azuis como disjuntores".</p>
+                        <textarea id="ia-nova-regra" rows="2" placeholder="Escreva a regra de aprendizado..."></textarea>
+                        <button class="btn btn-purple" style="padding: 10px; font-size:14px;" onclick="ferramentas.ensinarIAGemini()"><i class="fas fa-sync-alt"></i> Atualizar Conhecimento e Reanalisar</button>
                     </div>
                     
                     <button class="btn btn-success" onclick="ferramentas.gerarOrcamentoDoProjeto()">Avançar para Orçamento <i class="fas fa-arrow-right"></i></button>
@@ -430,11 +395,11 @@
         <div id="view-ferramentas" class="view">
             
             <div class="card" style="border-left: 4px solid var(--purple);">
-                <h3 style="font-size: 17px; color: var(--primary); margin-bottom: 10px;"><i class="fas fa-brain" style="color: var(--purple)"></i> Leitor de Projetos (IA)</h3>
-                <p style="font-size: 14px; color: var(--ios-gray); margin-bottom: 16px;">Faça upload do <b>PDF ou Foto da Planta/Legenda</b>. A IA vai contar os pontos elétricos.</p>
+                <h3 style="font-size: 17px; color: var(--primary); margin-bottom: 10px;"><i class="fas fa-brain" style="color: var(--purple)"></i> Leitor de Projetos (IA Gemini)</h3>
+                <p style="font-size: 14px; color: var(--ios-gray); margin-bottom: 16px;">O cérebro avançado da Google agora lê seus PDFs e Plantas. Funciona com arquivos complexos e legendas.</p>
                 <div style="position: relative; margin-bottom: 5px;">
-                    <input type="file" accept="image/*, application/pdf" id="projeto-file" onchange="ferramentas.iniciarAnaliseVisiva(this)" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer; z-index: 10;">
-                    <button class="btn btn-purple"><i class="fas fa-file-upload"></i> Escanear Projeto</button>
+                    <input type="file" accept="image/*, application/pdf" id="projeto-file" onchange="ferramentas.iniciarAnaliseGemini(this)" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer; z-index: 10;">
+                    <button class="btn btn-purple"><i class="fas fa-file-upload"></i> Escanear Projeto Avançado</button>
                 </div>
             </div>
 
@@ -468,18 +433,6 @@
                 <div id="calc-btu-result" style="margin-top: 15px; font-size: 16px; font-weight: bold; color: var(--info); text-align:center; padding: 15px; background: rgba(90, 200, 250, 0.1); border-radius: 10px; display: none;"></div>
             </div>
 
-            <div class="card">
-                <h3 style="font-size: 17px; color: var(--primary); margin-bottom: 10px;"><i class="fas fa-bolt" style="color: var(--warning)"></i> Queda de Tensão Elétrica</h3>
-                <p style="font-size: 14px; color: var(--ios-gray); margin-bottom: 16px;">Tire a foto da etiqueta para preencher ou digite.</p>
-                <div style="position: relative; margin-bottom: 16px;"><input type="file" accept="image/*" capture="environment" onchange="ferramentas.lerPlaca(this)" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer; z-index: 10;"><button class="btn btn-outline" style="background: rgba(255, 149, 0, 0.1); color: var(--warning);"><i class="fas fa-camera"></i> Ler Etiqueta (IA)</button></div>
-                <div id="placa-loading" style="display: none; text-align: center; color: var(--warning); font-size: 13px; margin-bottom: 10px;"><i class="fas fa-spinner fa-spin"></i> Analisando placa...</div>
-                <div style="display:flex; gap: 10px;"><div style="flex:1"><label>Potência (W)</label><input type="number" id="calc-w" placeholder="Ex: 5500" inputmode="numeric"></div><div style="flex:1"><label>Tensão (V)</label><select id="calc-v"><option value="220">220V</option><option value="127">127V</option><option value="380">380V (Tri)</option></select></div></div>
-                <label>Distância do Quadro até a Carga (metros)</label><input type="number" id="calc-dist" placeholder="Opcional. Ex: 30" inputmode="numeric">
-                <label>Bitola do Cabo Padrão (mm²)</label><select id="calc-cabo"><option value="1.5">1,5 mm²</option><option value="2.5">2,5 mm²</option><option value="4">4,0 mm²</option><option value="6">6,0 mm²</option><option value="10">10,0 mm²</option></select>
-                <button class="btn btn-warning" onclick="ferramentas.calcularEletricaCompleta()">Calcular Tudo</button>
-                <div id="calc-ele-result" style="margin-top: 15px; font-size: 14px; color: var(--primary); padding: 15px; background: rgba(255, 149, 0, 0.1); border-radius: 10px; display: none; line-height: 1.6;"></div>
-            </div>
-
             <h3 style="font-size: 13px; font-weight: 600; color: var(--ios-gray); margin-top: 25px; margin-bottom: 10px; text-transform: uppercase; padding-left: 5px;">Biblioteca Técnica</h3>
             
             <div class="lib-section"><div class="lib-header" onclick="this.nextElementSibling.classList.toggle('show')"><span><i class="fas fa-snowflake" style="color: var(--info);"></i> Pressões Manifold (AC)</span> <i class="fas fa-chevron-down" style="color: var(--ios-gray)"></i></div><div class="lib-content"><p style="margin-bottom: 10px;"><b>Gás R22 (Óleo Mineral):</b></p><ul style="padding-left: 20px; margin-bottom: 15px;"><li>Baixa: 60 a 70 PSI</li><li>Alta: 250 a 280 PSI</li></ul><p style="margin-bottom: 10px;"><b>Gás R410A (Inverter):</b></p><ul style="padding-left: 20px;"><li>Baixa: 110 a 130 PSI</li><li>Alta: 400 a 450 PSI</li><li style="color: var(--danger); font-weight: bold; margin-top: 5px;">ATENÇÃO: R410A sempre adicionar em fase LÍQUIDA.</li></ul></div></div>
@@ -489,7 +442,15 @@
 
         <!-- TELA: FINANCEIRO E AJUSTES -->
         <div id="view-financeiro" class="view">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            
+            <div class="card" style="border: 2px solid var(--purple); background: rgba(175, 82, 222, 0.05);">
+                <h2 style="font-size: 17px; margin-bottom: 10px; color: var(--purple);"><i class="fas fa-robot"></i> Chave da IA (Gemini)</h2>
+                <p style="font-size: 12px; color: var(--ios-gray); margin-bottom: 15px; text-transform:none;">Para usar a leitura avançada de projetos, crie uma chave grátis no <b>Google AI Studio</b> e cole abaixo.</p>
+                <input type="password" id="conf-gemini-key" placeholder="Cole sua API Key aqui...">
+                <button class="btn btn-purple" onclick="db.saveConfig()">Salvar Chave IA</button>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; margin-top:25px;">
                 <h3 style="font-size: 22px; font-weight: 700; color: var(--primary);">Dashboard</h3>
                 <input type="month" id="fin-filtro-mes" style="width:auto; margin:0; padding:8px 12px; background: white; border: none; border-radius: 10px; font-size: 15px;" onchange="financeiro.renderDash()">
             </div>
@@ -574,39 +535,6 @@
         btnInstalar.addEventListener('click', async () => { if (deferredPrompt) { deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; btnInstalar.style.display = 'none'; } });
         window.addEventListener('appinstalled', () => { btnInstalar.style.display = 'none'; ui.toast("Instalado com sucesso!"); });
 
-        // CÉREBRO DA IA: DICIONÁRIO ELÉTRICO E DE ARQUITETURA
-        const iaConfig = {
-            dicionario: {
-                tomada: ['tomada', 'tug', 'tue', 'pt', 'pto', 'chuveiro', 'ar condicionado', 'bomba', '20a', '10a', '220v', '127v', 'tom'],
-                iluminacao: [
-                    'ilumina', 'lampada', 'lâmpada', 'luminaria', 'luminária', 'easy', 'mr16', 'evo', 
-                    'arandela', 'plafon', 'painel', 'embutir', '17x17', '22x22', '30x30', '40x40',
-                    'spot', 'sobrepor', 'cilindrico', 'cilíndrico', 'croica', 'led', 'fluorescente', 
-                    'balizador', 'refletor', 'pendente', 'lustre', 'trilho', 'articulada'
-                ],
-                interruptor: ['interruptor', 'tecla', 'secao', 'seção', 'pulsador', 'paralelo', 'dimmer', 'sensor', 'three-way', 'four-way', 'threeway', 'fourway', 'int'],
-                disjuntor: ['disjuntor', 'quadro', 'qdc', 'qdl', 'qg', 'dpm', 'dps', 'dr', 'idr', 'dj', 'bipolar', 'monopolar', 'trifasico', 'trifásico', 'tetrapolar', 'disj'],
-                infraestrutura: ['driver', 'drivers', 'câmera', 'camera', 'cftv']
-            },
-            cores: {
-                tomada: 'rgba(52, 199, 89, 0.4)', // Verde
-                iluminacao: 'rgba(255, 149, 0, 0.4)', // Laranja
-                interruptor: 'rgba(90, 200, 250, 0.4)', // Azul claro
-                disjuntor: 'rgba(175, 82, 222, 0.4)', // Roxo
-                infraestrutura: 'rgba(255, 45, 85, 0.4)' // Rosa
-            },
-            load() {
-                const saved = localStorage.getItem('ia_dict_custom');
-                if(saved) {
-                    const parsed = JSON.parse(saved);
-                    for(let cat in parsed) {
-                        this.dicionario[cat] = [...new Set([...this.dicionario[cat], ...parsed[cat]])];
-                    }
-                }
-            },
-            save() { localStorage.setItem('ia_dict_custom', JSON.stringify(this.dicionario)); }
-        };
-
         const dictation = {
             recognition: null, isListening: false,
             init() { const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition; if (SpeechRecognition) { this.recognition = new SpeechRecognition(); this.recognition.continuous = false; this.recognition.interimResults = false; this.recognition.lang = 'pt-BR'; this.recognition.onresult = (e) => { const transcript = e.results[0][0].transcript; const desc = document.getElementById('laudo-desc'); desc.value += (desc.value ? ' ' : '') + transcript + '.'; this.stop(); }; this.recognition.onerror = () => this.stop(); this.recognition.onend = () => this.stop(); } },
@@ -680,20 +608,27 @@
 
         const ferramentas = {
             projetoLido: { tomada:0, iluminacao:0, interruptor:0, disjuntor:0, infraestrutura:0 },
-            lastImgData: null,
-            lastWords: [],
+            lastBase64Data: "",
             
-            async iniciarAnaliseVisiva(input) {
+            async iniciarAnaliseGemini(input) {
                 if(!input.files.length) return;
                 
+                const apiKey = configEmpresa.geminiKey;
+                if(!apiKey || apiKey.trim() === "") {
+                    ui.toast("Erro: Chave da IA não configurada na aba Financeiro.", true);
+                    input.value = '';
+                    return;
+                }
+
                 ui.changeView('view-analise-projeto');
                 document.getElementById('ia-canvas-wrapper').style.display = 'none';
                 document.getElementById('ia-loading-overlay').style.display = 'block';
                 
                 const file = input.files[0];
-                let imgDataUrl = '';
 
                 try {
+                    // Converter Arquivo para Imagem Base64
+                    let imgDataUrl = '';
                     if (file.type === "application/pdf") {
                         const arrayBuffer = await file.arrayBuffer();
                         const pdfjsLib = window['pdfjs-dist/build/pdf'] || window.pdfjsLib;
@@ -708,7 +643,7 @@
                         tempCanvas.height = viewport.height;
                         
                         await page.render({canvasContext: tempCanvas.getContext('2d'), viewport}).promise;
-                        imgDataUrl = tempCanvas.toDataURL('image/jpeg');
+                        imgDataUrl = tempCanvas.toDataURL('image/jpeg', 0.8);
                     } else {
                         imgDataUrl = await new Promise((resolve) => {
                             const reader = new FileReader();
@@ -717,91 +652,90 @@
                         });
                     }
 
-                    const img = new Image();
-                    img.src = imgDataUrl;
-                    
-                    img.onload = async () => {
-                        this.lastImgData = img;
-                        const result = await Tesseract.recognize(imgDataUrl, 'por');
-                        this.lastWords = result.data.words;
-                        
-                        document.getElementById('ia-loading-overlay').style.display = 'none';
-                        document.getElementById('ia-canvas-wrapper').style.display = 'block';
-                        
-                        this.renderizarBBoxesIA();
-                        ui.toast("Análise Concluída!");
-                    };
+                    this.lastBase64Data = imgDataUrl.split(',')[1];
+                    document.getElementById('ia-imagem-preview').src = imgDataUrl;
+
+                    await this.chamarAPIGemini(this.lastBase64Data);
 
                 } catch(err) {
                     console.error(err);
-                    ui.toast("Erro ao ler o arquivo.", true);
+                    ui.toast("Falha ao preparar o arquivo.", true);
                     ui.changeView('view-ferramentas');
                 }
                 input.value = '';
             },
 
-            renderizarBBoxesIA() {
-                if(!this.lastImgData || !this.lastWords) return;
+            async chamarAPIGemini(base64Image) {
+                const apiKey = configEmpresa.geminiKey;
+                const regrasUser = localStorage.getItem('ia_rules_prompt') || '';
                 
-                const canvas = document.getElementById('ia-canvas');
-                const ctx = canvas.getContext('2d');
-                
-                canvas.width = this.lastImgData.width;
-                canvas.height = this.lastImgData.height;
-                ctx.drawImage(this.lastImgData, 0, 0);
-                
-                this.projetoLido = { tomada:0, iluminacao:0, interruptor:0, disjuntor:0, infraestrutura:0 };
-                
-                this.lastWords.forEach(w => {
-                    const text = w.text.toLowerCase().replace(/[^a-z0-9áéíóúãõç\-]/g, '');
-                    if(!text || text.length < 2) return;
+                const prompt = `Você é um Engenheiro Eletricista e Orçamentista sênior. 
+Analise a imagem desta planta e/ou legenda de projeto. Sua única missão é interpretar os símbolos e palavras para contar a quantidade aproximada de pontos instalados que deverão ser orçados.
+Considere as seguintes regras extras que o usuário te ensinou: ${regrasUser}
+IMPORTANTE: Retorne ESTRITAMENTE um objeto JSON válido, sem NENHUM texto antes ou depois, sem as crases de markdown ( \`\`\`json ). O formato exato deve ser:
+{"tomada": 0, "iluminacao": 0, "interruptor": 0, "disjuntor": 0, "infraestrutura": 0}`;
+
+                try {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{
+                                parts: [
+                                    { text: prompt },
+                                    { inlineData: { mimeType: "image/jpeg", data: base64Image } }
+                                ]
+                            }],
+                            generationConfig: { temperature: 0.1 }
+                        })
+                    });
+
+                    const data = await response.json();
                     
-                    let foundCat = null;
-                    for (const cat in iaConfig.dicionario) {
-                        if (iaConfig.dicionario[cat].some(termo => {
-                            if (termo.length <= 3) return text === termo;
-                            return text.includes(termo);
-                        })) {
-                            foundCat = cat;
-                            break;
-                        }
-                    }
-                    
-                    if(foundCat) {
-                        this.projetoLido[foundCat]++;
-                        const width = w.bbox.x1 - w.bbox.x0;
-                        const height = w.bbox.y1 - w.bbox.y0;
-                        
-                        ctx.fillStyle = iaConfig.cores[foundCat];
-                        ctx.fillRect(w.bbox.x0, w.bbox.y0, width, height);
-                        
-                        ctx.strokeStyle = iaConfig.cores[foundCat].replace('0.4', '1');
-                        ctx.lineWidth = 3;
-                        ctx.strokeRect(w.bbox.x0, w.bbox.y0, width, height);
-                    }
-                });
-                
-                document.getElementById('ia-count-tomada').innerText = this.projetoLido.tomada;
-                document.getElementById('ia-count-iluminacao').innerText = this.projetoLido.iluminacao;
-                document.getElementById('ia-count-interruptor').innerText = this.projetoLido.interruptor;
-                document.getElementById('ia-count-disjuntor').innerText = this.projetoLido.disjuntor;
-                document.getElementById('ia-count-infra').innerText = this.projetoLido.infraestrutura;
+                    if(data.error) throw new Error(data.error.message);
+
+                    const textResp = data.candidates[0].content.parts[0].text;
+                    const jsonStr = textResp.replace(/```json/g, '').replace(/```/g, '').trim();
+                    const resultadoIA = JSON.parse(jsonStr);
+
+                    this.projetoLido = resultadoIA;
+
+                    // Atualiza Interface
+                    document.getElementById('ia-count-tomada').innerText = this.projetoLido.tomada || 0;
+                    document.getElementById('ia-count-iluminacao').innerText = this.projetoLido.iluminacao || 0;
+                    document.getElementById('ia-count-interruptor').innerText = this.projetoLido.interruptor || 0;
+                    document.getElementById('ia-count-disjuntor').innerText = this.projetoLido.disjuntor || 0;
+                    document.getElementById('ia-count-infra').innerText = this.projetoLido.infraestrutura || 0;
+
+                    document.getElementById('ia-loading-overlay').style.display = 'none';
+                    document.getElementById('ia-canvas-wrapper').style.display = 'block';
+                    ui.toast("Análise Concluída!");
+
+                } catch(err) {
+                    console.error("Erro no Gemini:", err);
+                    document.getElementById('ia-loading-overlay').style.display = 'none';
+                    ui.toast("Erro de conexão com o cérebro da IA. Verifique sua Chave.", true);
+                }
             },
 
-            ensinarIA() {
-                const palavra = document.getElementById('ia-nova-palavra').value.toLowerCase().trim();
-                const categoria = document.getElementById('ia-nova-categoria').value;
+            // ENSINA A IA SALVANDO NO PROMPT
+            ensinarIAGemini() {
+                const regra = document.getElementById('ia-nova-regra').value.trim();
+                if(!regra) return ui.toast("Digite o que a IA deve aprender!", true);
                 
-                if(!palavra) return ui.toast("Digite a palavra que faltou!", true);
+                let regrasAtuais = localStorage.getItem('ia_rules_prompt') || '';
+                regrasAtuais += ` - ${regra}.`;
+                localStorage.setItem('ia_rules_prompt', regrasAtuais);
                 
-                if(!iaConfig.dicionario[categoria].includes(palavra)) {
-                    iaConfig.dicionario[categoria].push(palavra);
-                    iaConfig.save();
-                    ui.toast("A IA aprendeu! Refazendo a análise...");
-                }
+                ui.toast("Conhecimento atualizado! Reanalisando imagem...", false, 3000);
+                document.getElementById('ia-nova-regra').value = '';
                 
-                document.getElementById('ia-nova-palavra').value = '';
-                this.renderizarBBoxesIA();
+                // Oculta tela e mostra carregando
+                document.getElementById('ia-canvas-wrapper').style.display = 'none';
+                document.getElementById('ia-loading-overlay').style.display = 'block';
+                
+                // Rechama a API com a mesma imagem salva na memória e a nova regra
+                this.chamarAPIGemini(this.lastBase64Data);
             },
             
             gerarOrcamentoDoProjeto() {
@@ -814,10 +748,9 @@
                 if(p.disjuntor > 0) itens.push({ nome: 'Montagem de Disjuntor (QDC)', qtd: p.disjuntor, preco: 50.00 });
                 if(p.infraestrutura > 0) itens.push({ nome: 'Ponto de Infraestrutura/CFTV', qtd: p.infraestrutura, preco: 60.00 });
                 
-                if(itens.length === 0) return ui.toast("Nenhum ponto contabilizado. Não há o que orçar.", true);
+                if(itens.length === 0) return ui.toast("A IA retornou zero pontos. Não há o que orçar.", true);
                 
                 orcamento.itens = itens;
-                
                 if(!app.currentClientId) ui.toast("Como não há cliente selecionado, o orçamento ficará avulso.", true);
                 
                 orcamento.renderLista();
@@ -886,7 +819,7 @@
         };
 
         let database;
-        let configEmpresa = { nome: "Sua Empresa", doc: "", tel: "" };
+        let configEmpresa = { nome: "Sua Empresa", doc: "", tel: "", geminiKey: "" };
 
         const db = {
             init() {
@@ -912,9 +845,10 @@
                 database.transaction("config", "readonly").objectStore("config").get(1).onsuccess = (e) => {
                     if (e.target.result) {
                         configEmpresa = e.target.result;
-                        document.getElementById('conf-empresa-nome').value = configEmpresa.nome;
-                        document.getElementById('conf-empresa-doc').value = configEmpresa.doc;
-                        document.getElementById('conf-empresa-tel').value = configEmpresa.tel;
+                        document.getElementById('conf-empresa-nome').value = configEmpresa.nome || '';
+                        document.getElementById('conf-empresa-doc').value = configEmpresa.doc || '';
+                        document.getElementById('conf-empresa-tel').value = configEmpresa.tel || '';
+                        document.getElementById('conf-gemini-key').value = configEmpresa.geminiKey || '';
                     }
                 };
             },
@@ -922,8 +856,9 @@
                 const nome = document.getElementById('conf-empresa-nome').value || "Sua Empresa";
                 const doc = document.getElementById('conf-empresa-doc').value;
                 const tel = document.getElementById('conf-empresa-tel').value;
-                configEmpresa = { id: 1, nome, doc, tel };
-                database.transaction("config", "readwrite").objectStore("config").put(configEmpresa).onsuccess = () => { ui.toast("Dados da Empresa Salvos!"); };
+                const geminiKey = document.getElementById('conf-gemini-key').value;
+                configEmpresa = { id: 1, nome, doc, tel, geminiKey };
+                database.transaction("config", "readwrite").objectStore("config").put(configEmpresa).onsuccess = () => { ui.toast("Ajustes Salvos com Sucesso!"); };
             },
             saveCliente() {
                 const nome = document.getElementById('cli-nome').value.trim(); 
@@ -1145,35 +1080,6 @@
         const pdf = {
             currentFileName: '', currentClientPhone: '', currentClientName: '', currentHtmlContent: '',
             
-            gerarReciboDaTela() {
-                ui.previousView = 'view-novo-recibo';
-                
-                const valorStr = document.getElementById('recibo-valor').value;
-                const descRecibo = document.getElementById('recibo-desc').value;
-                const dataInput = document.getElementById('recibo-data').value;
-                
-                if (!valorStr) return ui.toast("Preencha o valor recebido!", true);
-                if (!descRecibo) return ui.toast("Preencha a descrição do recibo!", true);
-                if (!dataInput) return ui.toast("Verifique a data do recibo!", true);
-
-                const valorPagar = parseFloat(valorStr);
-
-                database.transaction("clientes", "readonly").objectStore("clientes").get(app.currentClientId).onsuccess = (ev) => {
-                    const cliente = ev.target.result;
-                    const dataF = new Date(dataInput + 'T12:00:00').toLocaleDateString('pt-BR');
-                    
-                    this.currentFileName = `Recibo_${cliente.nome.replace(/\s+/g, '_')}.pdf`;
-                    this.currentClientName = cliente.nome;
-
-                    const html = `<div class="pdf-page-container"><div style="border: 2px solid #e2e8f0; padding: 40px; border-radius: 12px; margin-top:20px;"><div class="pdf-header" style="border-bottom:none; margin-bottom:0; display:flex; justify-content:space-between;"><div><div class="pdf-title" style="color:#16a34a; font-size:28px;">RECIBO DE PAGAMENTO</div></div><div style="text-align:right"><div style="background:#16a34a; color:white; padding:8px 15px; border-radius:4px; font-weight:bold; font-size:18px; display:inline-block;">Nº ${Math.floor(Math.random() * 89999) + 10000}</div></div></div><div style="font-size:32px; font-weight:900; color:#1e293b; margin:20px 0; text-align:center; padding:15px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px;">${BRL.format(valorPagar)}</div><div style="font-size:18px; line-height:1.8; color:#334155; text-align:justify; margin-bottom:40px; margin-top:30px;">Recebi(emos) de <b>${cliente.nome}</b> a quantia de <b>${BRL.format(valorPagar)}</b> referente a: <br><b style="color:#1e293b; font-size:16px;">${descRecibo}</b>.</div><div style="text-align:center; margin-top:100px; font-size:14px;"><div style="border-top:1px solid #334155; display:inline-block; padding-top:10px; width:300px; color:#1e293b;"><b>${configEmpresa.nome}</b><br>CNPJ/CPF: ${configEmpresa.doc}<br>${dataF}</div></div></div></div>`;
-                    
-                    this.currentHtmlContent = html;
-                    document.getElementById('pdf-container-view').innerHTML = html;
-                    document.getElementById('btn-final-pdf').innerHTML = '<i class="fab fa-whatsapp"></i> Gerar Recibo e Enviar';
-                    ui.changeView('view-preview');
-                };
-            },
-
             previewOrcamento(orcId) {
                 ui.previousView = 'view-orcamento';
                 database.transaction(["orcamentos", "clientes"], "readonly").objectStore("orcamentos").get(orcId).onsuccess = (e) => {
