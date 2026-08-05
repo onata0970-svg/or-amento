@@ -10,6 +10,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
+    <!-- Bibliotecas Necessárias: PDF, OCR (IA de Imagem) e Leitor PDF.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -17,16 +18,35 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
     <style>
+        /* DESIGN SYSTEM DO iOS (Apple) */
         :root { 
-            --primary: #000000; --accent: #007aff; --success: #34c759; --danger: #ff3b30; 
-            --warning: #ff9500; --info: #5ac8fa; --purple: #af52de; --cyan: #32ade6; 
-            --bg: #f2f2f7; --card: #ffffff; --text: #1c1c1e; --border: rgba(60, 60, 67, 0.13); 
-            --ios-gray: #8e8e93; --ios-input-bg: rgba(118, 118, 128, 0.08); --app-width: 480px; 
+            --primary: #000000; 
+            --accent: #007aff; 
+            --success: #34c759; 
+            --danger: #ff3b30; 
+            --warning: #ff9500; 
+            --info: #5ac8fa; 
+            --purple: #af52de; 
+            --cyan: #32ade6; 
+            --bg: #f2f2f7; 
+            --card: #ffffff; 
+            --text: #1c1c1e; 
+            --border: rgba(60, 60, 67, 0.13); 
+            --ios-gray: #8e8e93;
+            --ios-input-bg: rgba(118, 118, 128, 0.08);
+            --app-width: 480px; 
         }
         
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         
-        body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #000; color: var(--text); display: flex; justify-content: center; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background-color: #000; 
+            color: var(--text); 
+            display: flex; justify-content: center; min-height: 100vh; 
+            -webkit-font-smoothing: antialiased;
+        }
+        
         .app-container { width: 100%; max-width: var(--app-width); background-color: var(--bg); min-height: 100vh; position: relative; padding-top: 60px; padding-bottom: 90px; box-shadow: 0 0 20px rgba(0,0,0,0.2); overflow-x: hidden; word-break: break-word; }
         
         .topbar { position: fixed; top: 0; left: 0; right: 0; max-width: var(--app-width); margin: 0 auto; height: 60px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 0.5px solid var(--border); color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 17px; z-index: 1000; }
@@ -119,10 +139,9 @@
         #pdf-wrapper { overflow: auto; background: var(--border); padding: 20px; border-radius: 12px; margin-bottom: 20px; }
         .scale-wrapper { transform: scale(0.42); transform-origin: top left; margin-bottom: -60%; }
         
+        /* CLASSES PARA A IMPRESSÃO SEGURA DO DOCUMENTO */
         .pdf-page-container { width: 794px; min-height: 1123px; background: white; padding: 40px; color: #1e293b; font-family: 'Inter', sans-serif; box-sizing: border-box; }
-        
         .pdf-info-box, .timeline-card, table tr, .pdf-img-box, .avoid-break { page-break-inside: avoid !important; break-inside: avoid !important; }
-
         .pdf-header { border-bottom: 3px solid #2563eb; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; }
         .pdf-title { font-size: 24px; font-weight: 800; color: #1e293b; }
         .pdf-info-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
@@ -349,6 +368,7 @@
             
             <div id="pdf-wrapper">
                 <div class="scale-wrapper">
+                    <!-- O id pdf-container-view é apenas visual -->
                     <div id="pdf-container-view" class="pdf-page-container"></div>
                 </div>
             </div>
@@ -356,7 +376,7 @@
             <button class="btn btn-success" id="btn-final-pdf" onclick="pdf.executeDownloadOrShare()" style="margin-bottom: 20px;"><i class="fab fa-whatsapp"></i> Gerar e Enviar PDF</button>
         </div>
 
-        <!-- NOVA TELA: ANÁLISE DE PROJETO COM BBOX E ENSINO DA IA -->
+        <!-- NOVA TELA: ANÁLISE DE PROJETO IA -->
         <div id="view-analise-projeto" class="view">
             <button class="btn-back" onclick="ui.changeView('view-ferramentas')"><i class="fas fa-chevron-left"></i> Cancelar Análise</button>
             <div class="card" style="border-left: 4px solid var(--purple);">
@@ -379,14 +399,15 @@
                     <div class="dash-grid" style="gap: 8px; margin-bottom: 15px;">
                         <div class="dash-box" style="padding: 10px; background: rgba(52, 199, 89, 0.1);"><div style="font-size:10px; font-weight:bold; color:var(--success);">TOMADAS</div><div id="ia-count-tomada" style="font-size:18px; font-weight:800; color:var(--primary);">0</div></div>
                         <div class="dash-box" style="padding: 10px; background: rgba(255, 149, 0, 0.1);"><div style="font-size:10px; font-weight:bold; color:var(--warning);">ILUMINAÇÃO</div><div id="ia-count-iluminacao" style="font-size:18px; font-weight:800; color:var(--primary);">0</div></div>
-                        <div class="dash-box" style="padding: 10px; background: rgba(90, 200, 250, 0.1);"><div style="font-size:10px; font-weight:bold; color:var(--info);">INTERRUPTO</div><div id="ia-count-interruptor" style="font-size:18px; font-weight:800; color:var(--primary);">0</div></div>
+                        <div class="dash-box" style="padding: 10px; background: rgba(90, 200, 250, 0.1);"><div style="font-size:10px; font-weight:bold; color:var(--info);">INTERRUPTOR</div><div id="ia-count-interruptor" style="font-size:18px; font-weight:800; color:var(--primary);">0</div></div>
                         <div class="dash-box" style="padding: 10px; background: rgba(175, 82, 222, 0.1);"><div style="font-size:10px; font-weight:bold; color:var(--purple);">DISJUNTORES</div><div id="ia-count-disjuntor" style="font-size:18px; font-weight:800; color:var(--primary);">0</div></div>
+                        <div class="dash-box" style="padding: 10px; background: rgba(255, 45, 85, 0.1); grid-column: span 2; text-align:center;"><div style="font-size:10px; font-weight:bold; color:#ff2d55;">INFRAESTRUTURA / CFTV</div><div id="ia-count-infra" style="font-size:18px; font-weight:800; color:var(--primary);">0</div></div>
                     </div>
 
                     <!-- Sistema de Ensino da IA -->
                     <div style="background: var(--ios-input-bg); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
                         <label style="color: var(--primary); font-size:13px; text-transform:none;"><i class="fas fa-graduation-cap"></i> Faltou alguma coisa?</label>
-                        <p style="font-size: 11px; color:var(--ios-gray); margin-bottom:10px; text-transform:none; font-weight:400;">Ensine como o projetista chamou o item na planta (ex: "arandela", "T.U.G", "100W") e a IA refará a contagem.</p>
+                        <p style="font-size: 11px; color:var(--ios-gray); margin-bottom:10px; text-transform:none; font-weight:400;">Ensine como o projetista chamou o item na planta (ex: "arandela", "100W", "T.U.G") e a IA refará a contagem.</p>
                         <div style="display:flex; gap:10px; margin-top:5px;">
                             <input type="text" id="ia-nova-palavra" placeholder="Digite o termo..." style="margin:0; flex:1; background:white; font-size:14px; padding:10px;">
                             <select id="ia-nova-categoria" style="margin:0; flex:1; background-color:white; font-size:14px; padding:10px;">
@@ -394,6 +415,7 @@
                                 <option value="iluminacao">Iluminação</option>
                                 <option value="interruptor">Interruptor</option>
                                 <option value="disjuntor">Disjuntor/QDC</option>
+                                <option value="infraestrutura">Infra / Câmera</option>
                             </select>
                         </div>
                         <button class="btn btn-purple" style="margin-top: 10px; padding: 10px; font-size:14px;" onclick="ferramentas.ensinarIA()"><i class="fas fa-sync-alt"></i> Aprender e Reanalisar</button>
@@ -556,15 +578,22 @@
         const iaConfig = {
             dicionario: {
                 tomada: ['tomada', 'tug', 'tue', 'pt', 'pto', 'chuveiro', 'ar condicionado', 'bomba', '20a', '10a', '220v', '127v', 'tom'],
-                iluminacao: ['ilumina', 'lampada', 'lâmpada', 'luminaria', 'luminária', 'arandela', 'plafon', 'spot', 'croica', 'led', 'fluorescente', 'balizador', 'refletor', 'pendente', '100w', '60w', '15w'],
+                iluminacao: [
+                    'ilumina', 'lampada', 'lâmpada', 'luminaria', 'luminária', 'easy', 'mr16', 'evo', 
+                    'arandela', 'plafon', 'painel', 'embutir', '17x17', '22x22', '30x30', '40x40',
+                    'spot', 'sobrepor', 'cilindrico', 'cilíndrico', 'croica', 'led', 'fluorescente', 
+                    'balizador', 'refletor', 'pendente', 'lustre', 'trilho', 'articulada'
+                ],
                 interruptor: ['interruptor', 'tecla', 'secao', 'seção', 'pulsador', 'paralelo', 'dimmer', 'sensor', 'three-way', 'four-way', 'threeway', 'fourway', 'int'],
-                disjuntor: ['disjuntor', 'quadro', 'qdc', 'qdl', 'qg', 'dpm', 'dps', 'dr', 'idr', 'dj', 'bipolar', 'monopolar', 'trifasico', 'trifásico', 'tetrapolar', 'disj']
+                disjuntor: ['disjuntor', 'quadro', 'qdc', 'qdl', 'qg', 'dpm', 'dps', 'dr', 'idr', 'dj', 'bipolar', 'monopolar', 'trifasico', 'trifásico', 'tetrapolar', 'disj'],
+                infraestrutura: ['driver', 'drivers', 'câmera', 'camera', 'cftv']
             },
             cores: {
                 tomada: 'rgba(52, 199, 89, 0.4)', // Verde
                 iluminacao: 'rgba(255, 149, 0, 0.4)', // Laranja
                 interruptor: 'rgba(90, 200, 250, 0.4)', // Azul claro
-                disjuntor: 'rgba(175, 82, 222, 0.4)' // Roxo
+                disjuntor: 'rgba(175, 82, 222, 0.4)', // Roxo
+                infraestrutura: 'rgba(255, 45, 85, 0.4)' // Rosa
             },
             load() {
                 const saved = localStorage.getItem('ia_dict_custom');
@@ -650,11 +679,10 @@
         };
 
         const ferramentas = {
-            projetoLido: { tomada:0, iluminacao:0, interruptor:0, disjuntor:0 },
+            projetoLido: { tomada:0, iluminacao:0, interruptor:0, disjuntor:0, infraestrutura:0 },
             lastImgData: null,
             lastWords: [],
             
-            // IA DE VISÃO COMPUTACIONAL: HÍBRIDA (PDF + FOTO) E COM CANVAS
             async iniciarAnaliseVisiva(input) {
                 if(!input.files.length) return;
                 
@@ -666,7 +694,6 @@
                 let imgDataUrl = '';
 
                 try {
-                    // Processamento de PDF
                     if (file.type === "application/pdf") {
                         const arrayBuffer = await file.arrayBuffer();
                         const pdfjsLib = window['pdfjs-dist/build/pdf'] || window.pdfjsLib;
@@ -682,9 +709,7 @@
                         
                         await page.render({canvasContext: tempCanvas.getContext('2d'), viewport}).promise;
                         imgDataUrl = tempCanvas.toDataURL('image/jpeg');
-                    } 
-                    // Processamento de Foto
-                    else {
+                    } else {
                         imgDataUrl = await new Promise((resolve) => {
                             const reader = new FileReader();
                             reader.onload = e => resolve(e.target.result);
@@ -715,7 +740,6 @@
                 input.value = '';
             },
 
-            // DESENHA AS CAIXAS NA IMAGEM E CONTA OS PONTOS
             renderizarBBoxesIA() {
                 if(!this.lastImgData || !this.lastWords) return;
                 
@@ -726,7 +750,7 @@
                 canvas.height = this.lastImgData.height;
                 ctx.drawImage(this.lastImgData, 0, 0);
                 
-                this.projetoLido = { tomada:0, iluminacao:0, interruptor:0, disjuntor:0 };
+                this.projetoLido = { tomada:0, iluminacao:0, interruptor:0, disjuntor:0, infraestrutura:0 };
                 
                 this.lastWords.forEach(w => {
                     const text = w.text.toLowerCase().replace(/[^a-z0-9áéíóúãõç\-]/g, '');
@@ -735,7 +759,7 @@
                     let foundCat = null;
                     for (const cat in iaConfig.dicionario) {
                         if (iaConfig.dicionario[cat].some(termo => {
-                            if (termo.length <= 3) return text === termo; // Exige match exato para siglas curtas
+                            if (termo.length <= 3) return text === termo;
                             return text.includes(termo);
                         })) {
                             foundCat = cat;
@@ -761,9 +785,9 @@
                 document.getElementById('ia-count-iluminacao').innerText = this.projetoLido.iluminacao;
                 document.getElementById('ia-count-interruptor').innerText = this.projetoLido.interruptor;
                 document.getElementById('ia-count-disjuntor').innerText = this.projetoLido.disjuntor;
+                document.getElementById('ia-count-infra').innerText = this.projetoLido.infraestrutura;
             },
 
-            // TREINAMENTO DA IA PELO USUÁRIO
             ensinarIA() {
                 const palavra = document.getElementById('ia-nova-palavra').value.toLowerCase().trim();
                 const categoria = document.getElementById('ia-nova-categoria').value;
@@ -788,6 +812,7 @@
                 if(p.iluminacao > 0) itens.push({ nome: 'Ponto de Iluminação', qtd: p.iluminacao, preco: 35.00 });
                 if(p.interruptor > 0) itens.push({ nome: 'Instalação de Interruptor', qtd: p.interruptor, preco: 25.00 });
                 if(p.disjuntor > 0) itens.push({ nome: 'Montagem de Disjuntor (QDC)', qtd: p.disjuntor, preco: 50.00 });
+                if(p.infraestrutura > 0) itens.push({ nome: 'Ponto de Infraestrutura/CFTV', qtd: p.infraestrutura, preco: 60.00 });
                 
                 if(itens.length === 0) return ui.toast("Nenhum ponto contabilizado. Não há o que orçar.", true);
                 
