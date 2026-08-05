@@ -46,7 +46,6 @@
         
         .app-container { width: 100%; max-width: var(--app-width); background-color: var(--bg); min-height: 100vh; position: relative; padding-top: 60px; padding-bottom: 90px; box-shadow: 0 0 20px rgba(0,0,0,0.2); overflow-x: hidden; word-break: break-word; }
         
-        /* Barras com Efeito Vidro (Blur) */
         .topbar { position: fixed; top: 0; left: 0; right: 0; max-width: var(--app-width); margin: 0 auto; height: 60px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 0.5px solid var(--border); color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 17px; z-index: 1000; }
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; max-width: var(--app-width); margin: 0 auto; height: 70px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-top: 0.5px solid var(--border); display: flex; justify-content: space-around; align-items: flex-start; padding-top: 8px; z-index: 1000; padding-bottom: env(safe-area-inset-bottom); }
         
@@ -60,7 +59,6 @@
 
         .card { background: var(--card); border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
         
-        /* Botões Estilo Apple */
         .btn { padding: 14px 20px; border-radius: 12px; border: none; font-weight: 600; font-size: 17px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; transition: 0.2s; -webkit-appearance: none; letter-spacing: -0.3px; }
         .btn:active { transform: scale(0.96); opacity: 0.8; }
         .btn-primary { background: var(--accent); color: white; }
@@ -72,26 +70,14 @@
         .btn-cyan { background: var(--cyan); color: white; }
         .btn-outline { background: rgba(0, 122, 255, 0.1); color: var(--accent); border: none; }
         
-        /* Botão "Voltar" do iOS */
         .btn-back { background: transparent; color: var(--accent); border: none; padding: 0; display: inline-flex; align-items: center; font-size: 17px; font-weight: 400; cursor: pointer; margin-bottom: 20px; width: auto; }
         .btn-back i { font-size: 20px; margin-right: 6px; font-weight: 300; }
 
-        /* Formulários do iOS */
         input, select, textarea { width: 100%; padding: 14px 16px; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 16px; font-size: 17px; background: var(--card); outline: none; -webkit-appearance: none; color: var(--text); }
         input:focus, select:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
         label { font-size: 12px; font-weight: 500; margin-bottom: 6px; display: block; color: var(--ios-gray); text-transform: uppercase; letter-spacing: 0.5px; padding-left: 4px; }
         select { background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238e8e93' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 14px center; background-size: 16px; }
-        
-        /* CORREÇÃO DO BUG DA BARRA DE BUSCA */
-        .search-input { 
-            background-color: var(--ios-input-bg); 
-            border: none; 
-            padding-left: 40px; 
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238e8e93' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3ccircle cx='11' cy='11' r='8'%3e%3c/circle%3e%3cline x1='21' y1='21' x2='16.65' y2='16.65'%3e%3c/line%3e%3c/svg%3e"); 
-            background-repeat: no-repeat; /* <-- Isso impede o ícone de se multiplicar */
-            background-position: left 12px center; 
-            background-size: 18px; 
-        }
+        .search-input { background-color: var(--ios-input-bg); border: none; padding-left: 40px; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238e8e93' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3ccircle cx='11' cy='11' r='8'%3e%3c/circle%3e%3cline x1='21' y1='21' x2='16.65' y2='16.65'%3e%3c/line%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: left 12px center; background-size: 18px; }
 
         .list-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 0.5px solid var(--border); padding: 14px 0; cursor: pointer; }
         .list-row:last-child { border-bottom: none; }
@@ -146,11 +132,14 @@
         #toast.warning { background: rgba(255, 149, 0, 0.9); color: #000; }
         #btn-instalar { display: none; position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); max-width: 300px; z-index: 1999; box-shadow: 0 10px 20px rgba(0,122,255,0.3); border-radius: 30px; white-space: nowrap; padding: 12px 24px;}
 
-        /* ESTILO DO PRÉVIEW DO PDF */
+        /* ESTILO DO PRÉVIEW DO PDF COM CORREÇÃO DE QUEBRA E ZOOM */
         #pdf-wrapper { overflow: auto; background: var(--border); padding: 20px; border-radius: 12px; margin-bottom: 20px; }
         .scale-wrapper { transform: scale(0.42); transform-origin: top left; margin-bottom: -60%; }
         #pdf-container { width: 794px; min-height: 1123px; background: white; padding: 40px; color: #1e293b; font-family: 'Inter', sans-serif; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
         
+        /* IMPEDE A BIBLIOTECA DE CORTAR O ELEMENTO NO MEIO DA PÁGINA */
+        .pdf-info-box, .timeline-card, table tr, .pdf-img-box { page-break-inside: avoid !important; break-inside: avoid !important; }
+
         .pdf-header { border-bottom: 3px solid #2563eb; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; }
         .pdf-title { font-size: 24px; font-weight: 800; color: #1e293b; }
         .pdf-info-box { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
@@ -203,8 +192,6 @@
             
             <div style="display: flex; gap: 10px; margin-bottom: 20px;">
                 <button class="btn btn-info" onclick="orcamento.abrirNovo()" style="flex: 2; font-size:15px"><i class="fas fa-file-invoice-dollar"></i> Orçamento</button>
-                
-                <!-- BOTÃO QUE CHAMA A NOVA TELA DE RECIBO RÁPIDO -->
                 <button class="btn btn-outline" onclick="app.openNovoRecibo()" style="flex: 1; font-size:15px; border: 1px solid var(--success); color: var(--success);"><i class="fas fa-receipt"></i> Recibo</button>
             </div>
 
@@ -221,7 +208,7 @@
             <div id="historico-laudos-container"></div>
         </div>
 
-        <!-- NOVA TELA: EMITIR RECIBO RÁPIDO -->
+        <!-- TELA: EMITIR RECIBO RÁPIDO -->
         <div id="view-novo-recibo" class="view">
             <button class="btn-back" onclick="ui.changeView('view-perfil-cliente')"><i class="fas fa-chevron-left"></i> Cancelar</button>
             <div class="card" style="border-left: 4px solid var(--success);">
@@ -385,6 +372,21 @@
         <!-- TELA: FERRAMENTAS TÉCNICAS -->
         <div id="view-ferramentas" class="view">
             
+            <!-- NOVA FUNÇÃO: LEITOR DE PROJETO ELÉTRICO -->
+            <div class="card" style="border-left: 4px solid var(--purple);">
+                <h3 style="font-size: 17px; color: var(--primary); margin-bottom: 10px;"><i class="fas fa-brain" style="color: var(--purple)"></i> Leitor de Projeto Elétrico (IA)</h3>
+                <p style="font-size: 14px; color: var(--ios-gray); margin-bottom: 16px;">Tire foto da <b>legenda ou lista de cargas</b> do projeto. A IA vai contar os pontos e orçar.</p>
+                <div style="position: relative; margin-bottom: 16px;">
+                    <input type="file" accept="image/*" capture="environment" onchange="ferramentas.analisarProjeto(this)" style="position: absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer; z-index: 10;">
+                    <button class="btn btn-purple"><i class="fas fa-camera"></i> Escanear Planta / Legenda</button>
+                </div>
+                <div id="projeto-loading" style="display: none; text-align: center; color: var(--purple); font-size: 13px; margin-bottom: 10px;"><i class="fas fa-spinner fa-spin"></i> Lendo diagrama e legendas...</div>
+                <div id="projeto-result" style="display: none; margin-top: 15px; padding-top: 15px; border-top: 0.5px solid var(--border);">
+                    <div id="projeto-itens-encontrados" style="margin-bottom: 16px; font-size:14px; color:var(--text);"></div>
+                    <button class="btn btn-success" onclick="ferramentas.gerarOrcamentoDoProjeto()">Gerar Orçamento Automático <i class="fas fa-arrow-right"></i></button>
+                </div>
+            </div>
+
             <div class="card">
                 <h3 style="font-size: 17px; color: var(--primary); margin-bottom: 10px;"><i class="fas fa-thermometer-half" style="color: var(--cyan)"></i> Superaquecimento (AC)</h3>
                 <p style="font-size: 14px; color: var(--ios-gray); margin-bottom: 16px;">Verifique a carga de fluido com precisão térmica.</p>
@@ -593,6 +595,66 @@
         };
 
         const ferramentas = {
+            projetoLido: [],
+            async analisarProjeto(input) {
+                if(!input.files.length) return;
+                const file = input.files[0];
+                document.getElementById('projeto-loading').style.display = 'block';
+                document.getElementById('projeto-result').style.display = 'none';
+                ui.toast("Analisando projeto... Isso pode levar alguns segundos.", false, 4000);
+
+                try {
+                    const result = await Tesseract.recognize(file, 'por');
+                    const texto = result.data.text.toLowerCase();
+                    document.getElementById('projeto-loading').style.display = 'none';
+                    
+                    this.projetoLido = [];
+
+                    // Contagem heurística baseada no texto OCR
+                    const tomadas = (texto.match(/(tomada|tug|tue|\bpt\b|\bpto\b)/g) || []).length;
+                    const iluminacao = (texto.match(/(ilumina|lâmpada|lampada|luminária|luminaria|led|\bw\b)/g) || []).length;
+                    const interruptores = (texto.match(/(interruptor|tecla|seção|secao)/g) || []).length;
+                    const disjuntores = (texto.match(/(disjuntor|qdc|quadro|dpm|dps|dr)/g) || []).length;
+
+                    if(tomadas === 0 && iluminacao === 0 && interruptores === 0 && disjuntores === 0) {
+                        ui.toast("A IA não identificou pontos na imagem. Tente focar na legenda.", true);
+                        return;
+                    }
+
+                    if (tomadas > 0) this.projetoLido.push({ nome: 'Ponto de Tomada (TUG/TUE)', qtd: tomadas, preco: 45.00 });
+                    if (iluminacao > 0) this.projetoLido.push({ nome: 'Ponto de Iluminação', qtd: iluminacao, preco: 35.00 });
+                    if (interruptores > 0) this.projetoLido.push({ nome: 'Instalação de Interruptor', qtd: interruptores, preco: 25.00 });
+                    if (disjuntores > 0) this.projetoLido.push({ nome: 'Montagem de Disjuntor (QDC)', qtd: disjuntores, preco: 50.00 });
+
+                    let html = '<b style="color:var(--primary);">Pontos Identificados:</b><br><ul style="margin-top:10px; padding-left:20px; line-height:1.6; color:var(--text);">';
+                    this.projetoLido.forEach(i => { html += `<li><b>${i.qtd}x</b> ${i.nome}</li>`; });
+                    html += '</ul><p style="font-size:12px; color:var(--ios-gray); margin-top:10px;">*Valores unitários baseados na média de mercado. Podem ser editados na próxima tela.</p>';
+                    
+                    document.getElementById('projeto-itens-encontrados').innerHTML = html;
+                    document.getElementById('projeto-result').style.display = 'block';
+                    ui.toast("Análise Concluída!");
+
+                } catch(err) {
+                    document.getElementById('projeto-loading').style.display = 'none';
+                    ui.toast("Erro ao ler o projeto.", true);
+                }
+                input.value = '';
+            },
+            gerarOrcamentoDoProjeto() {
+                if(this.projetoLido.length === 0) return;
+                // Redirecionar os itens para o orçamento expresso
+                orcamento.itens = [...this.projetoLido];
+                
+                // Se nenhum cliente estiver selecionado (foi direto pela aba), pedir para criar orçamento em branco
+                if(!app.currentClientId) {
+                    ui.toast("Aviso: Como não há cliente selecionado, o orçamento será gerado solto.", true);
+                }
+                
+                orcamento.renderLista();
+                ui.changeView('view-orcamento');
+                document.getElementById('topbar-title').innerText = "Orçamento do Projeto";
+            },
+
             calcularSuperaquecimento() {
                 const tSuc = parseFloat(document.getElementById('calc-tsuc').value);
                 const tEvap = parseFloat(document.getElementById('calc-tevap').value);
@@ -851,7 +913,6 @@
             },
             salvarCofre() { const tx = database.transaction("clientes", "readwrite").objectStore("clientes"); tx.get(this.currentClientId).onsuccess = (e) => { let c = e.target.result; c.cofre = document.getElementById('cli-cofre').value; tx.put(c).onsuccess = () => ui.toast("Cofre atualizado!"); }; },
             
-            // NOVA FUNÇÃO: ABRE A TELA DO RECIBO JÁ PRÉ-PREENCHIDA COM O CLIENTE
             openNovoRecibo() {
                 database.transaction("clientes", "readonly").objectStore("clientes").get(this.currentClientId).onsuccess = (e) => {
                     const c = e.target.result;
@@ -922,7 +983,6 @@
         const pdf = {
             currentFileName: '', currentClientPhone: '', currentClientName: '', currentHtmlContent: '',
             
-            // NOVA FUNÇÃO: GERA RECIBO DIRETO DA TELA PRÉ-PREENCHIDA
             gerarReciboDaTela() {
                 ui.previousView = 'view-novo-recibo';
                 
@@ -1029,11 +1089,13 @@
                 ui.toast("Gerando arquivo do documento...", false, 3000);
                 
                 const element = document.getElementById('pdf-container');
+                window.scrollTo(0,0);
 
                 const opt = { 
-                    margin: 10, 
+                    margin: [10, 0, 10, 0], 
                     filename: this.currentFileName, 
                     image: { type: 'jpeg', quality: 1 }, 
+                    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
                     html2canvas: { 
                         scale: 2, 
                         useCORS: true, 
@@ -1044,6 +1106,7 @@
                             const clonedEl = clonedDoc.getElementById('pdf-container');
                             clonedEl.style.transform = 'none'; 
                             clonedEl.style.width = '794px';
+                            clonedEl.style.height = 'auto';
                             clonedEl.style.minHeight = '1123px';
                             clonedEl.style.marginBottom = '0';
                             clonedEl.style.boxShadow = 'none';
