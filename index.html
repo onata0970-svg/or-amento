@@ -35,6 +35,8 @@
         #view-login { display: flex; flex-direction: column; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; right: 0; bottom: 0; max-width: var(--app-width); margin: 0 auto; background: var(--primary); z-index: 3000; padding: 30px; text-align: center; color: white; }
         #view-login.hidden { display: none; }
 
+        #pdf-loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--primary); color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
+
         .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .btn { padding: 14px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; transition: 0.2s; font-size: 15px; -webkit-appearance: none; }
         .btn:active { transform: scale(0.98); }
@@ -255,7 +257,7 @@
                 <label>Data de Emissão</label>
                 <input type="date" id="recibo-data">
                 
-                <button class="btn btn-warning" style="color: #000;" onclick="recibo.gerar()"><i class="fas fa-eye"></i> Gerar Pré-visualização do Recibo</button>
+                <button class="btn btn-warning" style="color: #000; margin-top:15px;" onclick="recibo.gerar()"><i class="fas fa-eye"></i> Gerar Pré-visualização do Recibo</button>
             </div>
         </div>
 
@@ -756,202 +758,6 @@
                         };
                     };
                 };
-            }
-        };
-
-        var orcamento = {
-            itens: [],
-            modo: 'lista', 
-            abrirNovo() { 
-                this.itens = []; 
-                this.modo = 'lista';
-                document.getElementById('orc-modo').value = 'lista';
-                this.mudarModo('lista');
-                this.renderLista(); 
-                document.getElementById('orc-edit-index').value = '-1';
-                document.getElementById('orc-item-nome').value=''; 
-                document.getElementById('orc-item-preco').value=''; 
-                document.getElementById('orc-item-qtd').value='1'; 
-                document.getElementById('orc-direto-desc').value='';
-                document.getElementById('orc-direto-valor').value='';
-                document.getElementById('orc-esconder-valores').checked = false;
-                ui.changeView('view-orcamento'); 
-                document.getElementById('topbar-title').innerText = "Orçamento Prévio"; 
-            },
-            mudarModo(val) {
-                this.modo = val;
-                if(val === 'lista') {
-                    document.getElementById('orc-bloco-lista').style.display = 'block';
-                    document.getElementById('orc-bloco-direto').style.display = 'none';
-                } else {
-                    document.getElementById('orc-bloco-lista').style.display = 'none';
-                    document.getElementById('orc-bloco-direto').style.display = 'block';
-                }
-            },
-            adicionarItem() {
-                const n = document.getElementById('orc-item-nome').value; 
-                const q = parseInt(document.getElementById('orc-item-qtd').value); 
-                const p = parseFloat(document.getElementById('orc-item-preco').value);
-                const editIdx = parseInt(document.getElementById('orc-edit-index').value);
-
-                if(!n || !q || isNaN(p)) return ui.toast("Preencha item, qtd e preço", true);
-
-                if (editIdx >= 0) {
-                    this.itens[editIdx] = { nome: n, qtd: q, preco: p };
-                    document.getElementById('orc-edit-index').value = '-1';
-                    document.getElementById('orc-label-acao').innerText = "Adicionar Material ou Serviço";
-                    document.getElementById('orc-btn-add').innerText = "+ Inserir na Lista";
-                } else {
-                    this.itens.push({ nome: n, qtd: q, preco: p });
-                }
-
-                document.getElementById('orc-item-nome').value=''; 
-                document.getElementById('orc-item-preco').value=''; 
-                document.getElementById('orc-item-qtd').value='1';
-                this.renderLista();
-            },
-            editarItem(idx) {
-                const item = this.itens[idx];
-                document.getElementById('orc-item-nome').value = item.nome;
-                document.getElementById('orc-item-qtd').value = item.qtd;
-                document.getElementById('orc-item-preco').value = item.preco;
-                document.getElementById('orc-edit-index').value = idx;
-                document.getElementById('orc-label-acao').innerText = "Editando Item (" + item.nome + ")";
-                document.getElementById('orc-btn-add').innerText = "Salvar Alteração";
-                window.scrollTo(0, 0);
-            },
-            removerItem(idx) { 
-                this.itens.splice(idx, 1); 
-                this.renderLista(); 
-            },
-            renderLista() {
-                let total = 0; const cont = document.getElementById('orc-lista-container');
-                if(this.itens.length === 0) { cont.innerHTML = '<div style="color:#94a3b8; font-size:12px; text-align:center;">Nenhum item inserido.</div>'; document.getElementById('orc-total-display').innerText = "R$ 0,00"; return; }
-                cont.innerHTML = this.itens.map((i, idx) => { 
-                    total += (i.qtd * i.preco); 
-                    return `<div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; border-bottom:1px solid #e2e8f0; padding:8px 0;">
-                        <div><b>${i.nome}</b> (${i.qtd}x) - ${BRL.format(i.preco)} un</div>
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <b style="color:var(--primary)">${BRL.format(i.qtd * i.preco)}</b> 
-                            <button onclick="orcamento.editarItem(${idx})" style="background:none; border:none; color:var(--accent); cursor:pointer;"><i class="fas fa-pen"></i></button>
-                            <button onclick="orcamento.removerItem(${idx})" style="background:none; border:none; color:var(--danger); cursor:pointer;"><i class="fas fa-times"></i></button>
-                        </div>
-                    </div>`; 
-                }).join('');
-                document.getElementById('orc-total-display').innerText = BRL.format(total);
-            },
-            salvarEGerar() {
-                let orc;
-                if(this.modo === 'lista') {
-                    if(this.itens.length === 0) return ui.toast("Adicione itens ao orçamento", true);
-                    const total = this.itens.reduce((sum, i) => sum + (i.qtd * i.preco), 0);
-                    orc = { clienteId: app.currentClientId, data: new Date().toISOString().split('T')[0], tipoModo: 'lista', itens: [...this.itens], total: total };
-                } else {
-                    const desc = document.getElementById('orc-direto-desc').value;
-                    const val = parseFloat(document.getElementById('orc-direto-valor').value);
-                    const esconder = document.getElementById('orc-esconder-valores').checked;
-                    if(!desc || isNaN(val)) return ui.toast("Preencha as especificações e o valor total", true);
-                    orc = { clienteId: app.currentClientId, data: new Date().toISOString().split('T')[0], tipoModo: 'direto', descricao: desc, total: val, esconderValores: esconder };
-                }
-
-                database.transaction("orcamentos", "readwrite").objectStore("orcamentos").add(orc).onsuccess = (e) => { 
-                    ui.toast("Orçamento Salvo! Preparando visualização..."); 
-                    pdf.previewOrcamento(e.target.result); 
-                };
-            },
-            darDesconto(id) {
-                const tx = database.transaction("orcamentos", "readwrite");
-                const store = tx.objectStore("orcamentos");
-                store.get(id).onsuccess = (e) => {
-                    let orc = e.target.result;
-                    
-                    if(orc.descontoAplicado) return ui.toast("Este orçamento já possui desconto!", true);
-
-                    const descStr = prompt(`Orçamento total: ${BRL.format(orc.total)}\nDigite o valor do desconto (R$):`, "0.00");
-                    if (!descStr) return;
-                    const val = parseFloat(descStr.replace(',', '.'));
-                    if (isNaN(val) || val <= 0) return ui.toast("Valor inválido.", true);
-
-                    if(orc.total <= val) return ui.toast("Desconto maior ou igual ao total!", true);
-                    
-                    orc.total -= val;
-                    orc.descontoAplicado = true;
-
-                    if (orc.tipoModo === 'direto') {
-                        orc.descricao += `\n\n[Desconto concedido: R$ ${val.toFixed(2)}]`;
-                    } else {
-                        orc.itens.push({ nome: 'Desconto Aplicado (Negociação)', qtd: 1, preco: -val });
-                    }
-                    
-                    store.put(orc).onsuccess = () => {
-                        ui.toast("Desconto aplicado com sucesso!");
-                        app.openClientProfile(app.currentClientId);
-                    };
-                };
-            }
-        };
-
-        var recibo = {
-            abrirNovo() {
-                document.getElementById('recibo-valor').value = '';
-                document.getElementById('recibo-desc').value = '';
-                document.getElementById('recibo-data').value = new Date().toISOString().split('T')[0];
-                ui.changeView('view-recibo');
-                document.getElementById('topbar-title').innerText = "Emitir Recibo";
-            },
-            gerar() {
-                const val = parseFloat(document.getElementById('recibo-valor').value);
-                const desc = document.getElementById('recibo-desc').value;
-                const dataStr = document.getElementById('recibo-data').value;
-                if(!val || !desc || !dataStr) return ui.toast("Preencha valor, descrição e data.", true);
-
-                pdf.previewRecibo(app.currentClientId, val, desc, dataStr);
-            }
-        };
-
-        var ferramentas = {
-            calcularBTU() {
-                const l = parseFloat(document.getElementById('calc-btu-l').value); const c = parseFloat(document.getElementById('calc-btu-c').value); const p = parseInt(document.getElementById('calc-btu-p').value) || 0; const sol = document.getElementById('calc-btu-sol').value;
-                if(!l || !c) return ui.toast("Preencha Largura e Comprimento.", true);
-                const area = l * c; const cargaBase = sol == "1" ? 800 : 600; let btus = (area * cargaBase) + (p * 600);
-                let rec = 9000; if(btus>9000) rec = 12000; if(btus>12000) rec = 18000; if(btus>18000) rec = 24000; if(btus>24000) rec = 30000; if(btus>30000) rec = 36000; if(btus>36000) rec = 60000;
-                document.getElementById('calc-btu-result').style.display = 'block'; document.getElementById('calc-btu-result').innerHTML = `Carga Estimada: <b>${btus.toFixed(0)} BTUs</b><br>Equipamento Recomendado:<br><span style="font-size:22px; color:var(--accent);">${rec} BTUs</span>`;
-            },
-            converterPotencia() {
-                const val = parseFloat(document.getElementById('conv-valor').value);
-                const tipo = document.getElementById('conv-de').value;
-                if(isNaN(val)) return ui.toast("Digite o valor para converter.", true);
-                
-                let watts = 0;
-                if(tipo === 'cv') watts = val * 735.5;
-                if(tipo === 'hp') watts = val * 745.7;
-                if(tipo === 'btu') watts = val * 0.293071; 
-                
-                document.getElementById('conv-result').style.display = 'block';
-                document.getElementById('conv-result').innerHTML = `${val} ${tipo.toUpperCase()} = <br><span style="font-size: 26px;">${watts.toFixed(1)} W</span>`;
-            },
-            async lerPlaca(input) {
-                if(!input.files.length) return; const file = input.files[0]; document.getElementById('placa-loading').style.display = 'block'; ui.toast("Lendo etiqueta... Mantenha o app aberto.", false, 4000);
-                try {
-                    const result = await Tesseract.recognize(file, 'por'); const texto = result.data.text.toLowerCase(); document.getElementById('placa-loading').style.display = 'none';
-                    const matchWatts = texto.match(/(\d+)\s*(?:w|watts|potência)/); const matchVolts = texto.match(/(\d+)\s*(?:v|volts|tensão)/); const matchBTUs = texto.match(/(\d+)\s*(?:btu|btus)/);
-                    let enc = false;
-                    if (matchWatts) { document.getElementById('calc-w').value = matchWatts[1]; enc = true; } else if (matchBTUs) { ui.toast(`Máquina de ${matchBTUs[1]} BTUs, preencha o consumo (W).`, true); }
-                    if (matchVolts) { let v = parseInt(matchVolts[1]); if (v>=110&&v<=130) document.getElementById('calc-v').value = "127"; else if (v>=200&&v<=240) document.getElementById('calc-v').value = "220"; else if (v>=380) document.getElementById('calc-v').value = "380"; enc = true; }
-                    if (enc) { ui.toast("Valores capturados!"); if(document.getElementById('calc-w').value) this.calcularEletricaCompleta(); } else { ui.toast("Não foi possível ler os valores.", true); }
-                } catch(e) { document.getElementById('placa-loading').style.display = 'none'; ui.toast("Erro ao analisar.", true); } input.value = '';
-            },
-            calcularEletricaCompleta() {
-                const w = parseFloat(document.getElementById('calc-w').value); const v = parseFloat(document.getElementById('calc-v').value); const dist = parseFloat(document.getElementById('calc-dist').value) || 0; const bitola = parseFloat(document.getElementById('calc-cabo').value);
-                if(!w || !v) return ui.toast("Preencha a Potência (W)", true);
-                let amperes = (v == 380) ? (w / (v * 1.732 * 0.85)) : (w / v);
-                let disj = 10; if(amperes>10) disj=16; if(amperes>16) disj=20; if(amperes>20) disj=25; if(amperes>25) disj=32; if(amperes>32) disj=40; if(amperes>40) disj=50; if(amperes>50) disj=63;
-                let quedaStr = "";
-                if(dist > 0) {
-                    let quedaV = (v == 380) ? ((1.732 * 0.0172 * dist * amperes) / bitola) : ((2 * 0.0172 * dist * amperes) / bitola); let quedaPct = (quedaV / v) * 100; let colorQueda = quedaPct > 4 ? "var(--danger)" : "var(--success)";
-                    quedaStr = `<br><br><b>Análise do Cabo (${dist}m):</b><br>Queda de Tensão: <b style="color:${colorQueda}">${quedaPct.toFixed(1)}%</b>`; if(quedaPct > 4) quedaStr += `<br><span style="color:var(--danger); font-size:11px;">⚠️ Risco de aquecimento. Aumente a bitola!</span>`;
-                }
-                const resultBox = document.getElementById('calc-ele-result'); resultBox.style.display = 'block'; resultBox.innerHTML = `<b>Corrente:</b> <span style="color:var(--danger)">${amperes.toFixed(2)} A</span><br><b>Disjuntor Sugerido:</b> <span style="color:var(--success)">${disj} A (Curva C)</span>${quedaStr}`;
             }
         };
 
@@ -1526,8 +1332,15 @@
             previewEstoque() { this.generateEstoque(); },
 
             executeDownloadOrShare() {
-                ui.toast("Renderizando arquivo em alta qualidade...", false, 2000);
+                window.scrollTo(0, 0); // Correção fundamental para celulares Apple/Android não cortarem a tela
                 
+                // Cria uma tela de bloqueio com aviso
+                const overlay = document.createElement('div');
+                overlay.id = 'pdf-loading-overlay';
+                overlay.innerHTML = '<div style="font-size: 50px; margin-bottom: 20px; color: var(--accent);"><i class="fas fa-spinner fa-spin"></i></div><h2 style="font-size: 20px; margin-bottom: 10px;">Renderizando Documento</h2><p style="font-size: 13px; color: #94a3b8; max-width: 80%; text-align: center;">Isso pode levar alguns segundos. Não feche ou minimize o aplicativo.</p>';
+                document.body.appendChild(overlay);
+
+                // Prepara o container para o HTML2PDF gerar o arquivo em perfeitas condições (Full A4)
                 const workerContainer = document.createElement('div');
                 workerContainer.innerHTML = this.currentHtmlContent;
                 workerContainer.style.width = '794px'; 
@@ -1536,8 +1349,9 @@
                 workerContainer.style.color = '#1e293b';
                 workerContainer.style.fontFamily = "'Inter', sans-serif";
                 workerContainer.style.position = 'absolute';
-                workerContainer.style.left = '-9999px';
                 workerContainer.style.top = '0';
+                workerContainer.style.left = '0';
+                workerContainer.style.zIndex = '9998'; // Fica exatamente embaixo da tela de bloqueio
                 document.body.appendChild(workerContainer);
 
                 const opt = { 
@@ -1548,26 +1362,31 @@
                     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
                 };
                 
-                html2pdf().set(opt).from(workerContainer).outputPdf('blob').then((blob) => {
-                    document.body.removeChild(workerContainer); 
-                    
-                    const file = new File([blob], this.currentFileName, { type: 'application/pdf' });
-                    
-                    if (this.currentClientName && navigator.canShare && navigator.canShare({ files: [file] })) {
-                        navigator.share({ 
-                            title: 'Documento Técnico', 
-                            text: `Olá ${this.currentClientName}! Segue em anexo o documento gerado pelo sistema.`, 
-                            files: [file] 
-                        }).then(()=>ui.toast("Compartilhado com sucesso!")).catch((err)=> {
+                // Atrasa em 1,5 segundos para carregar as fotos, logos e dar tempo do celular "respirar"
+                setTimeout(() => {
+                    html2pdf().set(opt).from(workerContainer).outputPdf('blob').then((blob) => {
+                        document.body.removeChild(workerContainer); 
+                        document.body.removeChild(overlay);
+                        
+                        const file = new File([blob], this.currentFileName, { type: 'application/pdf' });
+                        
+                        if (this.currentClientName && navigator.canShare && navigator.canShare({ files: [file] })) {
+                            navigator.share({ 
+                                title: 'Documento Técnico', 
+                                text: `Olá ${this.currentClientName}! Segue em anexo o documento gerado pelo sistema.`, 
+                                files: [file] 
+                            }).then(()=>ui.toast("Compartilhado com sucesso!")).catch((err)=> {
+                                this.forceDownload(blob);
+                            });
+                        } else {
                             this.forceDownload(blob);
-                        });
-                    } else {
-                        this.forceDownload(blob);
-                    }
-                }).catch(err => {
-                    if(document.body.contains(workerContainer)) document.body.removeChild(workerContainer);
-                    ui.toast("Erro ao processar o arquivo PDF.", true);
-                });
+                        }
+                    }).catch(err => {
+                        if(document.body.contains(workerContainer)) document.body.removeChild(workerContainer);
+                        if(document.body.contains(overlay)) document.body.removeChild(overlay);
+                        ui.toast("Erro ao processar o arquivo PDF.", true);
+                    });
+                }, 1500); 
             },
 
             forceDownload(blob) {
@@ -1627,7 +1446,7 @@
             
             window.addEventListener('popstate', (e) => {
                 if (document.getElementById('view-login') && !document.getElementById('view-login').classList.contains('hidden')) {
-                    history.pushState(null, '', location.href); 
+                    history.pushState(null, '', location.href); // Bloqueia sair da tela de login
                     return;
                 }
                 
