@@ -129,7 +129,7 @@
 <body>
 
     <!-- TELA DE LOGIN / SEGURANÇA -->
-    <div id="view-login">
+    <div id="view-login" class="view active">
         <div style="font-size: 50px; color: var(--info); margin-bottom: 20px;"><i class="fas fa-shield-alt"></i></div>
         <h2 id="login-titulo" style="font-size: 22px; margin-bottom: 10px;">Segurança do Sistema</h2>
         <p id="login-sub" style="font-size: 13px; color: #94a3b8; margin-bottom: 25px;">Insira sua senha de acesso para continuar.</p>
@@ -147,7 +147,7 @@
         <button id="btn-instalar" class="btn btn-primary"><i class="fas fa-download"></i> Instalar App</button>
 
         <!-- TELA: LISTA DE CLIENTES -->
-        <div id="view-clientes" class="view active">
+        <div id="view-clientes" class="view">
             <button class="btn btn-primary" onclick="app.openNovoCliente()" style="margin-bottom: 15px;"><i class="fas fa-plus"></i> Novo Cliente</button>
             <input type="text" id="search-cli" class="search-input" placeholder="Buscar por nome..." oninput="app.buscarCliente()">
             <div class="card" style="padding:0; margin-top: 5px;"><div id="lista-clientes-container" style="padding: 10px 15px;"></div></div>
@@ -571,11 +571,16 @@
                 if (!senhaSalva) {
                     localStorage.setItem('fieldapp_senha', inputVal);
                     ui.toast("Senha cadastrada com sucesso!");
+                    document.getElementById('view-login').classList.remove('active');
                     document.getElementById('view-login').classList.add('hidden');
+                    // Exibir a tela de clientes após o login
+                    ui.changeView('view-clientes', true);
                 } else {
                     if (inputVal === senhaSalva) {
+                        document.getElementById('view-login').classList.remove('active');
                         document.getElementById('view-login').classList.add('hidden');
                         document.getElementById('login-senha-input').value = '';
+                        ui.changeView('view-clientes', true);
                     } else {
                         ui.toast("Senha incorreta!", true);
                         document.getElementById('login-senha-input').value = '';
@@ -1332,15 +1337,13 @@
             previewEstoque() { this.generateEstoque(); },
 
             executeDownloadOrShare() {
-                window.scrollTo(0, 0); // Correção fundamental para celulares Apple/Android não cortarem a tela
+                window.scrollTo(0, 0); 
                 
-                // Cria uma tela de bloqueio com aviso
                 const overlay = document.createElement('div');
                 overlay.id = 'pdf-loading-overlay';
                 overlay.innerHTML = '<div style="font-size: 50px; margin-bottom: 20px; color: var(--accent);"><i class="fas fa-spinner fa-spin"></i></div><h2 style="font-size: 20px; margin-bottom: 10px;">Renderizando Documento</h2><p style="font-size: 13px; color: #94a3b8; max-width: 80%; text-align: center;">Isso pode levar alguns segundos. Não feche ou minimize o aplicativo.</p>';
                 document.body.appendChild(overlay);
 
-                // Prepara o container para o HTML2PDF gerar o arquivo em perfeitas condições (Full A4)
                 const workerContainer = document.createElement('div');
                 workerContainer.innerHTML = this.currentHtmlContent;
                 workerContainer.style.width = '794px'; 
@@ -1351,7 +1354,7 @@
                 workerContainer.style.position = 'absolute';
                 workerContainer.style.top = '0';
                 workerContainer.style.left = '0';
-                workerContainer.style.zIndex = '9998'; // Fica exatamente embaixo da tela de bloqueio
+                workerContainer.style.zIndex = '9998'; 
                 document.body.appendChild(workerContainer);
 
                 const opt = { 
@@ -1362,7 +1365,6 @@
                     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
                 };
                 
-                // Atrasa em 1,5 segundos para carregar as fotos, logos e dar tempo do celular "respirar"
                 setTimeout(() => {
                     html2pdf().set(opt).from(workerContainer).outputPdf('blob').then((blob) => {
                         document.body.removeChild(workerContainer); 
@@ -1434,19 +1436,17 @@
             }
         };
 
-        // Amarração global anti-falha para o HTML
         window.auth = auth; window.ui = ui; window.financeiro = financeiro; window.orcamento = orcamento; window.recibo = recibo; window.ferramentas = ferramentas; window.db = db; window.estoque = estoque; window.ocr = ocr; window.app = app; window.pdf = pdf; window.backup = backup; window.dictation = dictation; window.signature = signature;
 
         window.onload = () => {
             db.init(); dictation.init();
             if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js').catch(err => console.log('Erro no PWA:', err)); }
 
-            // Lógica do botão Voltar do Celular (Histórico Virtual)
             history.replaceState({ view: 'view-clientes' }, '', '#view-clientes');
             
             window.addEventListener('popstate', (e) => {
                 if (document.getElementById('view-login') && !document.getElementById('view-login').classList.contains('hidden')) {
-                    history.pushState(null, '', location.href); // Bloqueia sair da tela de login
+                    history.pushState(null, '', location.href); 
                     return;
                 }
                 
