@@ -44,6 +44,7 @@
         .btn-warning { background: var(--warning); color: white; }
         .btn-info { background: var(--info); color: white; }
         .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+        .btn-sm { padding: 4px 8px; font-size: 12px; border-radius: 4px; }
         
         input, select, textarea { width: 100%; padding: 14px 12px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 15px; font-size: 16px; background: #f8fafc; outline: none; -webkit-appearance: none; }
         input:focus, select:focus, textarea:focus { border-color: var(--accent); background: #fff; box-shadow: 0 0 0 2px rgba(37,99,235,0.1); }
@@ -58,6 +59,8 @@
         .badge { font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px; margin-left: 5px; }
         .badge-material { background: #fef3c7; color: #d97706; }
         .badge-servico { background: #e0e7ff; color: #2563eb; }
+        .badge-mao { background: #fce7f3; color: #be185d; }
+        .badge-hoje { background: var(--danger); color: white; margin-left: 10px; padding: 4px 8px; font-size: 11px; }
         
         .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
         .photo-item { position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
@@ -68,7 +71,7 @@
         .timeline-date { font-size: 11px; font-weight: bold; color: var(--accent); margin-bottom: 5px; text-transform: uppercase; }
 
         .pill-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
-        .pill { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 8px 12px; border-radius: 50px; font-size: 12px; font-weight: 600; color: #64748b; cursor: pointer; transition: 0.2s; user-select: none; }
+        .pill { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 8px 12px; border-radius: 50px; font-size: 12px; font-weight: 600; color: #64748b; cursor: pointer; transition: 0.2s; user-select: none; text-align: center; }
         .pill.active { background: #eff6ff; border-color: var(--accent); color: var(--accent); }
         
         .signature-pad { border: 1px dashed var(--accent); background: #f8fafc; border-radius: 8px; width: 100%; height: 150px; touch-action: none; margin-bottom: 10px; }
@@ -107,7 +110,7 @@
 
         #pdf-wrapper { overflow: auto; background: #e2e8f0; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--border); }
         #pdf-container { width: 794px; min-height: 1123px; background: white; padding: 40px; color: #1e293b; font-family: 'Inter', sans-serif; transform: scale(0.42); transform-origin: top left; margin-bottom: -60%; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-        .pdf-header { border-bottom: 3px solid var(--accent); padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; }
+        .pdf-header { border-bottom: 3px solid var(--accent); padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
         .pdf-title { font-size: 24px; font-weight: 800; color: var(--primary); }
         .pdf-info-box { background: #f8fafc; border: 1px solid var(--border); padding: 15px; border-radius: 8px; margin-bottom: 20px; }
         .pdf-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px; page-break-inside: avoid;}
@@ -116,6 +119,9 @@
         .table-pdf { width: 100%; border-collapse: collapse; margin-top: 15px; }
         .table-pdf th { background: var(--primary); color: white; padding: 10px; text-align: left; font-size: 12px; }
         .table-pdf td { border-bottom: 1px solid var(--border); padding: 10px; font-size: 12px; }
+        
+        .qtd-control { display: flex; align-items: center; gap: 8px; background: #f1f5f9; padding: 4px; border-radius: 6px; }
+        .qtd-btn { background: white; border: 1px solid var(--border); border-radius: 4px; width: 24px; height: 24px; display: flex; justify-content: center; align-items: center; font-weight: bold; cursor: pointer; color: var(--primary); }
     </style>
 </head>
 <body>
@@ -168,7 +174,11 @@
                 <button class="btn btn-primary" onclick="app.openNovoLaudo()" style="flex:1; font-size:13px"><i class="fas fa-file-signature"></i> Laudo</button>
                 <div id="btn-whats-container"></div>
             </div>
-            <button class="btn btn-info" onclick="orcamento.abrirNovo()" style="margin-bottom: 20px;"><i class="fas fa-file-invoice-dollar"></i> Gerar Orçamento Expresso</button>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button class="btn btn-info" onclick="orcamento.abrirNovo()" style="flex:1; font-size:13px"><i class="fas fa-file-invoice-dollar"></i> Orçamento</button>
+                <button class="btn btn-warning" onclick="recibo.abrirNovo()" style="flex:1; font-size:13px; color: #000;"><i class="fas fa-receipt"></i> Recibo</button>
+            </div>
 
             <div class="cofre-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'">
                 <span><i class="fas fa-lock"></i> Cofre Técnico (Senhas/IPs)</span> <i class="fas fa-chevron-down"></i>
@@ -222,11 +232,30 @@
 
                     <div style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid var(--border); margin-top: 15px; display:flex; align-items:center; gap:10px;">
                         <input type="checkbox" id="orc-esconder-valores" style="width:20px; height:20px; margin:0;">
-                        <label for="orc-esconder-valores" style="margin:0; font-size:13px; color:var(--primary); cursor:pointer;">Esconder valores unitários/quantidades no PDF (Mostrar apenas especificações e valor total)</label>
+                        <label for="orc-esconder-valores" style="margin:0; font-size:13px; color:var(--primary); cursor:pointer;">Esconder valores unitários/quantidades no PDF</label>
                     </div>
                 </div>
 
                 <button class="btn btn-success" onclick="orcamento.salvarEGerar()" style="margin-top: 15px;"><i class="fas fa-eye"></i> Avançar para Pré-visualização</button>
+            </div>
+        </div>
+
+        <!-- TELA: RECIBO SIMPLES -->
+        <div id="view-recibo" class="view">
+            <button class="btn btn-outline" onclick="ui.changeView('view-perfil-cliente')" style="margin-bottom: 20px; width: auto;"><i class="fas fa-arrow-left"></i> Cancelar</button>
+            <div class="card" style="border-left: 4px solid var(--warning);">
+                <h3 style="font-size: 15px; color: var(--warning); margin-bottom: 15px;"><i class="fas fa-receipt"></i> Emitir Recibo Simples</h3>
+                
+                <label>Valor Recebido (R$)</label>
+                <input type="number" id="recibo-valor" placeholder="Ex: 150.00" inputmode="decimal">
+                
+                <label>Referente a (Descrição)</label>
+                <textarea id="recibo-desc" rows="3" placeholder="Ex: Manutenção preventiva do Ar Condicionado, ref. Mês de Agosto..."></textarea>
+                
+                <label>Data de Emissão</label>
+                <input type="date" id="recibo-data">
+                
+                <button class="btn btn-warning" style="color: #000;" onclick="recibo.gerar()"><i class="fas fa-eye"></i> Gerar Pré-visualização do Recibo</button>
             </div>
         </div>
 
@@ -236,10 +265,16 @@
                 <button class="btn btn-primary" onclick="estoque.openNovoMaterial()" style="flex:1;"><i class="fas fa-plus"></i> Novo Item</button>
                 <button class="btn btn-warning" onclick="ui.changeView('view-leitor-nota')" style="flex:1;"><i class="fas fa-camera"></i> Ler Nota</button>
             </div>
-            <button class="btn btn-outline" style="margin-bottom: 15px; border-color: var(--danger); color: var(--danger);" onclick="pdf.previewEstoque()"><i class="fas fa-eye"></i> Pré-visualizar Catálogo PDF</button>
             
-            <div style="position: relative;">
-                <input type="text" id="search-mat" class="search-input" placeholder="Buscar material ou serviço..." oninput="estoque.buscarMaterial()">
+            <div class="pill-container" style="justify-content: center; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                <div class="pill active" id="pill-cat-todos" onclick="estoque.setFiltro('Todos', this)">Todos</div>
+                <div class="pill" id="pill-cat-mat" onclick="estoque.setFiltro('Material', this)">Peças Físicas</div>
+                <div class="pill" id="pill-cat-serv" onclick="estoque.setFiltro('Servico', this)">Serviços (Fixo)</div>
+                <div class="pill" id="pill-cat-mao" onclick="estoque.setFiltro('MaoDeObra', this)">Mão de Obra (Hora/Dia)</div>
+            </div>
+
+            <div style="position: relative; margin-top: 10px;">
+                <input type="text" id="search-mat" class="search-input" placeholder="Buscar no catálogo..." oninput="estoque.buscarMaterial()">
             </div>
             
             <div id="btn-ia-busca" style="display:none; margin-bottom: 15px;">
@@ -247,6 +282,8 @@
             </div>
 
             <div class="card" style="padding:0; margin-top: 5px;"><div id="lista-materiais-container" style="padding: 10px 15px;"></div></div>
+            
+            <button class="btn btn-outline" style="margin-top: 15px; border-color: var(--danger); color: var(--danger);" onclick="pdf.previewEstoque()"><i class="fas fa-file-pdf"></i> Gerar PDF do Estoque Patrimonial</button>
         </div>
 
         <!-- TELA: NOVO/EDITAR MATERIAL/SERVIÇO -->
@@ -254,14 +291,19 @@
             <button class="btn btn-outline" onclick="ui.changeView('view-estoque')" style="margin-bottom: 20px; width: auto;"><i class="fas fa-arrow-left"></i> Cancelar</button>
             <div class="card">
                 <input type="hidden" id="mat-id-edit">
-                <label>Tipo do Cadastro</label>
-                <select id="mat-tipo">
-                    <option value="Material">Produto / Material</option>
-                    <option value="Servico">Serviço / Mão de Obra</option>
+                <label>Categoria do Item</label>
+                <select id="mat-tipo" onchange="estoque.mudarLabels()">
+                    <option value="Material">Produto / Peça Física em Estoque</option>
+                    <option value="Servico">Serviço (Preço Fixo Fechado)</option>
+                    <option value="MaoDeObra">Mão de Obra (Valor por Hora ou Dia)</option>
                 </select>
-                <label>Nome / Descrição</label><input type="text" id="mat-nome" placeholder="Ex: Contatora Trifásica ou Limpeza de AC...">
-                <label>Quantidade em Estoque (Opcional)</label><input type="number" id="mat-qtd" placeholder="0" inputmode="numeric">
-                <label>Valor Unitário (R$)</label><input type="number" id="mat-preco" placeholder="0.00" inputmode="decimal">
+                <label id="lbl-mat-nome">Nome do Produto / Peça</label><input type="text" id="mat-nome" placeholder="Ex: Contatora Trifásica ou Limpeza de AC...">
+                
+                <div id="container-mat-qtd">
+                    <label id="lbl-mat-qtd">Quantidade Física em Estoque</label><input type="number" id="mat-qtd" placeholder="0" inputmode="numeric">
+                </div>
+
+                <label id="lbl-mat-preco">Valor Unitário / Preço Base (R$)</label><input type="number" id="mat-preco" placeholder="0.00" inputmode="decimal">
                 <button class="btn btn-primary" id="btn-save-mat" onclick="db.saveMaterial()">Salvar no Catálogo</button>
             </div>
         </div>
@@ -356,6 +398,17 @@
 
         <!-- TELA: FERRAMENTAS TÉCNICAS -->
         <div id="view-ferramentas" class="view">
+            
+            <div class="card" style="border-left: 4px solid var(--success);">
+                <h3 style="font-size: 15px; color: var(--primary); margin-bottom: 10px;"><i class="fas fa-exchange-alt" style="color: var(--success)"></i> Conversor Rápido (Potência)</h3>
+                <div style="display:flex; gap:10px;">
+                    <div style="flex:1"><label>Valor</label><input type="number" id="conv-valor" placeholder="Ex: 2" inputmode="decimal"></div>
+                    <div style="flex:1"><label>Converter de:</label><select id="conv-de"><option value="cv">Cavalos (CV)</option><option value="hp">HP</option><option value="btu">BTU/h</option></select></div>
+                </div>
+                <button class="btn btn-success" onclick="ferramentas.converterPotencia()">Converter para Watts (W)</button>
+                <div id="conv-result" style="margin-top: 15px; font-size: 18px; font-weight: bold; color: var(--success); text-align:center; padding: 10px; background: #f0fdf4; border-radius: 8px; border: 1px dashed var(--success); display: none;"></div>
+            </div>
+
             <div class="card" style="border-left: 4px solid var(--info);">
                 <h3 style="font-size: 15px; color: var(--primary); margin-bottom: 10px;"><i class="fas fa-snowflake" style="color: var(--info)"></i> Calculadora Térmica (BTUs)</h3>
                 <div style="display:flex; gap:10px;"><div style="flex:1"><label>Largura (m)</label><input type="number" id="calc-btu-l" placeholder="Ex: 4" inputmode="decimal"></div><div style="flex:1"><label>Comprimento (m)</label><input type="number" id="calc-btu-c" placeholder="Ex: 5" inputmode="decimal"></div></div>
@@ -391,7 +444,7 @@
             </div>
 
             <div class="dash-grid">
-                <div class="dash-box green"><div style="font-size: 11px; font-weight: bold; color: var(--success); text-transform: uppercase;">Faturamento</div><div id="dash-bruto" style="font-size: 18px; font-weight: 900; color: var(--primary); margin-top: 5px;">R$ 0,00</div></div>
+                <div class="dash-box green"><div style="font-size: 11px; font-weight: bold; color: var(--success); text-transform: uppercase;">Recebido</div><div id="dash-bruto" style="font-size: 18px; font-weight: 900; color: var(--primary); margin-top: 5px;">R$ 0,00</div></div>
                 <div class="dash-box red"><div style="font-size: 11px; font-weight: bold; color: var(--danger); text-transform: uppercase;">Despesas</div><div id="dash-despesas" style="font-size: 18px; font-weight: 900; color: var(--primary); margin-top: 5px;">R$ 0,00</div></div>
                 <div class="dash-box yellow"><div style="font-size: 11px; font-weight: bold; color: var(--warning); text-transform: uppercase;">A Receber (Pendente)</div><div id="dash-pendente" style="font-size: 18px; font-weight: 900; color: var(--primary); margin-top: 5px;">R$ 0,00</div></div>
                 <div class="dash-box blue"><div style="font-size: 12px; font-weight: bold; color: var(--accent); text-transform: uppercase;">Lucro Líquido Real</div><div id="dash-liquido" style="font-size: 26px; font-weight: 900; color: var(--primary); margin-top: 5px;">R$ 0,00</div></div>
@@ -399,27 +452,37 @@
 
             <button class="btn btn-outline" style="margin-bottom: 15px; border-color: var(--success); color: var(--success);" onclick="financeiro.exportarCSV()"><i class="fas fa-file-excel"></i> Exportar Relatório para Excel (CSV)</button>
 
-            <div class="card" style="border-left: 4px solid var(--danger);">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;"><h3 style="font-size: 15px; color: var(--danger); margin:0;"><i class="fas fa-receipt"></i> Lançar Despesa</h3></div>
-                <input type="text" id="desp-desc" placeholder="Ex: Gasolina, Fio 10mm, Pedágio...">
-                <div style="display:flex; gap:10px;"><input type="number" id="desp-valor" placeholder="Valor (R$)" inputmode="decimal"><input type="date" id="desp-data"></div>
-                <button class="btn btn-danger" onclick="financeiro.salvarDespesa()">Registrar Gasto</button>
-
-                <div class="cofre-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'" style="background: #fef2f2; color: var(--danger); margin-top: 20px; border: 1px solid #fca5a5;">
-                    <span><i class="fas fa-list"></i> Ver Extrato do Mês</span> <i class="fas fa-chevron-down"></i>
-                </div>
-                <div class="cofre-body" style="background: #fff; border: 1px solid #fca5a5; padding: 10px;"><div id="extrato-despesas-container"></div></div>
+            <div class="card" style="border-left: 4px solid var(--warning);">
+                <h3 style="font-size: 15px; color: var(--warning); margin-bottom: 10px;"><i class="fas fa-clock"></i> Contas a Receber (Pendentes)</h3>
+                <div id="lista-pendentes-container"></div>
             </div>
 
-            <!-- NOVO: SELEÇÃO DE MODELO DE ORÇAMENTO -->
-            <div class="card" style="border-left: 4px solid var(--info);">
-                <h3 style="font-size: 15px; color: var(--primary); margin-bottom: 10px;"><i class="fas fa-file-invoice"></i> Estilo Padrão de Orçamento</h3>
-                <label>Escolha o modelo visual gerado no PDF:</label>
-                <select id="conf-modelo-orc" onchange="db.saveConfigModelo()">
-                    <option value="padrao">Modelo 1: Técnico / Direto (Padrão)</option>
-                    <option value="corporativo">Modelo 2: Comercial / Formal (Com Validade e Prazos)</option>
-                    <option value="executivo">Modelo 3: Executivo / Resumido (Limpo e Direto)</option>
-                </select>
+            <div class="card" style="border-left: 4px solid var(--danger);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;"><h3 style="font-size: 15px; color: var(--danger); margin:0;"><i class="fas fa-receipt"></i> Lançar Despesa</h3></div>
+                
+                <input type="text" id="desp-desc" placeholder="Ex: Gasolina, Fio 10mm, Pedágio...">
+                
+                <div style="display:flex; gap:10px; margin-bottom:10px;">
+                    <select id="desp-cat" style="flex:1;">
+                        <option value="Material">Material/Peças</option>
+                        <option value="Combustivel">Combustível</option>
+                        <option value="Alimentacao">Alimentação</option>
+                        <option value="Outros">Outros</option>
+                    </select>
+                    <input type="date" id="desp-data" style="flex:1;">
+                </div>
+                
+                <input type="number" id="desp-valor" placeholder="Valor (R$)" inputmode="decimal">
+                
+                <button class="btn btn-danger" onclick="financeiro.salvarDespesa()">Registrar Gasto</button>
+            </div>
+
+            <div class="card" style="border-left: 4px solid var(--primary);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 15px;">
+                    <h3 style="font-size: 15px; color: var(--primary); margin:0;"><i class="fas fa-list"></i> Extrato Geral do Mês</h3>
+                </div>
+                <p style="font-size: 11px; color:#64748b; margin-bottom: 10px;">Mostra as contas pagas e as despesas do mês selecionado.</p>
+                <div id="extrato-geral-container" style="max-height: 300px; overflow-y: auto; padding-right: 5px;"></div>
             </div>
 
             <div class="card" style="border-left: 4px solid var(--accent);">
@@ -431,10 +494,31 @@
 
             <div class="card" style="border-top: 2px dashed var(--border);">
                 <h2 style="font-size: 16px; margin-bottom: 15px;"><i class="fas fa-building" style="color: var(--accent);"></i> Dados da Empresa (P/ Relatórios)</h2>
+                
+                <div style="background: #f8fafc; padding: 10px; border: 1px dashed var(--border); border-radius: 8px; margin-bottom: 15px; text-align: center;">
+                    <label style="text-align: left;">Logotipo da Empresa</label>
+                    <img id="logo-preview" style="display: none; max-height: 80px; max-width: 100%; object-fit: contain; margin: 10px auto; border-radius: 4px;">
+                    <input type="file" id="conf-empresa-logo-input" accept="image/*" onchange="app.processLogo(this)" style="font-size: 12px; padding: 8px; margin-bottom: 5px; background: white; border: 1px solid var(--border); border-radius: 4px; width: 100%;">
+                    <button class="btn-outline" style="font-size: 11px; padding: 6px 10px; width: auto; color: var(--danger); border-color: var(--danger); margin-top: 5px;" onclick="app.removeLogo()"><i class="fas fa-times"></i> Remover Logotipo</button>
+                </div>
+
                 <label>Nome Fantasia / Razão Social</label><input type="text" id="conf-empresa-nome" placeholder="Sua Empresa LTDA">
                 <label>CNPJ / CPF</label><input type="text" id="conf-empresa-doc" placeholder="00.000.000/0001-00">
-                <label>Telefone Comercial</label><input type="text" id="conf-empresa-tel" placeholder="(00) 00000-0000">
-                <button class="btn btn-primary" onclick="db.saveConfig()"><i class="fas fa-save"></i> Atualizar Empresa</button>
+                <label>Telefone Comercial / WhatsApp</label><input type="text" id="conf-empresa-tel" placeholder="(00) 00000-0000">
+                <label>E-mail Comercial (Opcional)</label><input type="email" id="conf-empresa-email" placeholder="contato@empresa.com.br">
+                <label>Endereço Completo (Opcional)</label><input type="text" id="conf-empresa-end" placeholder="Rua, Número - Cidade/UF">
+                
+                <button class="btn btn-primary" onclick="db.saveConfig()"><i class="fas fa-save"></i> Atualizar Dados da Empresa</button>
+            </div>
+
+            <div class="card" style="border-left: 4px solid var(--info);">
+                <h3 style="font-size: 15px; color: var(--primary); margin-bottom: 10px;"><i class="fas fa-file-invoice"></i> Estilo Padrão de Orçamento</h3>
+                <label>Escolha o modelo visual gerado no PDF:</label>
+                <select id="conf-modelo-orc" onchange="db.saveConfigModelo()">
+                    <option value="padrao">Modelo 1: Técnico / Direto (Padrão)</option>
+                    <option value="corporativo">Modelo 2: Comercial / Formal (Com Validade e Prazos)</option>
+                    <option value="executivo">Modelo 3: Executivo / Resumido (Limpo e Direto)</option>
+                </select>
             </div>
 
             <div class="card" style="border-top: 2px dashed var(--border);">
@@ -544,13 +628,21 @@
 
         const financeiro = {
             salvarDespesa() {
-                const desc = document.getElementById('desp-desc').value; const valorStr = document.getElementById('desp-valor').value; const dataVal = document.getElementById('desp-data').value;
+                const desc = document.getElementById('desp-desc').value; const valorStr = document.getElementById('desp-valor').value; const dataVal = document.getElementById('desp-data').value; const cat = document.getElementById('desp-cat').value;
                 if(!desc || !valorStr || !dataVal) return ui.toast("Preencha descrição, valor e data.", true);
-                database.transaction("despesas", "readwrite").objectStore("despesas").add({ desc, valor: parseFloat(valorStr), data: dataVal }).onsuccess = () => { ui.toast("Despesa registrada!"); document.getElementById('desp-desc').value = ''; document.getElementById('desp-valor').value = ''; this.renderDash(); };
+                database.transaction("despesas", "readwrite").objectStore("despesas").add({ desc, categoria: cat, valor: parseFloat(valorStr), data: dataVal }).onsuccess = () => { ui.toast("Despesa registrada!"); document.getElementById('desp-desc').value = ''; document.getElementById('desp-valor').value = ''; this.renderDash(); };
             },
             excluirDespesa(id) {
                 if(!confirm("Apagar esta despesa do extrato?")) return;
                 database.transaction("despesas", "readwrite").objectStore("despesas").delete(id).onsuccess = () => { ui.toast("Despesa excluída."); this.renderDash(); };
+            },
+            darBaixa(laudoId) {
+                if(!confirm("Confirmar o recebimento deste valor?")) return;
+                const tx = database.transaction("laudos", "readwrite").objectStore("laudos");
+                tx.get(laudoId).onsuccess = (e) => {
+                    let l = e.target.result; l.statusPagto = 'Pago';
+                    tx.put(l).onsuccess = () => { ui.toast("Recebimento confirmado!"); this.renderDash(); };
+                };
             },
             exportarCSV() {
                 const filtroMesAno = document.getElementById('fin-filtro-mes').value;
@@ -561,18 +653,11 @@
                     database.transaction("despesas", "readonly").objectStore("despesas").getAll().onsuccess = (ev) => {
                         const despesas = ev.target.result.filter(d => d.data && d.data.startsWith(filtroMesAno));
 
-                        let csvContent = "data:text/csv;charset=utf-8,Tipo;Data;Descricao;Valor\n";
-                        laudos.forEach(l => { csvContent += `Receita;${l.data};Laudo ID ${l.id};${l.valor}\n`; });
-                        despesas.forEach(d => { csvContent += `Despesa;${d.data};${d.desc};-${d.valor}\n`; });
+                        let csvContent = "data:text/csv;charset=utf-8,Tipo;Categoria;Data;Descricao;Valor;Status\n";
+                        laudos.forEach(l => { csvContent += `Receita;Serviço;${l.data};Laudo ID ${l.id};${l.valor};${l.statusPagto}\n`; });
+                        despesas.forEach(d => { csvContent += `Despesa;${d.categoria || 'Geral'};${d.data};${d.desc};-${d.valor};Pago\n`; });
 
-                        const encodedUri = encodeURI(csvContent);
-                        const link = document.createElement("a");
-                        link.setAttribute("href", encodedUri);
-                        link.setAttribute("download", `Relatorio_Financeiro_${filtroMesAno}.csv`);
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        ui.toast("Relatório Excel gerado!");
+                        const encodedUri = encodeURI(csvContent); const link = document.createElement("a"); link.setAttribute("href", encodedUri); link.setAttribute("download", `Relatorio_Financeiro_${filtroMesAno}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link); ui.toast("Relatório Excel gerado!");
                     };
                 };
             },
@@ -582,172 +667,73 @@
                 const anoAtual = new Date().getFullYear(); document.getElementById('mei-ano').innerText = anoAtual;
                 let totalBrutoMes = 0; let totalPendenteMes = 0; let totalDespMes = 0; let totalBrutoAno = 0;
 
-                database.transaction("laudos", "readonly").objectStore("laudos").getAll().onsuccess = (e) => {
-                    e.target.result.forEach(l => { 
-                        if(l.valor) { 
-                            if(l.data && l.data.startsWith(anoAtual)) totalBrutoAno += l.valor; 
-                            if(l.data && l.data.startsWith(filtroMesAno)) {
-                                if(l.statusPagto === 'Pendente') totalPendenteMes += l.valor;
-                                else totalBrutoMes += l.valor; 
-                            }
-                        } 
-                    });
-                    database.transaction("despesas", "readonly").objectStore("despesas").getAll().onsuccess = (ev) => {
-                        const todasDespesas = ev.target.result; let despesasMesHTML = '';
-                        let despesasMes = todasDespesas.filter(d => d.data && d.data.startsWith(filtroMesAno)).sort((a,b) => new Date(b.data) - new Date(a.data));
-                        despesasMes.forEach(d => { totalDespMes += d.valor; let df = new Date(d.data + 'T12:00:00').toLocaleDateString('pt-BR'); despesasMesHTML += `<div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #fecaca; padding:8px 0; font-size:12px;"><div><div style="color:var(--primary); font-weight:600;">${d.desc}</div><div style="color:#64748b;">${df}</div></div><div style="display:flex; align-items:center; gap:10px;"><b style="color:var(--danger)">${BRL.format(d.valor)}</b><button onclick="financeiro.excluirDespesa(${d.id})" style="background:none; border:none; color:var(--danger); cursor:pointer;"><i class="fas fa-trash"></i></button></div></div>`; });
-
-                        document.getElementById('dash-bruto').innerText = BRL.format(totalBrutoMes); 
-                        document.getElementById('dash-despesas').innerText = BRL.format(totalDespMes); 
-                        document.getElementById('dash-pendente').innerText = BRL.format(totalPendenteMes);
-                        document.getElementById('dash-liquido').innerText = BRL.format(totalBrutoMes - totalDespMes);
+                database.transaction("clientes", "readonly").objectStore("clientes").getAll().onsuccess = (eCli) => {
+                    const clientes = eCli.target.result;
+                    database.transaction("laudos", "readonly").objectStore("laudos").getAll().onsuccess = (eLau) => {
+                        const todosLaudos = eLau.target.result;
+                        let pendentesHTML = '';
                         
-                        const contExtrato = document.getElementById('extrato-despesas-container');
-                        if(despesasMesHTML === '') contExtrato.innerHTML = '<div style="color:#94a3b8; font-size:12px; text-align:center;">Nenhuma despesa neste mês.</div>'; else contExtrato.innerHTML = despesasMesHTML;
-                        const limiteMEI = 81000; const pct = Math.min((totalBrutoAno / limiteMEI) * 100, 100); document.getElementById('mei-valor').innerText = `${BRL.format(totalBrutoAno)} / ${BRL.format(limiteMEI)}`; document.getElementById('mei-bar-fill').style.width = pct + '%';
-                        if(pct > 80) document.getElementById('mei-bar-fill').style.backgroundColor = 'var(--danger)'; else if(pct > 50) document.getElementById('mei-bar-fill').style.backgroundColor = 'var(--warning)'; else document.getElementById('mei-bar-fill').style.backgroundColor = 'var(--success)';
+                        todosLaudos.forEach(l => { 
+                            if(l.valor) { 
+                                if(l.data && l.data.startsWith(anoAtual)) totalBrutoAno += l.valor; 
+                                
+                                if(l.data && l.data.startsWith(filtroMesAno)) {
+                                    if(l.statusPagto === 'Pendente') {
+                                        let c = clientes.find(cli => cli.id === l.clienteId);
+                                        let nomeCli = c ? c.nome : 'Desconhecido';
+                                        let df = new Date(l.data + 'T12:00:00').toLocaleDateString('pt-BR');
+                                        totalPendenteMes += l.valor;
+                                        pendentesHTML += `<div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #fde68a; padding:8px 0; font-size:12px;"><div><div style="color:var(--primary); font-weight:600;">${nomeCli}</div><div style="color:#64748b;">Serviço: ${df}</div></div><div style="display:flex; align-items:center; gap:10px;"><b style="color:var(--warning)">${BRL.format(l.valor)}</b><button class="btn-success" style="padding:4px 8px; font-size:10px; border-radius:4px;" onclick="financeiro.darBaixa(${l.id})">Dar Baixa</button></div></div>`;
+                                    } else {
+                                        totalBrutoMes += l.valor; 
+                                    }
+                                }
+                            } 
+                        });
+
+                        const contPendentes = document.getElementById('lista-pendentes-container');
+                        if(pendentesHTML === '') contPendentes.innerHTML = '<div style="color:#94a3b8; font-size:12px; text-align:center;">Nenhuma conta a receber.</div>'; else contPendentes.innerHTML = pendentesHTML;
+
+                        database.transaction("despesas", "readonly").objectStore("despesas").getAll().onsuccess = (eDes) => {
+                            const todasDespesas = eDes.target.result; 
+                            
+                            let extratoItens = [];
+                            todosLaudos.filter(l => l.data && l.data.startsWith(filtroMesAno) && l.statusPagto === 'Pago' && l.valor > 0).forEach(l => {
+                                let c = clientes.find(cli => cli.id === l.clienteId);
+                                extratoItens.push({ tipo: 'receita', data: l.data, desc: `Serviço - ${c ? c.nome : 'Cliente'}`, valor: l.valor });
+                            });
+                            todasDespesas.filter(d => d.data && d.data.startsWith(filtroMesAno)).forEach(d => {
+                                totalDespMes += d.valor;
+                                extratoItens.push({ tipo: 'despesa', id: d.id, data: d.data, desc: d.desc, cat: d.categoria, valor: d.valor });
+                            });
+
+                            extratoItens.sort((a,b) => new Date(b.data) - new Date(a.data));
+                            
+                            let extratoHTML = '';
+                            extratoItens.forEach(item => {
+                                let df = new Date(item.data + 'T12:00:00').toLocaleDateString('pt-BR');
+                                if(item.tipo === 'receita') {
+                                    extratoHTML += `<div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding:8px 0; font-size:12px;"><div><div style="color:var(--success); font-weight:600;"><i class="fas fa-arrow-up"></i> ${item.desc}</div><div style="color:#64748b;">${df}</div></div><b style="color:var(--success)">+ ${BRL.format(item.valor)}</b></div>`;
+                                } else {
+                                    extratoHTML += `<div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding:8px 0; font-size:12px;"><div><div style="color:var(--danger); font-weight:600;"><i class="fas fa-arrow-down"></i> ${item.desc}</div><div style="color:#64748b;">${df} • ${item.cat || 'Geral'}</div></div><div style="display:flex; align-items:center; gap:10px;"><b style="color:var(--danger)">- ${BRL.format(item.valor)}</b><button onclick="financeiro.excluirDespesa(${item.id})" style="background:none; border:none; color:#94a3b8; cursor:pointer;"><i class="fas fa-times"></i></button></div></div>`;
+                                }
+                            });
+
+                            document.getElementById('dash-bruto').innerText = BRL.format(totalBrutoMes); 
+                            document.getElementById('dash-despesas').innerText = BRL.format(totalDespMes); 
+                            document.getElementById('dash-pendente').innerText = BRL.format(totalPendenteMes);
+                            document.getElementById('dash-liquido').innerText = BRL.format(totalBrutoMes - totalDespMes);
+                            
+                            const contExtrato = document.getElementById('extrato-geral-container');
+                            if(extratoHTML === '') contExtrato.innerHTML = '<div style="color:#94a3b8; font-size:12px; text-align:center;">Nenhuma movimentação neste mês.</div>'; else contExtrato.innerHTML = extratoHTML;
+                            
+                            const limiteMEI = 81000; const pct = Math.min((totalBrutoAno / limiteMEI) * 100, 100); document.getElementById('mei-valor').innerText = `${BRL.format(totalBrutoAno)} / ${BRL.format(limiteMEI)}`; document.getElementById('mei-bar-fill').style.width = pct + '%';
+                            if(pct > 80) document.getElementById('mei-bar-fill').style.backgroundColor = 'var(--danger)'; else if(pct > 50) document.getElementById('mei-bar-fill').style.backgroundColor = 'var(--warning)'; else document.getElementById('mei-bar-fill').style.backgroundColor = 'var(--success)';
+                        };
                     };
                 };
             }
         };
-
-        const orcamento = {
-            itens: [],
-            modo: 'lista', 
-            abrirNovo() { 
-                this.itens = []; 
-                this.modo = 'lista';
-                document.getElementById('orc-modo').value = 'lista';
-                this.mudarModo('lista');
-                this.renderLista(); 
-                document.getElementById('orc-edit-index').value = '-1';
-                document.getElementById('orc-item-nome').value=''; 
-                document.getElementById('orc-item-preco').value=''; 
-                document.getElementById('orc-item-qtd').value='1'; 
-                document.getElementById('orc-direto-desc').value='';
-                document.getElementById('orc-direto-valor').value='';
-                document.getElementById('orc-esconder-valores').checked = false;
-                ui.changeView('view-orcamento'); 
-                document.getElementById('topbar-title').innerText = "Orçamento Prévio"; 
-            },
-            mudarModo(val) {
-                this.modo = val;
-                if(val === 'lista') {
-                    document.getElementById('orc-bloco-lista').style.display = 'block';
-                    document.getElementById('orc-bloco-direto').style.display = 'none';
-                } else {
-                    document.getElementById('orc-bloco-lista').style.display = 'none';
-                    document.getElementById('orc-bloco-direto').style.display = 'block';
-                }
-            },
-            adicionarItem() {
-                const n = document.getElementById('orc-item-nome').value; 
-                const q = parseInt(document.getElementById('orc-item-qtd').value); 
-                const p = parseFloat(document.getElementById('orc-item-preco').value);
-                const editIdx = parseInt(document.getElementById('orc-edit-index').value);
-
-                if(!n || !q || isNaN(p)) return ui.toast("Preencha item, qtd e preço", true);
-
-                if (editIdx >= 0) {
-                    this.itens[editIdx] = { nome: n, qtd: q, preco: p };
-                    document.getElementById('orc-edit-index').value = '-1';
-                    document.getElementById('orc-label-acao').innerText = "Adicionar Material ou Serviço";
-                    document.getElementById('orc-btn-add').innerText = "+ Inserir na Lista";
-                } else {
-                    this.itens.push({ nome: n, qtd: q, preco: p });
-                }
-
-                document.getElementById('orc-item-nome').value=''; 
-                document.getElementById('orc-item-preco').value=''; 
-                document.getElementById('orc-item-qtd').value='1';
-                this.renderLista();
-            },
-            editarItem(idx) {
-                const item = this.itens[idx];
-                document.getElementById('orc-item-nome').value = item.nome;
-                document.getElementById('orc-item-qtd').value = item.qtd;
-                document.getElementById('orc-item-preco').value = item.preco;
-                document.getElementById('orc-edit-index').value = idx;
-                document.getElementById('orc-label-acao').innerText = "Editando Item (" + item.nome + ")";
-                document.getElementById('orc-btn-add').innerText = "Salvar Alteração";
-                window.scrollTo(0, 0);
-            },
-            removerItem(idx) { 
-                this.itens.splice(idx, 1); 
-                this.renderLista(); 
-            },
-            renderLista() {
-                let total = 0; const cont = document.getElementById('orc-lista-container');
-                if(this.itens.length === 0) { cont.innerHTML = '<div style="color:#94a3b8; font-size:12px; text-align:center;">Nenhum item inserido.</div>'; document.getElementById('orc-total-display').innerText = "R$ 0,00"; return; }
-                cont.innerHTML = this.itens.map((i, idx) => { 
-                    total += (i.qtd * i.preco); 
-                    return `<div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; border-bottom:1px solid #e2e8f0; padding:8px 0;">
-                        <div><b>${i.nome}</b> (${i.qtd}x) - ${BRL.format(i.preco)} un</div>
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <b style="color:var(--primary)">${BRL.format(i.qtd * i.preco)}</b> 
-                            <button onclick="orcamento.editarItem(${idx})" style="background:none; border:none; color:var(--accent); cursor:pointer;"><i class="fas fa-pen"></i></button>
-                            <button onclick="orcamento.removerItem(${idx})" style="background:none; border:none; color:var(--danger); cursor:pointer;"><i class="fas fa-times"></i></button>
-                        </div>
-                    </div>`; 
-                }).join('');
-                document.getElementById('orc-total-display').innerText = BRL.format(total);
-            },
-            salvarEGerar() {
-                let orc;
-                if(this.modo === 'lista') {
-                    if(this.itens.length === 0) return ui.toast("Adicione itens ao orçamento", true);
-                    const total = this.itens.reduce((sum, i) => sum + (i.qtd * i.preco), 0);
-                    orc = { clienteId: app.currentClientId, data: new Date().toISOString().split('T')[0], tipoModo: 'lista', itens: [...this.itens], total: total };
-                } else {
-                    const desc = document.getElementById('orc-direto-desc').value;
-                    const val = parseFloat(document.getElementById('orc-direto-valor').value);
-                    const esconder = document.getElementById('orc-esconder-valores').checked;
-                    if(!desc || isNaN(val)) return ui.toast("Preencha as especificações e o valor total", true);
-                    orc = { clienteId: app.currentClientId, data: new Date().toISOString().split('T')[0], tipoModo: 'direto', descricao: desc, total: val, esconderValores: esconder };
-                }
-
-                database.transaction("orcamentos", "readwrite").objectStore("orcamentos").add(orc).onsuccess = (e) => { 
-                    ui.toast("Orçamento Salvo! Preparando visualização..."); 
-                    pdf.previewOrcamento(e.target.result); 
-                };
-            }
-        };
-
-        const ferramentas = {
-            calcularBTU() {
-                const l = parseFloat(document.getElementById('calc-btu-l').value); const c = parseFloat(document.getElementById('calc-btu-c').value); const p = parseInt(document.getElementById('calc-btu-p').value) || 0; const sol = document.getElementById('calc-btu-sol').value;
-                if(!l || !c) return ui.toast("Preencha Largura e Comprimento.", true);
-                const area = l * c; const cargaBase = sol == "1" ? 800 : 600; let btus = (area * cargaBase) + (p * 600);
-                let rec = 9000; if(btus>9000) rec = 12000; if(btus>12000) rec = 18000; if(btus>18000) rec = 24000; if(btus>24000) rec = 30000; if(btus>30000) rec = 36000; if(btus>36000) rec = 60000;
-                document.getElementById('calc-btu-result').style.display = 'block'; document.getElementById('calc-btu-result').innerHTML = `Carga Estimada: <b>${btus.toFixed(0)} BTUs</b><br>Equipamento Recomendado:<br><span style="font-size:22px; color:var(--accent);">${rec} BTUs</span>`;
-            },
-            async lerPlaca(input) {
-                if(!input.files.length) return; const file = input.files[0]; document.getElementById('placa-loading').style.display = 'block'; ui.toast("Lendo etiqueta... Mantenha o app aberto.", false, 4000);
-                try {
-                    const result = await Tesseract.recognize(file, 'por'); const texto = result.data.text.toLowerCase(); document.getElementById('placa-loading').style.display = 'none';
-                    const matchWatts = texto.match(/(\d+)\s*(?:w|watts|potência)/); const matchVolts = texto.match(/(\d+)\s*(?:v|volts|tensão)/); const matchBTUs = texto.match(/(\d+)\s*(?:btu|btus)/);
-                    let enc = false;
-                    if (matchWatts) { document.getElementById('calc-w').value = matchWatts[1]; enc = true; } else if (matchBTUs) { ui.toast(`Máquina de ${matchBTUs[1]} BTUs, preencha o consumo (W).`, true); }
-                    if (matchVolts) { let v = parseInt(matchVolts[1]); if (v>=110&&v<=130) document.getElementById('calc-v').value = "127"; else if (v>=200&&v<=240) document.getElementById('calc-v').value = "220"; else if (v>=380) document.getElementById('calc-v').value = "380"; enc = true; }
-                    if (enc) { ui.toast("Valores capturados!"); if(document.getElementById('calc-w').value) this.calcularEletricaCompleta(); } else { ui.toast("Não foi possível ler os valores.", true); }
-                } catch(e) { document.getElementById('placa-loading').style.display = 'none'; ui.toast("Erro ao analisar.", true); } input.value = '';
-            },
-            calcularEletricaCompleta() {
-                const w = parseFloat(document.getElementById('calc-w').value); const v = parseFloat(document.getElementById('calc-v').value); const dist = parseFloat(document.getElementById('calc-dist').value) || 0; const bitola = parseFloat(document.getElementById('calc-cabo').value);
-                if(!w || !v) return ui.toast("Preencha a Potência (W)", true);
-                let amperes = (v == 380) ? (w / (v * 1.732 * 0.85)) : (w / v);
-                let disj = 10; if(amperes>10) disj=16; if(amperes>16) disj=20; if(amperes>20) disj=25; if(amperes>25) disj=32; if(amperes>32) disj=40; if(amperes>40) disj=50; if(amperes>50) disj=63;
-                let quedaStr = "";
-                if(dist > 0) {
-                    let quedaV = (v == 380) ? ((1.732 * 0.0172 * dist * amperes) / bitola) : ((2 * 0.0172 * dist * amperes) / bitola); let quedaPct = (quedaV / v) * 100; let colorQueda = quedaPct > 4 ? "var(--danger)" : "var(--success)";
-                    quedaStr = `<br><br><b>Análise do Cabo (${dist}m):</b><br>Queda de Tensão: <b style="color:${colorQueda}">${quedaPct.toFixed(1)}%</b>`; if(quedaPct > 4) quedaStr += `<br><span style="color:var(--danger); font-size:11px;">⚠️ Risco de aquecimento. Aumente a bitola!</span>`;
-                }
-                const resultBox = document.getElementById('calc-ele-result'); resultBox.style.display = 'block'; resultBox.innerHTML = `<b>Corrente:</b> <span style="color:var(--danger)">${amperes.toFixed(2)} A</span><br><b>Disjuntor Sugerido:</b> <span style="color:var(--success)">${disj} A (Curva C)</span>${quedaStr}`;
-            }
-        };
-
-        let database;
-        let configEmpresa = { nome: "Sua Empresa", doc: "", tel: "", modeloOrc: "padrao" };
 
         const db = {
             init() {
@@ -777,16 +763,26 @@
                         document.getElementById('conf-empresa-nome').value = configEmpresa.nome || "";
                         document.getElementById('conf-empresa-doc').value = configEmpresa.doc || "";
                         document.getElementById('conf-empresa-tel').value = configEmpresa.tel || "";
+                        document.getElementById('conf-empresa-email').value = configEmpresa.email || "";
+                        document.getElementById('conf-empresa-end').value = configEmpresa.end || "";
                         document.getElementById('conf-modelo-orc').value = configEmpresa.modeloOrc || "padrao";
+                        
+                        if (configEmpresa.logo) {
+                            document.getElementById('logo-preview').src = configEmpresa.logo;
+                            document.getElementById('logo-preview').style.display = 'block';
+                        }
                     }
                 };
             },
             saveConfig() {
-                const nome = document.getElementById('conf-empresa-nome').value || "Sua Empresa";
-                const doc = document.getElementById('conf-empresa-doc').value;
-                const tel = document.getElementById('conf-empresa-tel').value;
-                const modeloOrc = document.getElementById('conf-modelo-orc').value;
-                configEmpresa = { id: 1, nome, doc, tel, modeloOrc };
+                configEmpresa.nome = document.getElementById('conf-empresa-nome').value || "Sua Empresa";
+                configEmpresa.doc = document.getElementById('conf-empresa-doc').value;
+                configEmpresa.tel = document.getElementById('conf-empresa-tel').value;
+                configEmpresa.email = document.getElementById('conf-empresa-email').value;
+                configEmpresa.end = document.getElementById('conf-empresa-end').value;
+                configEmpresa.modeloOrc = document.getElementById('conf-modelo-orc').value;
+                configEmpresa.id = 1;
+                
                 database.transaction("config", "readwrite").objectStore("config").put(configEmpresa).onsuccess = () => { ui.toast("Dados da Empresa Salvos!"); };
             },
             saveConfigModelo() {
@@ -836,25 +832,99 @@
                 if (editId) { tx.get(parseInt(editId)).onsuccess = (e) => { let m = e.target.result; m.nome = nome; m.qtd = parseFloat(qtd); m.preco = parseFloat(preco); m.tipo = tipo; tx.put(m).onsuccess = () => { ui.toast("Atualizado!"); ui.changeTab('view-estoque', document.querySelectorAll('.nav-item')[1], 'Catálogo'); }; }; } 
                 else { tx.add({ tipo, nome, qtd: parseFloat(qtd), preco: parseFloat(preco) }).onsuccess = () => { ui.toast("Salvo no Catálogo!"); ui.changeTab('view-estoque', document.querySelectorAll('.nav-item')[1], 'Catálogo'); }; }
             },
-            deleteMaterial(id) { if(!confirm("Remover item do catálogo?")) return; database.transaction("materiais", "readwrite").objectStore("materiais").delete(id).onsuccess = () => { ui.toast("Excluído."); estoque.renderMateriais(); }; }
+            deleteMaterial(id) { if(!confirm("Remover item do catálogo?")) return; database.transaction("materiais", "readwrite").objectStore("materiais").delete(id).onsuccess = () => { ui.toast("Excluído."); estoque.renderMateriais(); }; },
+            deleteLaudo(id) { if(!confirm("ATENÇÃO: Excluir este laudo permanentemente? Isso removerá o valor do seu caixa financeiro.")) return; database.transaction("laudos", "readwrite").objectStore("laudos").delete(id).onsuccess = () => { ui.toast("Laudo excluído!"); app.openClientProfile(app.currentClientId); }; },
+            deleteOrcamento(id) { if(!confirm("Excluir este orçamento permanentemente?")) return; database.transaction("orcamentos", "readwrite").objectStore("orcamentos").delete(id).onsuccess = () => { ui.toast("Orçamento excluído!"); app.openClientProfile(app.currentClientId); }; }
         };
 
         const estoque = {
             itensLidosOCR: [],
-            openNovoMaterial() { document.getElementById('mat-id-edit').value = ''; document.getElementById('mat-tipo').value = 'Material'; document.getElementById('mat-nome').value = ''; document.getElementById('mat-qtd').value = ''; document.getElementById('mat-preco').value = ''; document.getElementById('btn-save-mat').innerText = "Salvar no Catálogo"; ui.changeView('view-novo-material'); },
+            filtroAtual: 'Todos',
+            mudarLabels() {
+                const tipo = document.getElementById('mat-tipo').value;
+                if(tipo === 'Material') {
+                    document.getElementById('lbl-mat-nome').innerText = "Nome do Produto / Peça";
+                    document.getElementById('lbl-mat-qtd').innerText = "Quantidade Física em Estoque";
+                    document.getElementById('lbl-mat-preco').innerText = "Valor Unitário / Custo (R$)";
+                    document.getElementById('container-mat-qtd').style.display = 'block';
+                } else if(tipo === 'Servico') {
+                    document.getElementById('lbl-mat-nome').innerText = "Descrição do Serviço (Ex: Limpeza de AC)";
+                    document.getElementById('lbl-mat-qtd').innerText = "Tempo Estimado (Horas) - Opcional";
+                    document.getElementById('lbl-mat-preco').innerText = "Preço Fixo Cobrado (R$)";
+                    document.getElementById('container-mat-qtd').style.display = 'block';
+                } else if(tipo === 'MaoDeObra') {
+                    document.getElementById('lbl-mat-nome').innerText = "Função / Especialidade (Ex: Ajudante)";
+                    document.getElementById('lbl-mat-qtd').innerText = "Horas/Dias Padrão (Opcional)";
+                    document.getElementById('lbl-mat-preco').innerText = "Valor da Hora ou Diária (R$)";
+                    document.getElementById('container-mat-qtd').style.display = 'block';
+                }
+            },
+            setFiltro(tipo, el) {
+                this.filtroAtual = tipo;
+                document.querySelectorAll('#view-estoque .pill').forEach(p => p.classList.remove('active'));
+                el.classList.add('active');
+                this.renderMateriais();
+            },
+            ajustarQtd(id, variacao) {
+                const tx = database.transaction("materiais", "readwrite").objectStore("materiais");
+                tx.get(id).onsuccess = (e) => {
+                    let m = e.target.result;
+                    if(m.tipo !== 'Material') return ui.toast("Ajuste rápido apenas para produtos físicos.", true);
+                    m.qtd = (parseFloat(m.qtd) || 0) + variacao;
+                    if(m.qtd < 0) m.qtd = 0;
+                    tx.put(m).onsuccess = () => {
+                        ui.toast(variacao > 0 ? "Adicionado +1" : "Removido -1");
+                        this.renderMateriais();
+                    };
+                };
+            },
+            openNovoMaterial() { 
+                document.getElementById('mat-id-edit').value = ''; 
+                document.getElementById('mat-tipo').value = 'Material'; 
+                document.getElementById('mat-nome').value = ''; 
+                document.getElementById('mat-qtd').value = ''; 
+                document.getElementById('mat-preco').value = ''; 
+                document.getElementById('btn-save-mat').innerText = "Salvar no Catálogo"; 
+                this.mudarLabels();
+                ui.changeView('view-novo-material'); 
+            },
             editMaterial(id) {
                 database.transaction("materiais", "readonly").objectStore("materiais").get(id).onsuccess = (e) => {
-                    const m = e.target.result; document.getElementById('mat-id-edit').value = m.id; document.getElementById('mat-tipo').value = m.tipo || 'Material'; document.getElementById('mat-nome').value = m.nome; document.getElementById('mat-qtd').value = m.qtd; document.getElementById('mat-preco').value = m.preco; document.getElementById('btn-save-mat').innerText = "Atualizar Catálogo"; ui.changeView('view-novo-material');
+                    const m = e.target.result; 
+                    document.getElementById('mat-id-edit').value = m.id; 
+                    document.getElementById('mat-tipo').value = m.tipo || 'Material'; 
+                    document.getElementById('mat-nome').value = m.nome; 
+                    document.getElementById('mat-qtd').value = m.qtd; 
+                    document.getElementById('mat-preco').value = m.preco; 
+                    document.getElementById('btn-save-mat').innerText = "Atualizar Catálogo"; 
+                    setTimeout(() => this.mudarLabels(), 10);
+                    ui.changeView('view-novo-material');
                 };
             },
             renderMateriais() {
                 database.transaction("materiais", "readonly").objectStore("materiais").getAll().onsuccess = (e) => {
-                    const materiais = e.target.result; const cont = document.getElementById('lista-materiais-container');
+                    let materiais = e.target.result; 
+                    if(this.filtroAtual !== 'Todos') { materiais = materiais.filter(m => m.tipo === this.filtroAtual); }
+                    
+                    const cont = document.getElementById('lista-materiais-container');
                     document.getElementById('btn-ia-busca').style.display = 'none';
                     if(materiais.length === 0) { cont.innerHTML = '<div style="text-align:center; padding:20px; color:#94a3b8">Catálogo vazio.</div>'; return; }
+                    
                     cont.innerHTML = materiais.map(m => {
-                        let badge = m.tipo === 'Servico' ? '<span class="badge badge-servico">SERVIÇO</span>' : '<span class="badge badge-material">PRODUTO</span>';
-                        return `<div class="list-row mat-row"><div style="flex:1"><div class="title">${m.nome} ${badge}</div><div class="subtitle">Quantidade: <b style="color:var(--primary)">${m.qtd}</b> • Unitário: ${BRL.format(m.preco)}</div></div><div class="action-btns"><button class="btn-edit" onclick="estoque.editMaterial(${m.id})"><i class="fas fa-pen"></i></button><button class="btn-del" onclick="db.deleteMaterial(${m.id})"><i class="fas fa-trash"></i></button></div></div>`;
+                        let badge = '';
+                        if(m.tipo === 'Servico') badge = '<span class="badge badge-servico">SERVIÇO</span>';
+                        else if(m.tipo === 'MaoDeObra') badge = '<span class="badge badge-mao">MÃO DE OBRA</span>';
+                        else badge = '<span class="badge badge-material">PRODUTO</span>';
+
+                        let colorAlerta = m.tipo === 'Material' && parseFloat(m.qtd) <= 3 ? 'color: var(--danger); font-weight: bold;' : 'color: var(--primary);';
+                        
+                        let qtdBloco = m.tipo === 'Material' ? 
+                            `<div class="qtd-control"><button class="qtd-btn" onclick="estoque.ajustarQtd(${m.id}, -1)">-</button><span style="${colorAlerta} min-width: 15px; text-align:center;">${m.qtd}</span><button class="qtd-btn" onclick="estoque.ajustarQtd(${m.id}, 1)">+</button></div>` 
+                            : `<div style="font-size: 11px; color:#94a3b8;">${m.qtd ? m.qtd + (m.tipo === 'MaoDeObra' ? ' h/d' : ' hrs') : 'N/A'}</div>`;
+
+                        let descPreco = m.tipo === 'MaoDeObra' ? 'Hora/Dia' : (m.tipo === 'Servico' ? 'Fixo' : 'Un.');
+
+                        return `<div class="list-row mat-row"><div style="flex:2"><div class="title" style="font-size:14px;">${m.nome} ${badge}</div><div class="subtitle">Valor (${descPreco}): ${BRL.format(m.preco)}</div></div><div style="flex:1; display:flex; justify-content:center;">${qtdBloco}</div><div class="action-btns" style="flex:1; justify-content:flex-end;"><button class="btn-edit" onclick="estoque.editMaterial(${m.id})"><i class="fas fa-pen"></i></button><button class="btn-del" onclick="db.deleteMaterial(${m.id})"><i class="fas fa-trash"></i></button></div></div>`;
                     }).join('');
                 };
             },
@@ -936,21 +1006,42 @@
                         const orcs = ev.target.result.filter(o => o.clienteId === id).map(o => ({...o, tipoDoc: 'orcamento'})); historicoCompleto = historicoCompleto.concat(orcs);
                         historicoCompleto.sort((a,b) => new Date(b.data) - new Date(a.data));
                         if(historicoCompleto.length === 0) { cont.innerHTML = '<p style="font-size:13px; color:#94a3b8; text-align:center; padding: 15px 0;">Nenhum serviço ou orçamento.</p>'; return; }
+                        
                         cont.innerHTML = historicoCompleto.map(item => {
                             if(item.tipoDoc === 'laudo') {
                                 let fotosHtml = item.fotos && item.fotos.length ? item.fotos.map(f => `<div class="photo-item"><img src="${f}"></div>`).join('') : ''; 
                                 let check = item.checklist && item.checklist.length ? `<div style="font-size:11px; color:var(--success); font-weight:bold; margin-bottom:5px"><i class="fas fa-check-circle"></i> ${item.checklist.join(' • ')}</div>` : ''; 
                                 let badgePagto = item.statusPagto === 'Pendente' ? '<span class="badge" style="background:#fef3c7; color:#d97706;">PENDENTE</span>' : '<span class="badge" style="background:#dcfce7; color:#16a34a;">PAGO</span>';
                                 let valorStr = item.valor ? `<div style="font-size:14px; font-weight:bold; color:var(--success); margin-top:5px;">Valor: ${BRL.format(item.valor)} ${badgePagto}</div>` : '';
-                                return `<div class="timeline-card"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;"><div class="timeline-date" style="margin:0;"><i class="fas fa-file-signature"></i> LAUDO (${new Date(item.data + 'T12:00:00').toLocaleDateString('pt-BR')})</div><button class="btn-outline" style="padding:6px 10px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer;" onclick="pdf.previewLaudo(${item.id})"><i class="fas fa-eye" style="color:var(--accent)"></i> Ver PDF</button></div>${check}<div style="font-size:14px; line-height:1.6; color:var(--text);">${item.desc.replace(/\n/g, '<br>')}</div>${valorStr}${fotosHtml ? `<div class="photo-grid" style="margin-top:10px;">${fotosHtml}</div>` : ''}</div>`;
+                                
+                                return `<div class="timeline-card"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;"><div class="timeline-date" style="margin:0;"><i class="fas fa-file-signature"></i> LAUDO (${new Date(item.data + 'T12:00:00').toLocaleDateString('pt-BR')})</div><div><button class="btn-outline" style="padding:6px 10px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; margin-right:5px;" onclick="pdf.previewLaudo(${item.id})"><i class="fas fa-eye" style="color:var(--accent)"></i> Ver PDF</button><button class="btn-outline" style="padding:6px 10px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; border-color:var(--danger); color:var(--danger);" onclick="db.deleteLaudo(${item.id})"><i class="fas fa-trash"></i></button></div></div>${check}<div style="font-size:14px; line-height:1.6; color:var(--text);">${item.desc.replace(/\n/g, '<br>')}</div>${valorStr}${fotosHtml ? `<div class="photo-grid" style="margin-top:10px;">${fotosHtml}</div>` : ''}</div>`;
                             } else {
                                 let resumoOrc = item.tipoModo === 'direto' ? item.descricao : `${item.itens.length} itens orçados.`;
                                 let valorOrc = item.tipoModo === 'direto' ? item.total : item.total;
-                                return `<div class="timeline-card" style="border-left-color: var(--info)"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;"><div class="timeline-date" style="margin:0; color:var(--info)"><i class="fas fa-file-invoice-dollar"></i> ORÇAMENTO (${new Date(item.data + 'T12:00:00').toLocaleDateString('pt-BR')})</div><button class="btn-outline" style="padding:6px 10px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer;" onclick="pdf.previewOrcamento_by_Id(${item.id})"><i class="fas fa-eye" style="color:var(--accent)"></i> Ver PDF</button></div><div style="font-size:13px; color:var(--text);">${resumoOrc}</div><div style="font-size:14px; font-weight:bold; color:var(--info); margin-top:5px;">Total: ${BRL.format(valorOrc)}</div></div>`;
+                                let desativarDesconto = item.descontoAplicado ? 'opacity:0.5; pointer-events:none;' : '';
+                                
+                                return `
+                                <div class="timeline-card" style="border-left-color: var(--info)">
+                                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                        <div class="timeline-date" style="margin:0; color:var(--info)"><i class="fas fa-file-invoice-dollar"></i> ORÇAMENTO (${new Date(item.data + 'T12:00:00').toLocaleDateString('pt-BR')})</div>
+                                        <div><button class="btn-outline" style="padding:6px 10px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; margin-right:5px;" onclick="pdf.previewOrcamento_by_Id(${item.id})"><i class="fas fa-eye" style="color:var(--accent)"></i> Ver PDF</button><button class="btn-outline" style="padding:6px 10px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; border-color:var(--danger); color:var(--danger);" onclick="db.deleteOrcamento(${item.id})"><i class="fas fa-trash"></i></button></div>
+                                    </div>
+                                    <div style="font-size:13px; color:var(--text);">${resumoOrc}</div>
+                                    <div style="font-size:14px; font-weight:bold; color:var(--info); margin-top:5px;">Total: ${BRL.format(valorOrc)}</div>
+                                    <div style="display: flex; gap: 8px; margin-top: 10px; border-top: 1px dashed var(--border); padding-top: 10px;">
+                                        <button class="btn-outline" style="flex:1; padding:6px; font-size:11px; border-color:var(--warning); color:var(--warning); ${desativarDesconto}" onclick="orcamento.darDesconto(${item.id})"><i class="fas fa-tags"></i> ${item.descontoAplicado ? 'Desconto já aplicado' : 'Desconto'}</button>
+                                        <button class="btn-outline" style="flex:1; padding:6px; font-size:11px; border-color:var(--success); color:var(--success);" onclick="app.convertOrcamentoToLaudo(${item.id})"><i class="fas fa-file-signature"></i> Virar Laudo</button>
+                                    </div>
+                                </div>`;
                             }
                         }).join('');
                     };
                 };
+            },
+            zapAvisoAgenda(fone, data, hora, nome) {
+                if(!fone || fone.length < 10) return ui.toast("Cliente sem WhatsApp válido cadastrado.", true);
+                const txt = `Olá ${nome}, tudo bem? Passando para confirmar nosso agendamento técnico para o dia ${new Date(data+'T12:00:00').toLocaleDateString('pt-BR')} às ${hora}. Qualquer imprevisto, me avise!`;
+                window.open(`https://wa.me/55${fone}?text=${encodeURIComponent(txt)}`, '_blank');
             },
             editAgendamento(id) {
                 database.transaction("agendamentos", "readonly").objectStore("agendamentos").get(id).onsuccess = (e) => { const ag = e.target.result; document.getElementById('ag-id-edit').value = ag.id; document.getElementById('ag-cliente').value = ag.clienteId; document.getElementById('ag-data').value = ag.data; document.getElementById('ag-hora').value = ag.hora; document.getElementById('ag-desc').value = ag.desc; document.getElementById('ag-materiais').value = ag.materiais || ''; document.getElementById('btn-save-ag').innerText = "Atualizar Agendamento"; ui.changeView('view-novo-agendamento'); };
@@ -960,12 +1051,20 @@
                 database.transaction(["agendamentos", "clientes"], "readonly").objectStore("agendamentos").getAll().onsuccess = (e) => {
                     const agendamentos = e.target.result.filter(a => a.status === 'Pendente').sort((a,b) => new Date(a.data) - new Date(b.data)); const cont = document.getElementById('lista-agenda-container');
                     if(agendamentos.length === 0) { cont.innerHTML = '<div style="text-align:center; padding:20px; color:#94a3b8">Nenhum agendamento pendente.</div>'; return; }
+                    
+                    const hojeIso = new Date().toISOString().split('T')[0];
+
                     database.transaction("clientes", "readonly").objectStore("clientes").getAll().onsuccess = (ev) => {
                         const clientes = ev.target.result;
                         cont.innerHTML = agendamentos.map(ag => {
                             const cliente = clientes.find(c => c.id === ag.clienteId);
+                            let numLimpo = (cliente && cliente.tel) ? cliente.tel.replace(/\D/g, '') : '';
+                            
+                            let badgeHoje = ag.data === hojeIso ? '<span class="badge badge-hoje"><i class="fas fa-exclamation-circle"></i> HOJE</span>' : '';
+
                             let materiaisHtml = ''; if(ag.materiais && ag.materiais.trim() !== '') { let lista = ag.materiais.split(',').map(m => m.trim()).filter(m => m !== ''); if(lista.length > 0) { materiaisHtml = `<div style="margin-top:10px; padding-top:10px; border-top:1px dashed var(--border);"><div style="font-size:11px; font-weight:bold; color:#64748b; margin-bottom:5px; text-transform:uppercase;">Checklist de Embarque:</div>${lista.map(item => `<div style="display:flex; align-items:center; gap:8px; margin-bottom:6px; font-size:13px; color:var(--primary); cursor:pointer;" onclick="this.querySelector('i').classList.toggle('fa-square'); this.querySelector('i').classList.toggle('fa-check-square'); this.querySelector('i').style.color = this.querySelector('i').classList.contains('fa-check-square') ? 'var(--success)' : '#cbd5e1'; this.style.textDecoration = this.querySelector('i').classList.contains('fa-check-square') ? 'line-through' : 'none';"><i class="far fa-square" style="color:#cbd5e1; font-size:16px;"></i> ${item}</div>`).join('')}</div>`; } }
-                            return `<div class="card" style="border-left: 4px solid var(--accent); position: relative;"><div style="position: absolute; top: 15px; right: 15px; display:flex; gap:10px;"><button onclick="app.editAgendamento(${ag.id})" style="background:none; border:none; color:var(--accent); font-size:16px; cursor:pointer;"><i class="fas fa-pen"></i></button><button onclick="db.deleteAgendamento(${ag.id})" style="background:none; border:none; color:#f87171; font-size:16px; cursor:pointer;"><i class="fas fa-trash"></i></button></div><div style="font-size:13px; font-weight:bold; color:var(--accent); margin-bottom: 10px;"><i class="far fa-clock"></i> ${new Date(ag.data + 'T12:00:00').toLocaleDateString('pt-BR')} às ${ag.hora}</div><div class="title" style="padding-right: 50px;">${cliente ? cliente.nome : 'Excluído'}</div><div class="subtitle" style="margin-bottom:10px;"><i class="fas fa-map-marker-alt"></i> ${cliente ? cliente.end : ''}</div><div style="font-size:14px; background:#f1f5f9; padding:10px; border-radius:8px; border:1px solid var(--border); line-height:1.5; margin-bottom: 10px;">${ag.desc}</div>${materiaisHtml}<button class="btn-success" style="width: 100%; margin-top: 10px;" onclick="app.convertAgendaToLaudo(${ag.id}, ${ag.clienteId})"><i class="fas fa-check"></i> Executar Serviço</button></div>`;
+                            
+                            return `<div class="card" style="border-left: 4px solid var(--accent); position: relative;"><div style="position: absolute; top: 15px; right: 15px; display:flex; gap:10px;"><button onclick="app.zapAvisoAgenda('${numLimpo}', '${ag.data}', '${ag.hora}', '${cliente ? cliente.nome : ''}')" style="background:none; border:none; color:#16a34a; font-size:18px; cursor:pointer;" title="Avisar no Zap"><i class="fab fa-whatsapp"></i></button><button onclick="app.editAgendamento(${ag.id})" style="background:none; border:none; color:var(--accent); font-size:16px; cursor:pointer;"><i class="fas fa-pen"></i></button><button onclick="db.deleteAgendamento(${ag.id})" style="background:none; border:none; color:#f87171; font-size:16px; cursor:pointer;"><i class="fas fa-trash"></i></button></div><div style="font-size:13px; font-weight:bold; color:var(--accent); margin-bottom: 10px; display:flex; align-items:center;"><i class="far fa-clock" style="margin-right:5px;"></i> ${new Date(ag.data + 'T12:00:00').toLocaleDateString('pt-BR')} às ${ag.hora} ${badgeHoje}</div><div class="title" style="padding-right: 90px;">${cliente ? cliente.nome : 'Excluído'}</div><div class="subtitle" style="margin-bottom:10px;"><i class="fas fa-map-marker-alt"></i> ${cliente ? cliente.end : ''}</div><div style="font-size:14px; background:#f1f5f9; padding:10px; border-radius:8px; border:1px solid var(--border); line-height:1.5; margin-bottom: 10px;">${ag.desc}</div>${materiaisHtml}<button class="btn-success" style="width: 100%; margin-top: 10px;" onclick="app.convertAgendaToLaudo(${ag.id}, ${ag.clienteId})"><i class="fas fa-check"></i> Executar Serviço</button></div>`;
                         }).join('');
                     };
                 };
@@ -973,9 +1072,54 @@
             openNovoAgendamento(clienteIdContexto) { document.getElementById('ag-id-edit').value = ''; document.getElementById('ag-data').value = new Date().toISOString().split('T')[0]; document.getElementById('ag-hora').value = ''; document.getElementById('ag-desc').value = ''; document.getElementById('ag-materiais').value = ''; document.getElementById('btn-save-ag').innerText = "Confirmar Agendamento"; ui.changeView('view-novo-agendamento'); document.getElementById('topbar-title').innerText = "Novo Agendamento"; if(clienteIdContexto) document.getElementById('ag-cliente').value = clienteIdContexto; else if(this.currentClientId) document.getElementById('ag-cliente').value = this.currentClientId; },
             openNovoLaudo() { this.tempPhotos = []; document.getElementById('laudo-photo-preview').innerHTML = ''; document.getElementById('laudo-data').value = new Date().toISOString().split('T')[0]; document.getElementById('laudo-cliente-id').value = this.currentClientId; document.getElementById('laudo-agenda-id').value = ""; document.getElementById('laudo-materiais').value = ""; document.getElementById('laudo-valor').value = ""; document.getElementById('laudo-status').value = "Pago"; document.querySelectorAll('.pill.active').forEach(p => p.classList.remove('active')); signature.clear(); ui.changeView('view-novo-laudo'); document.getElementById('topbar-title').innerText = "Registro de Serviço"; setTimeout(() => signature.init(), 300); },
             convertAgendaToLaudo(agendaId, clienteId) { this.currentClientId = clienteId; this.openNovoLaudo(); document.getElementById('laudo-agenda-id').value = agendaId; },
+            convertOrcamentoToLaudo(orcId) {
+                database.transaction("orcamentos", "readonly").objectStore("orcamentos").get(orcId).onsuccess = (e) => {
+                    const orc = e.target.result;
+                    this.openNovoLaudo();
+                    document.getElementById('laudo-valor').value = orc.total;
+                    let descText = "Serviço executado conforme orçamento prévio:\n\n";
+                    if(orc.tipoModo === 'direto') {
+                        descText += orc.descricao;
+                    } else {
+                        descText += orc.itens.map(i => `${i.qtd}x ${i.nome}`).join('\n');
+                    }
+                    document.getElementById('laudo-desc').value = descText;
+                    ui.toast("Dados do orçamento importados!");
+                };
+            },
             processPhotos(input) { if(!input.files) return; ui.toast("Comprimindo fotos..."); Array.from(input.files).forEach(file => { const reader = new FileReader(); reader.onload = (e) => { const img = new Image(); img.src = e.target.result; img.onload = () => { const canvas = document.createElement('canvas'); const MAX_WIDTH = 800; const scaleSize = MAX_WIDTH / img.width; canvas.width = MAX_WIDTH; canvas.height = img.height * scaleSize; canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height); this.tempPhotos.push(canvas.toDataURL('image/jpeg', 0.7)); this.renderPhotoPreview(); } }; reader.readAsDataURL(file); }); input.value = ''; },
             renderPhotoPreview() { document.getElementById('laudo-photo-preview').innerHTML = this.tempPhotos.map((foto, idx) => `<div class="photo-item"><img src="${foto}"><button class="btn-remove-photo" onclick="app.removePhoto(${idx})"><i class="fas fa-times"></i></button></div>`).join(''); },
-            removePhoto(index) { this.tempPhotos.splice(index, 1); this.renderPhotoPreview(); }
+            removePhoto(index) { this.tempPhotos.splice(index, 1); this.renderPhotoPreview(); },
+            processLogo(input) {
+                if(!input.files || !input.files[0]) return;
+                const file = input.files[0];
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 400; 
+                        let scaleSize = MAX_WIDTH / img.width;
+                        if(scaleSize > 1) scaleSize = 1;
+                        canvas.width = img.width * scaleSize;
+                        canvas.height = img.height * scaleSize;
+                        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                        configEmpresa.logo = canvas.toDataURL('image/png', 0.9);
+                        document.getElementById('logo-preview').src = configEmpresa.logo;
+                        document.getElementById('logo-preview').style.display = 'block';
+                        ui.toast("Logotipo carregado! Salve os dados.");
+                    }
+                };
+                reader.readAsDataURL(file);
+            },
+            removeLogo() {
+                configEmpresa.logo = "";
+                document.getElementById('logo-preview').src = "";
+                document.getElementById('logo-preview').style.display = 'none';
+                document.getElementById('conf-empresa-logo-input').value = "";
+                ui.toast("Logotipo removido. Salve os dados.");
+            }
         };
 
         const pdf = {
@@ -999,7 +1143,6 @@
                         let corpoOrcHtml = '';
                         let modelo = configEmpresa.modeloOrc || 'padrao';
 
-                        // Adaptação dos Modelos Selecionados nas Configurações
                         let blocoValidade = modelo === 'corporativo' ? `<div style="background:#f1f5f9; padding:10px; border-radius:6px; margin-bottom:15px; font-size:12px;"><b>Condições:</b> Pagamento a combinar • <b>Validade da Proposta:</b> 15 dias • <b>Prazo de Execução:</b> A combinar</div>` : '';
 
                         if(orc.tipoModo === 'direto') {
@@ -1033,8 +1176,9 @@
                         }
                         
                         let tituloModelo = modelo === 'executivo' ? 'Orçamento Executivo' : (modelo === 'corporativo' ? 'Proposta Comercial' : 'Proposta Comercial / Orçamento');
+                        let logoHeader = configEmpresa.logo ? `<img src="${configEmpresa.logo}" style="max-height: 60px; max-width: 150px; object-fit: contain;">` : '';
 
-                        const html = `<div class="pdf-header"><div><div class="pdf-title">${tituloModelo}</div><div style="color:#64748b; margin-top:5px;">Serviços Técnicos Profissionais</div></div><div style="text-align:right"><div style="background:var(--info); color:white; padding:5px 10px; border-radius:4px; font-weight:bold; font-size:14px; display:inline-block;">ORC-${Math.floor(Math.random() * 8999) + 1000}</div><div style="font-size:12px; margin-top:5px; color:#64748b;">Data Emissão: ${dataF}</div></div></div><div class="pdf-info-box"><div style="font-size:10px; font-weight:bold; color:var(--info); text-transform:uppercase; margin-bottom:5px;">Emissor</div><div style="font-size:16px; font-weight:bold; color:var(--primary);">${configEmpresa.nome}</div><div style="font-size:13px; color:#334155;">CNPJ/CPF: ${configEmpresa.doc} | Tel: ${configEmpresa.tel}</div></div><div class="pdf-info-box"><div style="font-size:10px; font-weight:bold; color:var(--info); text-transform:uppercase; margin-bottom:5px;">Aos Cuidados de</div><div style="font-size:16px; font-weight:bold; color:var(--primary);">${cliente.nome}</div><div style="font-size:13px; color:#334155; margin-top:5px;">${cliente.end || ''}</div></div>${corpoOrcHtml}<div style="margin-top:40px; text-align:center; font-size:11px; color:#64748b; border-top:1px dashed #cbd5e1; padding-top:10px; page-break-inside: avoid;">Validade desta proposta: 15 dias.</div>`;
+                        const html = `<div class="pdf-header"><div style="display:flex; align-items:center; gap:15px;">${logoHeader}<div><div class="pdf-title">${tituloModelo}</div><div style="color:#64748b; margin-top:5px;">Serviços Técnicos Profissionais</div></div></div><div style="text-align:right"><div style="background:var(--info); color:white; padding:5px 10px; border-radius:4px; font-weight:bold; font-size:14px; display:inline-block;">ORC-${Math.floor(Math.random() * 8999) + 1000}</div><div style="font-size:12px; margin-top:5px; color:#64748b;">Data Emissão: ${dataF}</div></div></div><div class="pdf-info-box"><div style="font-size:10px; font-weight:bold; color:var(--info); text-transform:uppercase; margin-bottom:5px;">Emissor</div><div style="font-size:16px; font-weight:bold; color:var(--primary);">${configEmpresa.nome}</div><div style="font-size:13px; color:#334155;">CNPJ/CPF: ${configEmpresa.doc} | Tel: ${configEmpresa.tel}</div>${configEmpresa.email ? `<div style="font-size:13px; color:#334155;">E-mail: ${configEmpresa.email}</div>` : ''}${configEmpresa.end ? `<div style="font-size:13px; color:#334155;">Endereço: ${configEmpresa.end}</div>` : ''}</div><div class="pdf-info-box"><div style="font-size:10px; font-weight:bold; color:var(--info); text-transform:uppercase; margin-bottom:5px;">Aos Cuidados de</div><div style="font-size:16px; font-weight:bold; color:var(--primary);">${cliente.nome}</div><div style="font-size:13px; color:#334155; margin-top:5px;">${cliente.end || ''}</div></div>${corpoOrcHtml}<div style="margin-top:40px; text-align:center; font-size:11px; color:#64748b; border-top:1px dashed #cbd5e1; padding-top:10px; page-break-inside: avoid;">Validade desta proposta: 15 dias.</div>`;
                         
                         this.currentHtmlContent = html;
                         document.getElementById('pdf-container').innerHTML = html;
@@ -1063,8 +1207,9 @@
                         let statusBadgePdf = laudo.statusPagto === 'Pendente' ? ' (Pendente)' : ' (Pago)';
                         let valorHtml = laudo.valor ? `<div style="background:#f0fdf4; border:1px solid #16a34a; padding:15px; border-radius:8px; margin-top:20px; display:flex; justify-content:space-between; align-items:center;"><span style="color:#16a34a; font-weight:bold; font-size:12px; text-transform:uppercase;">Valor Total Cobrado / Recebido${statusBadgePdf}</span><span style="font-size:20px; font-weight:900; color:#166534;">${BRL.format(laudo.valor)}</span></div>` : '';
                         let assHtml = laudo.assinatura ? `<div style="margin-top:40px; text-align:center; page-break-inside: avoid;"><img src="${laudo.assinatura}" style="height:80px; border-bottom:1px solid var(--text); padding-bottom:10px; margin-bottom:5px;"><div style="font-size:12px; font-weight:bold;">ASSINATURA DO CLIENTE (${cliente.nome})</div></div>` : '';
+                        let logoHeader = configEmpresa.logo ? `<img src="${configEmpresa.logo}" style="max-height: 60px; max-width: 150px; object-fit: contain;">` : '';
 
-                        const html = `<div class="pdf-header"><div><div class="pdf-title">Relatório de Serviço Técnico</div><div style="color:#64748b; margin-top:5px;">Documento de finalização e evidência técnica</div></div><div style="text-align:right"><div style="background:var(--primary); color:white; padding:5px 10px; border-radius:4px; font-weight:bold; font-size:14px; display:inline-block;">OS-${Math.floor(Math.random() * 8999) + 1000}</div><div style="font-size:12px; margin-top:5px; color:#64748b;">Data Execução: ${dataF}</div></div></div><div class="pdf-grid"><div class="pdf-info-box"><div style="font-size:10px; font-weight:bold; color:var(--accent); text-transform:uppercase; margin-bottom:5px;">Empresa / Técnico</div><div style="font-size:16px; font-weight:bold; color:var(--primary);">${configEmpresa.nome}</div><div style="font-size:13px; color:#334155;">CNPJ/CPF: ${configEmpresa.doc}<br>Tel: ${configEmpresa.tel}</div></div><div class="pdf-info-box"><div style="font-size:10px; font-weight:bold; color:var(--accent); text-transform:uppercase; margin-bottom:5px;">Dados do Cliente / Local</div><div style="font-size:16px; font-weight:bold; color:var(--primary);">${cliente.nome}</div><div style="font-size:13px; color:#334155;">${cliente.end || ''}<br>Tel: ${cliente.tel || 'N/A'}</div>${cliente.equip ? `<div style="font-size:12px; color:#64748b; margin-top:5px;"><b>Equip:</b> ${cliente.equip}</div>` : ''}</div></div><div style="font-size:12px; font-weight:bold; color:var(--primary); text-transform:uppercase; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:5px;">Descrição Técnica do Serviço Realizado:</div>${checkHtml}${matHtml}<div style="font-size:13px; line-height:1.6; color:#334155; text-align:justify; white-space:pre-wrap;">${laudo.desc}</div>${valorHtml}${fotosHtml ? `<div style="margin-top:30px; page-break-inside: avoid;"><div style="font-size:12px; font-weight:bold; color:var(--primary); text-transform:uppercase; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:5px;">Evidências Fotográficas:</div><div class="pdf-grid">${fotosHtml}</div></div>` : ''}${assHtml}<div style="margin-top:40px; text-align:center; font-size:10px; color:#94a3b8; border-top:1px dashed #cbd5e1; padding-top:10px; page-break-inside: avoid;">Documento gerado eletronicamente para registro histórico de atendimento.</div>`;
+                        const html = `<div class="pdf-header"><div style="display:flex; align-items:center; gap:15px;">${logoHeader}<div><div class="pdf-title">Relatório de Serviço Técnico</div><div style="color:#64748b; margin-top:5px;">Documento de finalização e evidência técnica</div></div></div><div style="text-align:right"><div style="background:var(--primary); color:white; padding:5px 10px; border-radius:4px; font-weight:bold; font-size:14px; display:inline-block;">OS-${Math.floor(Math.random() * 8999) + 1000}</div><div style="font-size:12px; margin-top:5px; color:#64748b;">Data Execução: ${dataF}</div></div></div><div class="pdf-grid"><div class="pdf-info-box"><div style="font-size:10px; font-weight:bold; color:var(--accent); text-transform:uppercase; margin-bottom:5px;">Empresa / Técnico</div><div style="font-size:16px; font-weight:bold; color:var(--primary);">${configEmpresa.nome}</div><div style="font-size:13px; color:#334155;">CNPJ/CPF: ${configEmpresa.doc}<br>Tel: ${configEmpresa.tel}</div>${configEmpresa.email ? `<div style="font-size:13px; color:#334155;">E-mail: ${configEmpresa.email}</div>` : ''}${configEmpresa.end ? `<div style="font-size:13px; color:#334155;">Endereço: ${configEmpresa.end}</div>` : ''}</div><div class="pdf-info-box"><div style="font-size:10px; font-weight:bold; color:var(--accent); text-transform:uppercase; margin-bottom:5px;">Dados do Cliente / Local</div><div style="font-size:16px; font-weight:bold; color:var(--primary);">${cliente.nome}</div><div style="font-size:13px; color:#334155;">${cliente.end || ''}<br>Tel: ${cliente.tel || 'N/A'}</div>${cliente.equip ? `<div style="font-size:12px; color:#64748b; margin-top:5px;"><b>Equip:</b> ${cliente.equip}</div>` : ''}</div></div><div style="font-size:12px; font-weight:bold; color:var(--primary); text-transform:uppercase; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:5px;">Descrição Técnica do Serviço Realizado:</div>${checkHtml}${matHtml}<div style="font-size:13px; line-height:1.6; color:#334155; text-align:justify; white-space:pre-wrap;">${laudo.desc}</div>${valorHtml}${fotosHtml ? `<div style="margin-top:30px; page-break-inside: avoid;"><div style="font-size:12px; font-weight:bold; color:var(--primary); text-transform:uppercase; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:5px;">Evidências Fotográficas:</div><div class="pdf-grid">${fotosHtml}</div></div>` : ''}${assHtml}<div style="margin-top:40px; text-align:center; font-size:10px; color:#94a3b8; border-top:1px dashed #cbd5e1; padding-top:10px; page-break-inside: avoid;">Documento gerado eletronicamente para registro histórico de atendimento.</div>`;
                         
                         this.currentHtmlContent = html; 
                         document.getElementById('pdf-container').innerHTML = html;
@@ -1075,16 +1220,79 @@
             },
             previewLaudo_e_Share(id) { this.previewLaudo(id); },
 
+            previewRecibo(clienteId, valor, desc, dataStr) {
+                ui.previousView = 'view-recibo';
+                database.transaction("clientes", "readonly").objectStore("clientes").get(clienteId).onsuccess = (ev) => {
+                    const cliente = ev.target.result;
+                    const dataF = new Date(dataStr + 'T12:00:00').toLocaleDateString('pt-BR');
+                    
+                    this.currentFileName = `Recibo_${cliente.nome.replace(/\s+/g, '_')}.pdf`;
+                    this.currentClientPhone = cliente.tel ? cliente.tel.replace(/\D/g, '') : '';
+                    this.currentClientName = cliente.nome;
+
+                    let logoHeader = configEmpresa.logo ? `<img src="${configEmpresa.logo}" style="max-height: 60px; max-width: 150px; object-fit: contain;">` : '';
+
+                    const html = `
+                        <div style="border: 2px solid var(--primary); padding: 30px; border-radius: 12px; position: relative;">
+                            <div style="display:flex; justify-content:space-between; border-bottom: 2px solid var(--border); padding-bottom: 20px; margin-bottom: 20px;">
+                                <div style="display:flex; align-items:center; gap:15px;">
+                                    ${logoHeader}
+                                    <div>
+                                        <div style="font-size: 24px; font-weight: 900; color: var(--primary); text-transform: uppercase;">RECIBO</div>
+                                        <div style="font-size: 12px; color: #64748b;">Nº ${Math.floor(Math.random() * 89999) + 10000}</div>
+                                    </div>
+                                </div>
+                                <div style="background: #f8fafc; border: 2px solid var(--primary); padding: 10px 20px; border-radius: 8px; display:flex; align-items:center; justify-content:center;">
+                                    <span style="font-size: 24px; font-weight: 900; color: var(--primary);">${BRL.format(valor)}</span>
+                                </div>
+                            </div>
+                            
+                            <div style="font-size: 16px; line-height: 2; color: var(--text); text-align: justify; margin-bottom: 40px;">
+                                Recebi(emos) de <b>${cliente.nome}</b>${cliente.doc ? ` (CPF/CNPJ: ${cliente.doc})` : ''}, 
+                                a importância supra de <b>${BRL.format(valor)}</b>, 
+                                referente a <b>${desc}</b>. 
+                                <br><br>
+                                Para maior clareza, firmo(amos) o presente recibo para que produza seus efeitos legais.
+                            </div>
+
+                            <div style="text-align: right; font-size: 14px; margin-bottom: 50px;">
+                                Data de Emissão: <b>${dataF}</b>
+                            </div>
+
+                            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; margin-top: 40px;">
+                                <div style="width: 300px; border-bottom: 1px solid var(--primary); margin-bottom: 10px;"></div>
+                                <div style="font-size: 16px; font-weight: bold; color: var(--primary);">${configEmpresa.nome}</div>
+                                <div style="font-size: 12px; color: #64748b;">CNPJ/CPF: ${configEmpresa.doc || 'Não informado'}</div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    this.currentHtmlContent = html;
+                    document.getElementById('pdf-container').innerHTML = html;
+                    document.getElementById('btn-final-pdf').innerHTML = '<i class="fab fa-whatsapp"></i> Gerar PDF e Enviar Recibo';
+                    ui.changeView('view-preview');
+                };
+            },
+
             generateEstoque() {
                 ui.previousView = 'view-estoque';
                 database.transaction("materiais", "readonly").objectStore("materiais").getAll().onsuccess = (e) => {
                     const materiais = e.target.result; if(materiais.length === 0) return ui.toast("O estoque está vazio.", true);
-                    let totalGeral = 0; let linhasTabela = materiais.map(m => { totalGeral += (m.qtd * m.preco); return `<tr><td>${m.nome}</td><td style="text-align:center">${m.qtd}</td><td style="text-align:right">${BRL.format(m.preco)}</td><td style="text-align:right; font-weight:bold;">${BRL.format(m.qtd * m.preco)}</td></tr>`; }).join('');
                     
-                    this.currentFileName = `Estoque_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.pdf`;
+                    let totalGeral = 0; 
+                    let linhasTabela = materiais.map(m => { 
+                        let valorTotalLinha = (m.tipo === 'Material') ? (m.qtd * m.preco) : m.preco;
+                        if(m.tipo === 'Material') totalGeral += valorTotalLinha; 
+                        let unStr = m.tipo === 'Material' ? m.qtd : (m.qtd ? m.qtd : '-');
+                        let tpStr = m.tipo === 'Material' ? 'Produto' : (m.tipo === 'MaoDeObra' ? 'M. Obra' : 'Serviço');
+                        return `<tr><td>${m.nome} <span style="font-size:9px; color:#64748b;">(${tpStr})</span></td><td style="text-align:center">${unStr}</td><td style="text-align:right">${BRL.format(m.preco)}</td><td style="text-align:right; font-weight:bold;">${m.tipo === 'Material' ? BRL.format(valorTotalLinha) : '-'}</td></tr>`; 
+                    }).join('');
+                    
+                    this.currentFileName = `Catalogo_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.pdf`;
                     this.currentClientName = ''; 
+                    let logoHeader = configEmpresa.logo ? `<img src="${configEmpresa.logo}" style="max-height: 60px; max-width: 150px; object-fit: contain;">` : '';
                     
-                    const html = `<div class="pdf-header"><div><div class="pdf-title">Relatório de Catálogo e Materiais</div><div style="color:#64748b; margin-top:5px;">Controle Interno de Ativos da ${configEmpresa.nome}</div></div><div style="text-align:right"><div style="background:var(--primary); color:white; padding:5px 10px; border-radius:4px; font-weight:bold; font-size:14px; display:inline-block;">INVENTÁRIO</div><div style="font-size:12px; margin-top:5px; color:#64748b;">Data: ${new Date().toLocaleDateString('pt-BR')}</div></div></div><table class="table-pdf"><thead><tr><th>Item / Serviço</th><th style="text-align:center">Qtd</th><th style="text-align:right">Valor Unit.</th><th style="text-align:right">Valor Total</th></tr></thead><tbody>${linhasTabela}</tbody></table><div style="margin-top:20px; text-align:right; font-size:18px; font-weight:900; color:var(--primary);">Total Patrimonial: ${BRL.format(totalGeral)}</div>`;
+                    const html = `<div class="pdf-header"><div style="display:flex; align-items:center; gap:15px;">${logoHeader}<div><div class="pdf-title">Relatório de Catálogo e Estoque</div><div style="color:#64748b; margin-top:5px;">Controle Interno de Ativos da ${configEmpresa.nome}</div></div></div><div style="text-align:right"><div style="background:var(--primary); color:white; padding:5px 10px; border-radius:4px; font-weight:bold; font-size:14px; display:inline-block;">INVENTÁRIO</div><div style="font-size:12px; margin-top:5px; color:#64748b;">Data: ${new Date().toLocaleDateString('pt-BR')}</div></div></div><table class="table-pdf"><thead><tr><th>Item / Serviço</th><th style="text-align:center">Qtd / Hrs</th><th style="text-align:right">Valor Unit.</th><th style="text-align:right">Custo Estoque</th></tr></thead><tbody>${linhasTabela}</tbody></table><div style="margin-top:20px; text-align:right; font-size:18px; font-weight:900; color:var(--primary);">Total em Produtos Físicos: ${BRL.format(totalGeral)}</div>`;
                     
                     this.currentHtmlContent = html;
                     document.getElementById('pdf-container').innerHTML = html;
