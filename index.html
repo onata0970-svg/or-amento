@@ -32,8 +32,9 @@
         .view.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        #view-login { display: flex; flex-direction: column; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; right: 0; bottom: 0; max-width: var(--app-width); margin: 0 auto; background: var(--primary); z-index: 3000; padding: 30px; text-align: center; color: white; }
-        #view-login.hidden { display: none; }
+        /* CORREÇÃO DO LOGIN: Agora é tratado como uma 'view' normal para não sobrepor cliques */
+        #view-login { display: none; flex-direction: column; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; right: 0; bottom: 0; max-width: var(--app-width); margin: 0 auto; background: var(--primary); z-index: 3000; padding: 30px; text-align: center; color: white; }
+        #view-login.active { display: flex !important; }
 
         #pdf-loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--primary); color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
 
@@ -572,13 +573,10 @@
                     localStorage.setItem('fieldapp_senha', inputVal);
                     ui.toast("Senha cadastrada com sucesso!");
                     document.getElementById('view-login').classList.remove('active');
-                    document.getElementById('view-login').classList.add('hidden');
-                    // Exibir a tela de clientes após o login
                     ui.changeView('view-clientes', true);
                 } else {
                     if (inputVal === senhaSalva) {
                         document.getElementById('view-login').classList.remove('active');
-                        document.getElementById('view-login').classList.add('hidden');
                         document.getElementById('login-senha-input').value = '';
                         ui.changeView('view-clientes', true);
                     } else {
@@ -766,6 +764,202 @@
             }
         };
 
+        var orcamento = {
+            itens: [],
+            modo: 'lista', 
+            abrirNovo() { 
+                this.itens = []; 
+                this.modo = 'lista';
+                document.getElementById('orc-modo').value = 'lista';
+                this.mudarModo('lista');
+                this.renderLista(); 
+                document.getElementById('orc-edit-index').value = '-1';
+                document.getElementById('orc-item-nome').value=''; 
+                document.getElementById('orc-item-preco').value=''; 
+                document.getElementById('orc-item-qtd').value='1'; 
+                document.getElementById('orc-direto-desc').value='';
+                document.getElementById('orc-direto-valor').value='';
+                document.getElementById('orc-esconder-valores').checked = false;
+                ui.changeView('view-orcamento'); 
+                document.getElementById('topbar-title').innerText = "Orçamento Prévio"; 
+            },
+            mudarModo(val) {
+                this.modo = val;
+                if(val === 'lista') {
+                    document.getElementById('orc-bloco-lista').style.display = 'block';
+                    document.getElementById('orc-bloco-direto').style.display = 'none';
+                } else {
+                    document.getElementById('orc-bloco-lista').style.display = 'none';
+                    document.getElementById('orc-bloco-direto').style.display = 'block';
+                }
+            },
+            adicionarItem() {
+                const n = document.getElementById('orc-item-nome').value; 
+                const q = parseInt(document.getElementById('orc-item-qtd').value); 
+                const p = parseFloat(document.getElementById('orc-item-preco').value);
+                const editIdx = parseInt(document.getElementById('orc-edit-index').value);
+
+                if(!n || !q || isNaN(p)) return ui.toast("Preencha item, qtd e preço", true);
+
+                if (editIdx >= 0) {
+                    this.itens[editIdx] = { nome: n, qtd: q, preco: p };
+                    document.getElementById('orc-edit-index').value = '-1';
+                    document.getElementById('orc-label-acao').innerText = "Adicionar Material ou Serviço";
+                    document.getElementById('orc-btn-add').innerText = "+ Inserir na Lista";
+                } else {
+                    this.itens.push({ nome: n, qtd: q, preco: p });
+                }
+
+                document.getElementById('orc-item-nome').value=''; 
+                document.getElementById('orc-item-preco').value=''; 
+                document.getElementById('orc-item-qtd').value='1';
+                this.renderLista();
+            },
+            editarItem(idx) {
+                const item = this.itens[idx];
+                document.getElementById('orc-item-nome').value = item.nome;
+                document.getElementById('orc-item-qtd').value = item.qtd;
+                document.getElementById('orc-item-preco').value = item.preco;
+                document.getElementById('orc-edit-index').value = idx;
+                document.getElementById('orc-label-acao').innerText = "Editando Item (" + item.nome + ")";
+                document.getElementById('orc-btn-add').innerText = "Salvar Alteração";
+                window.scrollTo(0, 0);
+            },
+            removerItem(idx) { 
+                this.itens.splice(idx, 1); 
+                this.renderLista(); 
+            },
+            renderLista() {
+                let total = 0; const cont = document.getElementById('orc-lista-container');
+                if(this.itens.length === 0) { cont.innerHTML = '<div style="color:#94a3b8; font-size:12px; text-align:center;">Nenhum item inserido.</div>'; document.getElementById('orc-total-display').innerText = "R$ 0,00"; return; }
+                cont.innerHTML = this.itens.map((i, idx) => { 
+                    total += (i.qtd * i.preco); 
+                    return `<div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; border-bottom:1px solid #e2e8f0; padding:8px 0;">
+                        <div><b>${i.nome}</b> (${i.qtd}x) - ${BRL.format(i.preco)} un</div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <b style="color:var(--primary)">${BRL.format(i.qtd * i.preco)}</b> 
+                            <button onclick="orcamento.editarItem(${idx})" style="background:none; border:none; color:var(--accent); cursor:pointer;"><i class="fas fa-pen"></i></button>
+                            <button onclick="orcamento.removerItem(${idx})" style="background:none; border:none; color:var(--danger); cursor:pointer;"><i class="fas fa-times"></i></button>
+                        </div>
+                    </div>`; 
+                }).join('');
+                document.getElementById('orc-total-display').innerText = BRL.format(total);
+            },
+            salvarEGerar() {
+                let orc;
+                if(this.modo === 'lista') {
+                    if(this.itens.length === 0) return ui.toast("Adicione itens ao orçamento", true);
+                    const total = this.itens.reduce((sum, i) => sum + (i.qtd * i.preco), 0);
+                    orc = { clienteId: app.currentClientId, data: new Date().toISOString().split('T')[0], tipoModo: 'lista', itens: [...this.itens], total: total };
+                } else {
+                    const desc = document.getElementById('orc-direto-desc').value;
+                    const val = parseFloat(document.getElementById('orc-direto-valor').value);
+                    const esconder = document.getElementById('orc-esconder-valores').checked;
+                    if(!desc || isNaN(val)) return ui.toast("Preencha as especificações e o valor total", true);
+                    orc = { clienteId: app.currentClientId, data: new Date().toISOString().split('T')[0], tipoModo: 'direto', descricao: desc, total: val, esconderValores: esconder };
+                }
+
+                database.transaction("orcamentos", "readwrite").objectStore("orcamentos").add(orc).onsuccess = (e) => { 
+                    ui.toast("Orçamento Salvo! Preparando visualização..."); 
+                    pdf.previewOrcamento(e.target.result); 
+                };
+            },
+            darDesconto(id) {
+                const tx = database.transaction("orcamentos", "readwrite");
+                const store = tx.objectStore("orcamentos");
+                store.get(id).onsuccess = (e) => {
+                    let orc = e.target.result;
+                    
+                    if(orc.descontoAplicado) return ui.toast("Este orçamento já possui desconto!", true);
+
+                    const descStr = prompt(`Orçamento total: ${BRL.format(orc.total)}\nDigite o valor do desconto (R$):`, "0.00");
+                    if (!descStr) return;
+                    const val = parseFloat(descStr.replace(',', '.'));
+                    if (isNaN(val) || val <= 0) return ui.toast("Valor inválido.", true);
+
+                    if(orc.total <= val) return ui.toast("Desconto maior ou igual ao total!", true);
+                    
+                    orc.total -= val;
+                    orc.descontoAplicado = true;
+
+                    if (orc.tipoModo === 'direto') {
+                        orc.descricao += `\n\n[Desconto concedido: R$ ${val.toFixed(2)}]`;
+                    } else {
+                        orc.itens.push({ nome: 'Desconto Aplicado (Negociação)', qtd: 1, preco: -val });
+                    }
+                    
+                    store.put(orc).onsuccess = () => {
+                        ui.toast("Desconto aplicado com sucesso!");
+                        app.openClientProfile(app.currentClientId, false);
+                    };
+                };
+            }
+        };
+
+        var recibo = {
+            abrirNovo() {
+                document.getElementById('recibo-valor').value = '';
+                document.getElementById('recibo-desc').value = '';
+                document.getElementById('recibo-data').value = new Date().toISOString().split('T')[0];
+                ui.changeView('view-recibo');
+                document.getElementById('topbar-title').innerText = "Emitir Recibo";
+            },
+            gerar() {
+                const val = parseFloat(document.getElementById('recibo-valor').value);
+                const desc = document.getElementById('recibo-desc').value;
+                const dataStr = document.getElementById('recibo-data').value;
+                if(!val || !desc || !dataStr) return ui.toast("Preencha valor, descrição e data.", true);
+
+                pdf.previewRecibo(app.currentClientId, val, desc, dataStr);
+            }
+        };
+
+        var ferramentas = {
+            calcularBTU() {
+                const l = parseFloat(document.getElementById('calc-btu-l').value); const c = parseFloat(document.getElementById('calc-btu-c').value); const p = parseInt(document.getElementById('calc-btu-p').value) || 0; const sol = document.getElementById('calc-btu-sol').value;
+                if(!l || !c) return ui.toast("Preencha Largura e Comprimento.", true);
+                const area = l * c; const cargaBase = sol == "1" ? 800 : 600; let btus = (area * cargaBase) + (p * 600);
+                let rec = 9000; if(btus>9000) rec = 12000; if(btus>12000) rec = 18000; if(btus>18000) rec = 24000; if(btus>24000) rec = 30000; if(btus>30000) rec = 36000; if(btus>36000) rec = 60000;
+                document.getElementById('calc-btu-result').style.display = 'block'; document.getElementById('calc-btu-result').innerHTML = `Carga Estimada: <b>${btus.toFixed(0)} BTUs</b><br>Equipamento Recomendado:<br><span style="font-size:22px; color:var(--accent);">${rec} BTUs</span>`;
+            },
+            converterPotencia() {
+                const val = parseFloat(document.getElementById('conv-valor').value);
+                const tipo = document.getElementById('conv-de').value;
+                if(isNaN(val)) return ui.toast("Digite o valor para converter.", true);
+                
+                let watts = 0;
+                if(tipo === 'cv') watts = val * 735.5;
+                if(tipo === 'hp') watts = val * 745.7;
+                if(tipo === 'btu') watts = val * 0.293071; 
+                
+                document.getElementById('conv-result').style.display = 'block';
+                document.getElementById('conv-result').innerHTML = `${val} ${tipo.toUpperCase()} = <br><span style="font-size: 26px;">${watts.toFixed(1)} W</span>`;
+            },
+            async lerPlaca(input) {
+                if(!input.files.length) return; const file = input.files[0]; document.getElementById('placa-loading').style.display = 'block'; ui.toast("Lendo etiqueta... Mantenha o app aberto.", false, 4000);
+                try {
+                    const result = await Tesseract.recognize(file, 'por'); const texto = result.data.text.toLowerCase(); document.getElementById('placa-loading').style.display = 'none';
+                    const matchWatts = texto.match(/(\d+)\s*(?:w|watts|potência)/); const matchVolts = texto.match(/(\d+)\s*(?:v|volts|tensão)/); const matchBTUs = texto.match(/(\d+)\s*(?:btu|btus)/);
+                    let enc = false;
+                    if (matchWatts) { document.getElementById('calc-w').value = matchWatts[1]; enc = true; } else if (matchBTUs) { ui.toast(`Máquina de ${matchBTUs[1]} BTUs, preencha o consumo (W).`, true); }
+                    if (matchVolts) { let v = parseInt(matchVolts[1]); if (v>=110&&v<=130) document.getElementById('calc-v').value = "127"; else if (v>=200&&v<=240) document.getElementById('calc-v').value = "220"; else if (v>=380) document.getElementById('calc-v').value = "380"; enc = true; }
+                    if (enc) { ui.toast("Valores capturados!"); if(document.getElementById('calc-w').value) this.calcularEletricaCompleta(); } else { ui.toast("Não foi possível ler os valores.", true); }
+                } catch(e) { document.getElementById('placa-loading').style.display = 'none'; ui.toast("Erro ao analisar.", true); } input.value = '';
+            },
+            calcularEletricaCompleta() {
+                const w = parseFloat(document.getElementById('calc-w').value); const v = parseFloat(document.getElementById('calc-v').value); const dist = parseFloat(document.getElementById('calc-dist').value) || 0; const bitola = parseFloat(document.getElementById('calc-cabo').value);
+                if(!w || !v) return ui.toast("Preencha a Potência (W)", true);
+                let amperes = (v == 380) ? (w / (v * 1.732 * 0.85)) : (w / v);
+                let disj = 10; if(amperes>10) disj=16; if(amperes>16) disj=20; if(amperes>20) disj=25; if(amperes>25) disj=32; if(amperes>32) disj=40; if(amperes>40) disj=50; if(amperes>50) disj=63;
+                let quedaStr = "";
+                if(dist > 0) {
+                    let quedaV = (v == 380) ? ((1.732 * 0.0172 * dist * amperes) / bitola) : ((2 * 0.0172 * dist * amperes) / bitola); let quedaPct = (quedaV / v) * 100; let colorQueda = quedaPct > 4 ? "var(--danger)" : "var(--success)";
+                    quedaStr = `<br><br><b>Análise do Cabo (${dist}m):</b><br>Queda de Tensão: <b style="color:${colorQueda}">${quedaPct.toFixed(1)}%</b>`; if(quedaPct > 4) quedaStr += `<br><span style="color:var(--danger); font-size:11px;">⚠️ Risco de aquecimento. Aumente a bitola!</span>`;
+                }
+                const resultBox = document.getElementById('calc-ele-result'); resultBox.style.display = 'block'; resultBox.innerHTML = `<b>Corrente:</b> <span style="color:var(--danger)">${amperes.toFixed(2)} A</span><br><b>Disjuntor Sugerido:</b> <span style="color:var(--success)">${disj} A (Curva C)</span>${quedaStr}`;
+            }
+        };
+
         var db = {
             init() {
                 const request = indexedDB.open("FieldServiceApp", 6);
@@ -786,6 +980,7 @@
                     app.renderClientes(); 
                     backup.checkWeekly(); 
                 };
+                request.onerror = (e) => { ui.toast("Erro ao acessar banco de dados do aparelho.", true); };
             },
             loadConfig() {
                 database.transaction("config", "readonly").objectStore("config").get(1).onsuccess = (e) => {
@@ -1098,373 +1293,4 @@
 
                             let materiaisHtml = ''; if(ag.materiais && ag.materiais.trim() !== '') { let lista = ag.materiais.split(',').map(m => m.trim()).filter(m => m !== ''); if(lista.length > 0) { materiaisHtml = `<div style="margin-top:10px; padding-top:10px; border-top:1px dashed var(--border);"><div style="font-size:11px; font-weight:bold; color:#64748b; margin-bottom:5px; text-transform:uppercase;">Checklist de Embarque:</div>${lista.map(item => `<div style="display:flex; align-items:center; gap:8px; margin-bottom:6px; font-size:13px; color:var(--primary); cursor:pointer;" onclick="this.querySelector('i').classList.toggle('fa-square'); this.querySelector('i').classList.toggle('fa-check-square'); this.querySelector('i').style.color = this.querySelector('i').classList.contains('fa-check-square') ? 'var(--success)' : '#cbd5e1'; this.style.textDecoration = this.querySelector('i').classList.contains('fa-check-square') ? 'line-through' : 'none';"><i class="far fa-square" style="color:#cbd5e1; font-size:16px;"></i> ${item}</div>`).join('')}</div>`; } }
                             
-                            return `<div class="card" style="border-left: 4px solid var(--accent); position: relative;"><div style="position: absolute; top: 15px; right: 15px; display:flex; gap:10px;"><button onclick="app.zapAvisoAgenda('${numLimpo}', '${ag.data}', '${ag.hora}', '${cliente ? cliente.nome : ''}')" style="background:none; border:none; color:#16a34a; font-size:18px; cursor:pointer;" title="Avisar no Zap"><i class="fab fa-whatsapp"></i></button><button onclick="app.editAgendamento(${ag.id})" style="background:none; border:none; color:var(--accent); font-size:16px; cursor:pointer;"><i class="fas fa-pen"></i></button><button onclick="db.deleteAgendamento(${ag.id})" style="background:none; border:none; color:#f87171; font-size:16px; cursor:pointer;"><i class="fas fa-trash"></i></button></div><div style="font-size:13px; font-weight:bold; color:var(--accent); margin-bottom: 10px; display:flex; align-items:center;"><i class="far fa-clock" style="margin-right:5px;"></i> ${new Date(ag.data + 'T12:00:00').toLocaleDateString('pt-BR')} às ${ag.hora} ${badgeHoje}</div><div class="title" style="padding-right: 90px;">${cliente ? cliente.nome : 'Excluído'}</div><div class="subtitle" style="margin-bottom:10px;"><i class="fas fa-map-marker-alt"></i> ${cliente ? cliente.end : ''}</div><div style="font-size:14px; background:#f1f5f9; padding:10px; border-radius:8px; border:1px solid var(--border); line-height:1.5; margin-bottom: 10px;">${ag.desc}</div>${materiaisHtml}<button class="btn-success" style="width: 100%; margin-top: 10px;" onclick="app.convertAgendaToLaudo(${ag.id}, ${ag.clienteId})"><i class="fas fa-check"></i> Executar Serviço</button></div>`;
-                        }).join('');
-                    };
-                };
-            },
-            openNovoAgendamento(clienteIdContexto) { document.getElementById('ag-id-edit').value = ''; document.getElementById('ag-data').value = new Date().toISOString().split('T')[0]; document.getElementById('ag-hora').value = ''; document.getElementById('ag-desc').value = ''; document.getElementById('ag-materiais').value = ''; document.getElementById('btn-save-ag').innerText = "Confirmar Agendamento"; ui.changeView('view-novo-agendamento'); document.getElementById('topbar-title').innerText = "Novo Agendamento"; if(clienteIdContexto) document.getElementById('ag-cliente').value = clienteIdContexto; else if(this.currentClientId) document.getElementById('ag-cliente').value = this.currentClientId; },
-            openNovoLaudo() { this.tempPhotos = []; document.getElementById('laudo-photo-preview').innerHTML = ''; document.getElementById('laudo-data').value = new Date().toISOString().split('T')[0]; document.getElementById('laudo-cliente-id').value = this.currentClientId; document.getElementById('laudo-agenda-id').value = ""; document.getElementById('laudo-materiais').value = ""; document.getElementById('laudo-valor').value = ""; document.getElementById('laudo-status').value = "Pago"; document.querySelectorAll('.pill.active').forEach(p => p.classList.remove('active')); signature.clear(); ui.changeView('view-novo-laudo'); document.getElementById('topbar-title').innerText = "Registro de Serviço"; setTimeout(() => signature.init(), 300); },
-            convertAgendaToLaudo(agendaId, clienteId) { this.currentClientId = clienteId; this.openNovoLaudo(); document.getElementById('laudo-agenda-id').value = agendaId; },
-            convertOrcamentoToLaudo(orcId) {
-                database.transaction("orcamentos", "readonly").objectStore("orcamentos").get(orcId).onsuccess = (e) => {
-                    const orc = e.target.result;
-                    this.openNovoLaudo();
-                    document.getElementById('laudo-valor').value = orc.total;
-                    let descText = "Serviço executado conforme orçamento prévio:\n\n";
-                    if(orc.tipoModo === 'direto') {
-                        descText += orc.descricao;
-                    } else {
-                        descText += orc.itens.map(i => `${i.qtd}x ${i.nome}`).join('\n');
-                    }
-                    document.getElementById('laudo-desc').value = descText;
-                    ui.toast("Dados do orçamento importados!");
-                };
-            },
-            processPhotos(input) { if(!input.files) return; ui.toast("Comprimindo fotos..."); Array.from(input.files).forEach(file => { const reader = new FileReader(); reader.onload = (e) => { const img = new Image(); img.src = e.target.result; img.onload = () => { const canvas = document.createElement('canvas'); const MAX_WIDTH = 800; const scaleSize = MAX_WIDTH / img.width; canvas.width = MAX_WIDTH; canvas.height = img.height * scaleSize; canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height); this.tempPhotos.push(canvas.toDataURL('image/jpeg', 0.7)); this.renderPhotoPreview(); } }; reader.readAsDataURL(file); }); input.value = ''; },
-            renderPhotoPreview() { document.getElementById('laudo-photo-preview').innerHTML = this.tempPhotos.map((foto, idx) => `<div class="photo-item"><img src="${foto}"><button class="btn-remove-photo" onclick="app.removePhoto(${idx})"><i class="fas fa-times"></i></button></div>`).join(''); },
-            removePhoto(index) { this.tempPhotos.splice(index, 1); this.renderPhotoPreview(); },
-            processLogo(input) {
-                if(!input.files || !input.files[0]) return;
-                const file = input.files[0];
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const img = new Image();
-                    img.src = e.target.result;
-                    img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 400; 
-                        let scaleSize = MAX_WIDTH / img.width;
-                        if(scaleSize > 1) scaleSize = 1;
-                        canvas.width = img.width * scaleSize;
-                        canvas.height = img.height * scaleSize;
-                        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-                        configEmpresa.logo = canvas.toDataURL('image/png', 0.9);
-                        document.getElementById('logo-preview').src = configEmpresa.logo;
-                        document.getElementById('logo-preview').style.display = 'block';
-                        ui.toast("Logotipo carregado! Salve os dados.");
-                    }
-                };
-                reader.readAsDataURL(file);
-            },
-            removeLogo() {
-                configEmpresa.logo = "";
-                document.getElementById('logo-preview').src = "";
-                document.getElementById('logo-preview').style.display = 'none';
-                document.getElementById('conf-empresa-logo-input').value = "";
-                ui.toast("Logotipo removido. Salve os dados.");
-            }
-        };
-
-        var pdf = {
-            currentFileName: '',
-            currentClientPhone: '',
-            currentClientName: '',
-            currentHtmlContent: '',
-            
-            previewOrcamento(orcId) {
-                ui.previousView = 'view-orcamento';
-                database.transaction(["orcamentos", "clientes"], "readonly").objectStore("orcamentos").get(orcId).onsuccess = (e) => {
-                    const orc = e.target.result;
-                    database.transaction("clientes", "readonly").objectStore("clientes").get(orc.clienteId).onsuccess = (ev) => {
-                        const cliente = ev.target.result;
-                        const dataF = new Date(orc.data + 'T12:00:00').toLocaleDateString('pt-BR');
-                        
-                        this.currentFileName = `Orcamento_${cliente.nome.replace(/\s+/g, '_')}.pdf`;
-                        this.currentClientPhone = cliente.tel ? cliente.tel.replace(/\D/g, '') : '';
-                        this.currentClientName = cliente.nome;
-
-                        let corpoOrcHtml = '';
-                        let modelo = configEmpresa.modeloOrc || 'padrao';
-
-                        let blocoValidade = modelo === 'corporativo' ? `<div style="background:#f1f5f9; padding:10px; border-radius:6px; margin-bottom:15px; font-size:12px;"><b>Condições:</b> Pagamento a combinar • <b>Validade da Proposta:</b> 15 dias • <b>Prazo de Execução:</b> A combinar</div>` : '';
-
-                        if(orc.tipoModo === 'direto') {
-                            if (orc.esconderValores) {
-                                corpoOrcHtml = `
-                                    ${blocoValidade}
-                                    <div style="margin-bottom: 20px;">
-                                        <div style="font-size:12px; font-weight:bold; color:var(--info); text-transform:uppercase; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:5px;">Especificações do Serviço / Proposta:</div>
-                                        <div style="font-size:14px; line-height:1.6; color:#334155; text-align:justify; white-space:pre-wrap; background:#f8fafc; padding:15px; border-radius:8px; border:1px solid var(--border);">${orc.descricao}</div>
-                                    </div>
-                                    <div style="margin-top:20px; text-align:right; font-size:20px; font-weight:900; color:var(--info);">Valor Total do Orçamento: ${BRL.format(orc.total)}</div>
-                                `;
-                            } else {
-                                corpoOrcHtml = `
-                                    ${blocoValidade}
-                                    <div style="margin-bottom: 20px;">
-                                        <div style="font-size:12px; font-weight:bold; color:var(--info); text-transform:uppercase; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:5px;">Especificações do Serviço / Proposta:</div>
-                                        <div style="font-size:14px; line-height:1.6; color:#334155; text-align:justify; white-space:pre-wrap; background:#f8fafc; padding:15px; border-radius:8px; border:1px solid var(--border); margin-bottom: 15px;">${orc.descricao}</div>
-                                    </div>
-                                    <table class="table-pdf"><thead><tr><th>Descrição do Serviço</th><th style="text-align:right">Valor Total</th></tr></thead><tbody><tr><td>Execução conforme especificação técnica detalhada acima</td><td style="text-align:right; font-weight:bold;">${BRL.format(orc.total)}</td></tr></tbody></table>
-                                    <div style="margin-top:20px; text-align:right; font-size:20px; font-weight:900; color:var(--info);">Valor Total do Orçamento: ${BRL.format(orc.total)}</div>
-                                `;
-                            }
-                        } else {
-                            let linhasTabela = orc.itens.map(i => `<tr><td>${i.nome}</td><td style="text-align:center">${i.qtd}</td><td style="text-align:right">${BRL.format(i.preco)}</td><td style="text-align:right; font-weight:bold;">${BRL.format(i.qtd * i.preco)}</td></tr>`).join('');
-                            corpoOrcHtml = `
-                                ${blocoValidade}
-                                <table class="table-pdf"><thead><tr><th>Descrição</th><th style="text-align:center">Qtd</th><th style="text-align:right">Valor Unit.</th><th style="text-align:right">Total</th></tr></thead><tbody>${linhasTabela}</tbody></table>
-                                <div style="margin-top:20px; text-align:right; font-size:18px; font-weight:900; color:var(--info);">Valor Total do Orçamento: ${BRL.format(orc.total)}</div>
-                            `;
-                        }
-                        
-                        let tituloModelo = modelo === 'executivo' ? 'Orçamento Executivo' : (modelo === 'corporativo' ? 'Proposta Comercial' : 'Proposta Comercial / Orçamento');
-                        let logoHeader = configEmpresa.logo ? `<img src="${configEmpresa.logo}" style="max-height: 60px; max-width: 150px; object-fit: contain;">` : '';
-
-                        const html = `<div class="pdf-header"><div style="display:flex; align-items:center; gap:15px;">${logoHeader}<div><div class="pdf-title">${tituloModelo}</div><div style="color:#64748b; margin-top:5px;">Serviços Técnicos Profissionais</div></div></div><div style="text-align:right"><div style="background:var(--info); color:white; padding:5px 10px; border-radius:4px; font-weight:bold; font-size:14px; display:inline-block;">ORC-${Math.floor(Math.random() * 8999) + 1000}</div><div style="font-size:12px; margin-top:5px; color:#64748b;">Data Emissão: ${dataF}</div></div></div><div class="pdf-info-box"><div style="font-size:10px; font-weight:bold; color:var(--info); text-transform:uppercase; margin-bottom:5px;">Emissor</div><div style="font-size:16px; font-weight:bold; color:var(--primary);">${configEmpresa.nome}</div><div style="font-size:13px; color:#334155;">CNPJ/CPF: ${configEmpresa.doc} | Tel: ${configEmpresa.tel}</div>${configEmpresa.email ? `<div style="font-size:13px; color:#334155;">E-mail: ${configEmpresa.email}</div>` : ''}${configEmpresa.end ? `<div style="font-size:13px; color:#334155;">Endereço: ${configEmpresa.end}</div>` : ''}</div><div class="pdf-info-box"><div style="font-size:10px; font-weight:bold; color:var(--info); text-transform:uppercase; margin-bottom:5px;">Aos Cuidados de</div><div style="font-size:16px; font-weight:bold; color:var(--primary);">${cliente.nome}</div><div style="font-size:13px; color:#334155; margin-top:5px;">${cliente.end || ''}</div></div>${corpoOrcHtml}<div style="margin-top:40px; text-align:center; font-size:11px; color:#64748b; border-top:1px dashed #cbd5e1; padding-top:10px; page-break-inside: avoid;">Validade desta proposta: 15 dias.</div>`;
-                        
-                        this.currentHtmlContent = html;
-                        document.getElementById('pdf-container').innerHTML = html;
-                        document.getElementById('btn-final-pdf').innerHTML = '<i class="fab fa-whatsapp"></i> Gerar PDF e Enviar Orçamento';
-                        ui.changeView('view-preview');
-                    };
-                };
-            },
-            previewOrcamento_by_Id(id) { this.previewOrcamento(id); }, 
-            
-            previewLaudo(laudoId) {
-                ui.previousView = 'view-novo-laudo';
-                database.transaction(["laudos", "clientes"], "readonly").objectStore("laudos").get(laudoId).onsuccess = (e) => {
-                    const laudo = e.target.result;
-                    database.transaction("clientes", "readonly").objectStore("clientes").get(laudo.clienteId).onsuccess = (ev) => {
-                        const cliente = ev.target.result;
-                        const dataF = new Date(laudo.data + 'T12:00:00').toLocaleDateString('pt-BR');
-                        
-                        this.currentFileName = `Laudo_${cliente.nome.replace(/\s+/g, '_')}_${dataF.replace(/\//g, '-')}.pdf`;
-                        this.currentClientPhone = cliente.tel ? cliente.tel.replace(/\D/g, '') : '';
-                        this.currentClientName = cliente.nome;
-
-                        let fotosHtml = laudo.fotos && laudo.fotos.length ? laudo.fotos.map(f => `<div class="pdf-img-box"><img src="${f}"></div>`).join('') : '';
-                        let checkHtml = laudo.checklist && laudo.checklist.length ? `<div style="margin-bottom:15px"><b>Serviços Verificados:</b><ul style="margin-top:5px; padding-left:20px; font-size:12px; color:#334155;">${laudo.checklist.map(c => `<li>${c}</li>`).join('')}</ul></div>` : '';
-                        let matHtml = laudo.materiaisUtilizados ? `<div style="margin-bottom:15px"><b>Materiais Utilizados:</b><br><div style="font-size:12px; color:#334155; margin-top:5px;">${laudo.materiaisUtilizados}</div></div>` : '';
-                        let statusBadgePdf = laudo.statusPagto === 'Pendente' ? ' (Pendente)' : ' (Pago)';
-                        let valorHtml = laudo.valor ? `<div style="background:#f0fdf4; border:1px solid #16a34a; padding:15px; border-radius:8px; margin-top:20px; display:flex; justify-content:space-between; align-items:center;"><span style="color:#16a34a; font-weight:bold; font-size:12px; text-transform:uppercase;">Valor Total Cobrado / Recebido${statusBadgePdf}</span><span style="font-size:20px; font-weight:900; color:#166534;">${BRL.format(laudo.valor)}</span></div>` : '';
-                        let assHtml = laudo.assinatura ? `<div style="margin-top:40px; text-align:center; page-break-inside: avoid;"><img src="${laudo.assinatura}" style="height:80px; border-bottom:1px solid var(--text); padding-bottom:10px; margin-bottom:5px;"><div style="font-size:12px; font-weight:bold;">ASSINATURA DO CLIENTE (${cliente.nome})</div></div>` : '';
-                        let logoHeader = configEmpresa.logo ? `<img src="${configEmpresa.logo}" style="max-height: 60px; max-width: 150px; object-fit: contain;">` : '';
-
-                        const html = `<div class="pdf-header"><div style="display:flex; align-items:center; gap:15px;">${logoHeader}<div><div class="pdf-title">Relatório de Serviço Técnico</div><div style="color:#64748b; margin-top:5px;">Documento de finalização e evidência técnica</div></div></div><div style="text-align:right"><div style="background:var(--primary); color:white; padding:5px 10px; border-radius:4px; font-weight:bold; font-size:14px; display:inline-block;">OS-${Math.floor(Math.random() * 8999) + 1000}</div><div style="font-size:12px; margin-top:5px; color:#64748b;">Data Execução: ${dataF}</div></div></div><div class="pdf-grid"><div class="pdf-info-box"><div style="font-size:10px; font-weight:bold; color:var(--accent); text-transform:uppercase; margin-bottom:5px;">Empresa / Técnico</div><div style="font-size:16px; font-weight:bold; color:var(--primary);">${configEmpresa.nome}</div><div style="font-size:13px; color:#334155;">CNPJ/CPF: ${configEmpresa.doc}<br>Tel: ${configEmpresa.tel}</div>${configEmpresa.email ? `<div style="font-size:13px; color:#334155;">E-mail: ${configEmpresa.email}</div>` : ''}${configEmpresa.end ? `<div style="font-size:13px; color:#334155;">Endereço: ${configEmpresa.end}</div>` : ''}</div><div class="pdf-info-box"><div style="font-size:10px; font-weight:bold; color:var(--accent); text-transform:uppercase; margin-bottom:5px;">Dados do Cliente / Local</div><div style="font-size:16px; font-weight:bold; color:var(--primary);">${cliente.nome}</div><div style="font-size:13px; color:#334155;">${cliente.end || ''}<br>Tel: ${cliente.tel || 'N/A'}</div>${cliente.equip ? `<div style="font-size:12px; color:#64748b; margin-top:5px;"><b>Equip:</b> ${cliente.equip}</div>` : ''}</div></div><div style="font-size:12px; font-weight:bold; color:var(--primary); text-transform:uppercase; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:5px;">Descrição Técnica do Serviço Realizado:</div>${checkHtml}${matHtml}<div style="font-size:13px; line-height:1.6; color:#334155; text-align:justify; white-space:pre-wrap;">${laudo.desc}</div>${valorHtml}${fotosHtml ? `<div style="margin-top:30px; page-break-inside: avoid;"><div style="font-size:12px; font-weight:bold; color:var(--primary); text-transform:uppercase; margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:5px;">Evidências Fotográficas:</div><div class="pdf-grid">${fotosHtml}</div></div>` : ''}${assHtml}<div style="margin-top:40px; text-align:center; font-size:10px; color:#94a3b8; border-top:1px dashed #cbd5e1; padding-top:10px; page-break-inside: avoid;">Documento gerado eletronicamente para registro histórico de atendimento.</div>`;
-                        
-                        this.currentHtmlContent = html; 
-                        document.getElementById('pdf-container').innerHTML = html;
-                        document.getElementById('btn-final-pdf').innerHTML = '<i class="fab fa-whatsapp"></i> Gerar PDF e Enviar Laudo';
-                        ui.changeView('view-preview');
-                    };
-                };
-            },
-            previewLaudo_e_Share(id) { this.previewLaudo(id); },
-
-            previewRecibo(clienteId, valor, desc, dataStr) {
-                ui.previousView = 'view-recibo';
-                database.transaction("clientes", "readonly").objectStore("clientes").get(clienteId).onsuccess = (ev) => {
-                    const cliente = ev.target.result;
-                    const dataF = new Date(dataStr + 'T12:00:00').toLocaleDateString('pt-BR');
-                    
-                    this.currentFileName = `Recibo_${cliente.nome.replace(/\s+/g, '_')}.pdf`;
-                    this.currentClientPhone = cliente.tel ? cliente.tel.replace(/\D/g, '') : '';
-                    this.currentClientName = cliente.nome;
-
-                    let logoHeader = configEmpresa.logo ? `<img src="${configEmpresa.logo}" style="max-height: 60px; max-width: 150px; object-fit: contain;">` : '';
-
-                    const html = `
-                        <div style="border: 2px solid var(--primary); padding: 30px; border-radius: 12px; position: relative; background: white;">
-                            <div style="display:flex; justify-content:space-between; border-bottom: 2px solid var(--border); padding-bottom: 20px; margin-bottom: 20px;">
-                                <div style="display:flex; align-items:center; gap:15px;">
-                                    ${logoHeader}
-                                    <div>
-                                        <div style="font-size: 24px; font-weight: 900; color: var(--primary); text-transform: uppercase;">RECIBO</div>
-                                        <div style="font-size: 12px; color: #64748b;">Nº ${Math.floor(Math.random() * 89999) + 10000}</div>
-                                    </div>
-                                </div>
-                                <div style="background: #f8fafc; border: 2px solid var(--primary); padding: 10px 20px; border-radius: 8px; display:flex; align-items:center; justify-content:center;">
-                                    <span style="font-size: 24px; font-weight: 900; color: var(--primary);">${BRL.format(valor)}</span>
-                                </div>
-                            </div>
-                            
-                            <div style="font-size: 16px; line-height: 2; color: var(--text); text-align: justify; margin-bottom: 40px;">
-                                Recebi(emos) de <b>${cliente.nome}</b>${cliente.doc ? ` (CPF/CNPJ: ${cliente.doc})` : ''}, 
-                                a importância supra de <b>${BRL.format(valor)}</b>, 
-                                referente a <b>${desc}</b>. 
-                                <br><br>
-                                Para maior clareza, firmo(amos) o presente recibo para que produza seus efeitos legais.
-                            </div>
-
-                            <div style="text-align: right; font-size: 14px; margin-bottom: 50px;">
-                                Data de Emissão: <b>${dataF}</b>
-                            </div>
-
-                            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; margin-top: 40px;">
-                                <div style="width: 300px; border-bottom: 1px solid var(--primary); margin-bottom: 10px;"></div>
-                                <div style="font-size: 16px; font-weight: bold; color: var(--primary);">${configEmpresa.nome}</div>
-                                <div style="font-size: 12px; color: #64748b;">CNPJ/CPF: ${configEmpresa.doc || 'Não informado'}</div>
-                            </div>
-                        </div>
-                    `;
-                    
-                    this.currentHtmlContent = html;
-                    document.getElementById('pdf-container').innerHTML = html;
-                    document.getElementById('btn-final-pdf').innerHTML = '<i class="fab fa-whatsapp"></i> Gerar PDF e Enviar Recibo';
-                    ui.changeView('view-preview');
-                };
-            },
-
-            generateEstoque() {
-                ui.previousView = 'view-estoque';
-                database.transaction("materiais", "readonly").objectStore("materiais").getAll().onsuccess = (e) => {
-                    const materiais = e.target.result; if(materiais.length === 0) return ui.toast("O estoque está vazio.", true);
-                    
-                    let totalGeral = 0; 
-                    let linhasTabela = materiais.map(m => { 
-                        let valorTotalLinha = (m.tipo === 'Material') ? (m.qtd * m.preco) : m.preco;
-                        if(m.tipo === 'Material') totalGeral += valorTotalLinha; 
-                        let unStr = m.tipo === 'Material' ? m.qtd : (m.qtd ? m.qtd : '-');
-                        let tpStr = m.tipo === 'Material' ? 'Produto' : (m.tipo === 'MaoDeObra' ? 'M. Obra' : 'Serviço');
-                        return `<tr><td>${m.nome} <span style="font-size:9px; color:#64748b;">(${tpStr})</span></td><td style="text-align:center">${unStr}</td><td style="text-align:right">${BRL.format(m.preco)}</td><td style="text-align:right; font-weight:bold;">${m.tipo === 'Material' ? BRL.format(valorTotalLinha) : '-'}</td></tr>`; 
-                    }).join('');
-                    
-                    this.currentFileName = `Catalogo_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}.pdf`;
-                    this.currentClientName = ''; 
-                    let logoHeader = configEmpresa.logo ? `<img src="${configEmpresa.logo}" style="max-height: 60px; max-width: 150px; object-fit: contain;">` : '';
-                    
-                    const html = `<div class="pdf-header"><div style="display:flex; align-items:center; gap:15px;">${logoHeader}<div><div class="pdf-title">Relatório de Catálogo e Estoque</div><div style="color:#64748b; margin-top:5px;">Controle Interno de Ativos da ${configEmpresa.nome}</div></div></div><div style="text-align:right"><div style="background:var(--primary); color:white; padding:5px 10px; border-radius:4px; font-weight:bold; font-size:14px; display:inline-block;">INVENTÁRIO</div><div style="font-size:12px; margin-top:5px; color:#64748b;">Data: ${new Date().toLocaleDateString('pt-BR')}</div></div></div><table class="table-pdf"><thead><tr><th>Item / Serviço</th><th style="text-align:center">Qtd / Hrs</th><th style="text-align:right">Valor Unit.</th><th style="text-align:right">Custo Estoque</th></tr></thead><tbody>${linhasTabela}</tbody></table><div style="margin-top:20px; text-align:right; font-size:18px; font-weight:900; color:var(--primary);">Total em Produtos Físicos: ${BRL.format(totalGeral)}</div>`;
-                    
-                    this.currentHtmlContent = html;
-                    document.getElementById('pdf-container').innerHTML = html;
-                    document.getElementById('btn-final-pdf').innerHTML = '<i class="fas fa-download"></i> Baixar PDF do Estoque';
-                    ui.changeView('view-preview');
-                };
-            },
-            previewEstoque() { this.generateEstoque(); },
-
-            executeDownloadOrShare() {
-                window.scrollTo(0, 0); 
-                
-                const overlay = document.createElement('div');
-                overlay.id = 'pdf-loading-overlay';
-                overlay.innerHTML = '<div style="font-size: 50px; margin-bottom: 20px; color: var(--accent);"><i class="fas fa-spinner fa-spin"></i></div><h2 style="font-size: 20px; margin-bottom: 10px;">Renderizando Documento</h2><p style="font-size: 13px; color: #94a3b8; max-width: 80%; text-align: center;">Isso pode levar alguns segundos. Não feche ou minimize o aplicativo.</p>';
-                document.body.appendChild(overlay);
-
-                const workerContainer = document.createElement('div');
-                workerContainer.innerHTML = this.currentHtmlContent;
-                workerContainer.style.width = '794px'; 
-                workerContainer.style.padding = '40px';
-                workerContainer.style.background = 'white';
-                workerContainer.style.color = '#1e293b';
-                workerContainer.style.fontFamily = "'Inter', sans-serif";
-                workerContainer.style.position = 'absolute';
-                workerContainer.style.top = '0';
-                workerContainer.style.left = '0';
-                workerContainer.style.zIndex = '9998'; 
-                document.body.appendChild(workerContainer);
-
-                const opt = { 
-                    margin: 10, 
-                    filename: this.currentFileName, 
-                    image: { type: 'jpeg', quality: 0.98 }, 
-                    html2canvas: { scale: 2, useCORS: true, scrollY: 0, scrollX: 0 }, 
-                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
-                };
-                
-                setTimeout(() => {
-                    html2pdf().set(opt).from(workerContainer).outputPdf('blob').then((blob) => {
-                        document.body.removeChild(workerContainer); 
-                        document.body.removeChild(overlay);
-                        
-                        const file = new File([blob], this.currentFileName, { type: 'application/pdf' });
-                        
-                        if (this.currentClientName && navigator.canShare && navigator.canShare({ files: [file] })) {
-                            navigator.share({ 
-                                title: 'Documento Técnico', 
-                                text: `Olá ${this.currentClientName}! Segue em anexo o documento gerado pelo sistema.`, 
-                                files: [file] 
-                            }).then(()=>ui.toast("Compartilhado com sucesso!")).catch((err)=> {
-                                this.forceDownload(blob);
-                            });
-                        } else {
-                            this.forceDownload(blob);
-                        }
-                    }).catch(err => {
-                        if(document.body.contains(workerContainer)) document.body.removeChild(workerContainer);
-                        if(document.body.contains(overlay)) document.body.removeChild(overlay);
-                        ui.toast("Erro ao processar o arquivo PDF.", true);
-                    });
-                }, 1500); 
-            },
-
-            forceDownload(blob) {
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = this.currentFileName;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                ui.toast("PDF baixado no aparelho!");
-            }
-        };
-
-        var backup = {
-            checkWeekly() { const lastBackup = localStorage.getItem('fieldapp_last_backup'); if (!lastBackup || (new Date().getTime() - parseInt(lastBackup)) > 7*24*60*60*1000) setTimeout(() => ui.toast("Aviso: Faça backup na aba Financeiro!", true), 2000); },
-            async download() {
-                ui.toast("Gerando arquivo..."); const tx = database.transaction(['clientes', 'agendamentos', 'laudos', 'materiais', 'orcamentos', 'despesas', 'config'], 'readonly');
-                const data = { 
-                    clientes: await new Promise(r => tx.objectStore('clientes').getAll().onsuccess = e => r(e.target.result)), 
-                    agendamentos: await new Promise(r => tx.objectStore('agendamentos').getAll().onsuccess = e => r(e.target.result)), 
-                    laudos: await new Promise(r => tx.objectStore('laudos').getAll().onsuccess = e => r(e.target.result)), 
-                    materiais: await new Promise(r => tx.objectStore('materiais').getAll().onsuccess = e => r(e.target.result)), 
-                    orcamentos: await new Promise(r => tx.objectStore('orcamentos').getAll().onsuccess = e => r(e.target.result)), 
-                    despesas: await new Promise(r => tx.objectStore('despesas').getAll().onsuccess = e => r(e.target.result)), 
-                    config: await new Promise(r => tx.objectStore('config').getAll().onsuccess = e => r(e.target.result)),
-                    timestamp: new Date().toISOString() 
-                };
-                const blob = new Blob([JSON.stringify(data)], {type: "application/json"}); const url = URL.createObjectURL(blob);
-                const a = document.createElement('a'); a.href = url; a.download = `Backup_Servicos_${new Date().toLocaleDateString().replace(/\//g,'-')}.json`; a.click(); URL.revokeObjectURL(url);
-                localStorage.setItem('fieldapp_last_backup', new Date().getTime().toString()); ui.toast("Backup baixado! Salve em local seguro.");
-            },
-            restore(input) {
-                if(!input.files[0] || !confirm("APAGAR dados atuais e substituir pelo backup?")) { input.value = ''; return; }
-                const reader = new FileReader();
-                reader.onload = async (e) => {
-                    try {
-                        const data = JSON.parse(e.target.result); const tx = database.transaction(['clientes', 'agendamentos', 'laudos', 'materiais', 'orcamentos', 'despesas', 'config'], 'readwrite');
-                        await new Promise(r => tx.objectStore('clientes').clear().onsuccess = r); await new Promise(r => tx.objectStore('agendamentos').clear().onsuccess = r); await new Promise(r => tx.objectStore('laudos').clear().onsuccess = r); if (database.objectStoreNames.contains("materiais")) await new Promise(r => tx.objectStore('materiais').clear().onsuccess = r); if (database.objectStoreNames.contains("orcamentos")) await new Promise(r => tx.objectStore('orcamentos').clear().onsuccess = r); if (database.objectStoreNames.contains("despesas")) await new Promise(r => tx.objectStore('despesas').clear().onsuccess = r); if (database.objectStoreNames.contains("config")) await new Promise(r => tx.objectStore('config').clear().onsuccess = r);
-                        if(data.clientes) data.clientes.forEach(i => tx.objectStore('clientes').add(i)); if(data.agendamentos) data.agendamentos.forEach(i => tx.objectStore('agendamentos').add(i)); if(data.laudos) data.laudos.forEach(i => tx.objectStore('laudos').add(i)); if(data.materiais && database.objectStoreNames.contains("materiais")) data.materiais.forEach(i => tx.objectStore('materiais').add(i)); if(data.orcamentos && database.objectStoreNames.contains("orcamentos")) data.orcamentos.forEach(i => tx.objectStore('orcamentos').add(i)); if(data.despesas && database.objectStoreNames.contains("despesas")) data.despesas.forEach(i => tx.objectStore('despesas').add(i)); if(data.config && database.objectStoreNames.contains("config")) data.config.forEach(i => tx.objectStore('config').add(i));
-                        tx.oncomplete = () => { ui.toast("Restaurado com sucesso!"); setTimeout(() => location.reload(), 1500); };
-                    } catch(err) { ui.toast("Arquivo inválido!", true); input.value = ''; }
-                }; reader.readAsText(input.files[0]);
-            }
-        };
-
-        window.auth = auth; window.ui = ui; window.financeiro = financeiro; window.orcamento = orcamento; window.recibo = recibo; window.ferramentas = ferramentas; window.db = db; window.estoque = estoque; window.ocr = ocr; window.app = app; window.pdf = pdf; window.backup = backup; window.dictation = dictation; window.signature = signature;
-
-        window.onload = () => {
-            db.init(); dictation.init();
-            if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js').catch(err => console.log('Erro no PWA:', err)); }
-
-            history.replaceState({ view: 'view-clientes' }, '', '#view-clientes');
-            
-            window.addEventListener('popstate', (e) => {
-                if (document.getElementById('view-login') && !document.getElementById('view-login').classList.contains('hidden')) {
-                    history.pushState(null, '', location.href); 
-                    return;
-                }
-                
-                if (e.state && e.state.view) {
-                    ui.changeView(e.state.view, false);
-                    ui.updateNavFromView(e.state.view);
-                    
-                    if(e.state.view === 'view-perfil-cliente' && app.currentClientId) app.openClientProfile(app.currentClientId, false);
-                    else if(e.state.view === 'view-clientes') app.renderClientes();
-                    else if(e.state.view === 'view-agenda') app.renderAgenda();
-                    else if(e.state.view === 'view-estoque') estoque.renderMateriais();
-                    else if(e.state.view === 'view-financeiro') financeiro.renderDash();
-                } else {
-                    ui.changeView('view-clientes', false);
-                    ui.updateNavFromView('view-clientes');
-                }
-            });
-        };
-    </script>
-</body>
-</html>
+                            return `<div class="card" style="border-left: 4px solid var(--accent); position: relative;"><div style="position: absolute; top: 15px; right: 15px; display:flex; gap:10px;"><button onclick="app.zapAvisoAgenda('${numLimpo}', '${ag.data}', '${ag.hora}', '${cliente ? cliente.nome : ''}')" style="background:none; border:none; color:#16a34a; font-size:18px; cursor:pointer;" title="Avisar no Zap"><i class="fab fa-whatsapp"></i></button><button onclick="app.editAgendamento(${ag.id})" style="background:none; border:none; color:var(--accent); font-size:16px; cursor:pointer;"><i class="fas fa-pen"></i></button><button onclick="db.deleteAgendamento(${ag.id})" style="background:none; border:none; color:#f87171; font-size:16px; cursor:pointer;"><i class="fas fa-trash"></i></button></div><div style="font-size:13px; font-weight:bold; color:var(--accent); margin-bottom: 10px; display:flex; align-items:center;"><i class="far fa-clock" style="margin-right:5px;"></i> ${new Date(ag.data + 'T12:00:00').toLocaleDateString('pt-BR')} às ${ag.hora} ${badgeHoje}</div><div class="title" style="padding-right: 90px;">${cliente ? cliente.nome : 'Excluído'}</div><div class="subtitle" style="margin-bottom:10px;"><i class="fas fa-map-marker-alt"></i> ${cliente ? cliente.endNão fui programado para fazer essas coisas.
