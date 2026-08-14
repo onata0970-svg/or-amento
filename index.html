@@ -153,7 +153,7 @@
 
         <!-- TELA: NOVO/EDITAR CLIENTE -->
         <div id="view-novo-cliente" class="view">
-            <button class="btn btn-outline" onclick="ui.changeView('view-clientes')" style="margin-bottom: 20px; width: auto;"><i class="fas fa-arrow-left"></i> Voltar</button>
+            <button class="btn btn-outline" onclick="history.back()" style="margin-bottom: 20px; width: auto;"><i class="fas fa-arrow-left"></i> Voltar</button>
             <div class="card">
                 <input type="hidden" id="cli-id-edit">
                 <label>Nome Completo / Empresa</label><input type="text" id="cli-nome" placeholder="Ex: João Silva">
@@ -166,7 +166,7 @@
 
         <!-- TELA: PERFIL DO CLIENTE -->
         <div id="view-perfil-cliente" class="view">
-            <button class="btn btn-outline" onclick="ui.changeView('view-clientes')" style="margin-bottom: 20px; width: auto;"><i class="fas fa-arrow-left"></i> Voltar</button>
+            <button class="btn btn-outline" onclick="history.back()" style="margin-bottom: 20px; width: auto;"><i class="fas fa-arrow-left"></i> Voltar</button>
             <div class="card" id="perfil-header" style="background: var(--primary); color: white; position: relative;"></div>
             
             <div style="display: flex; gap: 10px; margin-bottom: 10px;">
@@ -195,7 +195,7 @@
 
         <!-- TELA: ORÇAMENTO EXPRESSO -->
         <div id="view-orcamento" class="view">
-            <button class="btn btn-outline" onclick="ui.changeView('view-perfil-cliente')" style="margin-bottom: 20px; width: auto;"><i class="fas fa-arrow-left"></i> Cancelar</button>
+            <button class="btn btn-outline" onclick="history.back()" style="margin-bottom: 20px; width: auto;"><i class="fas fa-arrow-left"></i> Cancelar</button>
             <div class="card" style="border-left: 4px solid var(--info);">
                 <h3 style="font-size: 15px; color: var(--info); margin-bottom: 15px;"><i class="fas fa-file-invoice-dollar"></i> Orçamento Prévio</h3>
                 
@@ -242,7 +242,7 @@
 
         <!-- TELA: RECIBO SIMPLES -->
         <div id="view-recibo" class="view">
-            <button class="btn btn-outline" onclick="ui.changeView('view-perfil-cliente')" style="margin-bottom: 20px; width: auto;"><i class="fas fa-arrow-left"></i> Cancelar</button>
+            <button class="btn btn-outline" onclick="history.back()" style="margin-bottom: 20px; width: auto;"><i class="fas fa-arrow-left"></i> Cancelar</button>
             <div class="card" style="border-left: 4px solid var(--warning);">
                 <h3 style="font-size: 15px; color: var(--warning); margin-bottom: 15px;"><i class="fas fa-receipt"></i> Emitir Recibo Simples</h3>
                 
@@ -288,7 +288,7 @@
 
         <!-- TELA: NOVO/EDITAR MATERIAL/SERVIÇO -->
         <div id="view-novo-material" class="view">
-            <button class="btn btn-outline" onclick="ui.changeView('view-estoque')" style="margin-bottom: 20px; width: auto;"><i class="fas fa-arrow-left"></i> Cancelar</button>
+            <button class="btn btn-outline" onclick="history.back()" style="margin-bottom: 20px; width: auto;"><i class="fas fa-arrow-left"></i> Cancelar</button>
             <div class="card">
                 <input type="hidden" id="mat-id-edit">
                 <label>Categoria do Item</label>
@@ -310,7 +310,7 @@
 
         <!-- TELA: LEITOR NOTA -->
         <div id="view-leitor-nota" class="view">
-            <button class="btn btn-outline" onclick="ui.changeView('view-estoque')" style="margin-bottom: 20px; width: auto;"><i class="fas fa-arrow-left"></i> Voltar</button>
+            <button class="btn btn-outline" onclick="history.back()" style="margin-bottom: 20px; width: auto;"><i class="fas fa-arrow-left"></i> Voltar</button>
             <div class="card" style="border-color: var(--warning);">
                 <h3 style="font-size: 15px; color: var(--warning); margin-bottom: 10px;"><i class="fas fa-robot"></i> Inteligência Artificial</h3>
                 <p style="font-size: 12px; color: #64748b; margin-bottom: 15px;">Tire uma foto bem iluminada da sua nota fiscal. O sistema vai extrair os textos e valores.</p>
@@ -332,7 +332,7 @@
 
         <!-- TELA: NOVO/EDITAR AGENDAMENTO -->
         <div id="view-novo-agendamento" class="view">
-            <button class="btn btn-outline" onclick="ui.changeView('view-agenda')" style="margin-bottom: 20px; width: auto;"><i class="fas fa-arrow-left"></i> Cancelar</button>
+            <button class="btn btn-outline" onclick="history.back()" style="margin-bottom: 20px; width: auto;"><i class="fas fa-arrow-left"></i> Cancelar</button>
             <div class="card">
                 <input type="hidden" id="ag-id-edit">
                 <label>Cliente</label><select id="ag-cliente"></select>
@@ -346,7 +346,7 @@
 
         <!-- TELA: CRIAR LAUDO -->
         <div id="view-novo-laudo" class="view">
-            <button class="btn btn-outline" onclick="ui.changeView('view-perfil-cliente')" style="margin-bottom: 20px; width: auto;"><i class="fas fa-arrow-left"></i> Cancelar</button>
+            <button class="btn btn-outline" onclick="history.back()" style="margin-bottom: 20px; width: auto;"><i class="fas fa-arrow-left"></i> Cancelar</button>
             <div class="card" style="border-left: 4px solid var(--success);">
                 <input type="hidden" id="laudo-cliente-id"><input type="hidden" id="laudo-agenda-id">
                 <label>Data da Execução</label><input type="date" id="laudo-data">
@@ -386,7 +386,7 @@
 
         <!-- TELA: PRÉ-VISUALIZAÇÃO DO PDF -->
         <div id="view-preview" class="view">
-            <button class="btn btn-outline" onclick="ui.goBackFromPreview()" style="margin-bottom: 20px; width: auto;"><i class="fas fa-arrow-left"></i> Voltar à Edição</button>
+            <button class="btn btn-outline" onclick="history.back()" style="margin-bottom: 20px; width: auto;"><i class="fas fa-arrow-left"></i> Voltar à Edição</button>
             <div style="margin-bottom: 20px; background: #fffbeb; padding: 10px; border-radius: 8px; border: 1px solid #fcd34d; font-size: 12px; color: #b45309;">
                 <i class="fas fa-info-circle"></i> O documento aparecerá abaixo para você conferir. Se estiver tudo certo, clique no botão para gerar o PDF e enviar.
             </div>
@@ -492,6 +492,7 @@
                 <div id="mei-valor" style="font-weight: 800; color: var(--primary); text-align: right; font-size: 14px;">Calculando...</div>
             </div>
 
+            <!-- DADOS DA EMPRESA -->
             <div class="card" style="border-top: 2px dashed var(--border);">
                 <h2 style="font-size: 16px; margin-bottom: 15px;"><i class="fas fa-building" style="color: var(--accent);"></i> Dados da Empresa (P/ Relatórios)</h2>
                 
@@ -545,9 +546,9 @@
     </div> 
 
     <script>
-        const BRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+        var BRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 
-        const auth = {
+        var auth = {
             init() {
                 const senhaSalva = localStorage.getItem('fieldapp_senha');
                 const titulo = document.getElementById('login-titulo');
@@ -588,11 +589,35 @@
             }
         };
 
-        const ui = {
-            previousView: '',
-            changeView(viewId) { document.querySelectorAll('.view').forEach(el => el.classList.remove('active')); document.getElementById(viewId).classList.add('active'); window.scrollTo(0,0); },
+        var ui = {
+            changeView(viewId, pushHistory = true) { 
+                document.querySelectorAll('.view').forEach(el => el.classList.remove('active')); 
+                document.getElementById(viewId).classList.add('active'); 
+                window.scrollTo(0,0); 
+                
+                if (pushHistory && viewId !== 'view-login') {
+                    if(window.location.hash !== `#${viewId}`) {
+                        history.pushState({ view: viewId }, '', `#${viewId}`);
+                    }
+                }
+            },
+            updateNavFromView(viewId) {
+                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                let title = document.getElementById('topbar-title').innerText;
+                
+                if(viewId === 'view-clientes') { document.querySelectorAll('.nav-item')[0].classList.add('active'); title = 'Clientes'; }
+                else if(viewId === 'view-estoque') { document.querySelectorAll('.nav-item')[1].classList.add('active'); title = 'Catálogo'; }
+                else if(viewId === 'view-agenda') { document.querySelectorAll('.nav-item')[2].classList.add('active'); title = 'Agenda'; }
+                else if(viewId === 'view-ferramentas') { document.querySelectorAll('.nav-item')[3].classList.add('active'); title = 'Técnico'; }
+                else if(viewId === 'view-financeiro') { document.querySelectorAll('.nav-item')[4].classList.add('active'); title = 'Financeiro'; }
+                
+                document.getElementById('topbar-title').innerText = title;
+            },
             changeTab(viewId, el, title) {
-                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active')); el.classList.add('active'); document.getElementById('topbar-title').innerText = title; this.changeView(viewId);
+                this.changeView(viewId, true);
+                this.updateNavFromView(viewId);
+                document.getElementById('topbar-title').innerText = title;
+                
                 if(viewId === 'view-clientes') app.renderClientes();
                 if(viewId === 'view-agenda') app.renderAgenda();
                 if(viewId === 'view-estoque') estoque.renderMateriais();
@@ -605,8 +630,7 @@
                     db.loadConfig();
                 }
             },
-            toast(msg, isWarning = false, duracao = 3500) { const t = document.getElementById('toast'); t.innerText = msg; t.className = isWarning ? 'warning show' : 'show'; setTimeout(() => t.className = '', duracao); },
-            goBackFromPreview() { this.changeView(this.previousView); }
+            toast(msg, isWarning = false, duracao = 3500) { const t = document.getElementById('toast'); t.innerText = msg; t.className = isWarning ? 'warning show' : 'show'; setTimeout(() => t.className = '', duracao); }
         };
 
         let deferredPrompt; const btnInstalar = document.getElementById('btn-instalar');
@@ -614,19 +638,19 @@
         btnInstalar.addEventListener('click', async () => { if (deferredPrompt) { deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; btnInstalar.style.display = 'none'; } });
         window.addEventListener('appinstalled', () => { btnInstalar.style.display = 'none'; ui.toast("Instalado com sucesso!"); });
 
-        const dictation = {
+        var dictation = {
             recognition: null, isListening: false,
             init() { const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition; if (SpeechRecognition) { this.recognition = new SpeechRecognition(); this.recognition.continuous = false; this.recognition.interimResults = false; this.recognition.lang = 'pt-BR'; this.recognition.onresult = (e) => { const transcript = e.results[0][0].transcript; const desc = document.getElementById('laudo-desc'); desc.value += (desc.value ? ' ' : '') + transcript + '.'; this.stop(); }; this.recognition.onerror = () => this.stop(); this.recognition.onend = () => this.stop(); } },
             toggle() { if(!this.recognition) return ui.toast("Seu navegador não suporta ditado.", true); if(this.isListening) { this.recognition.stop(); } else { this.recognition.start(); this.isListening = true; document.getElementById('btn-dictation').classList.add('listening'); ui.toast("🎤 Pode falar..."); } }, stop() { this.isListening = false; document.getElementById('btn-dictation').classList.remove('listening'); }
         };
 
-        const signature = {
+        var signature = {
             canvas: null, ctx: null, drawing: false,
             init() { this.canvas = document.getElementById('signature-pad'); if(!this.canvas) return; this.ctx = this.canvas.getContext('2d'); this.canvas.width = this.canvas.offsetWidth; this.canvas.height = this.canvas.offsetHeight; this.ctx.lineWidth = 2; this.ctx.strokeStyle = "#1e293b"; const start = (e) => { this.drawing = true; this.ctx.beginPath(); this.ctx.moveTo(this.getX(e), this.getY(e)); e.preventDefault(); }; const move = (e) => { if(!this.drawing) return; this.ctx.lineTo(this.getX(e), this.getY(e)); this.ctx.stroke(); e.preventDefault(); }; const stop = () => { this.drawing = false; this.ctx.closePath(); }; this.canvas.addEventListener('touchstart', start, {passive: false}); this.canvas.addEventListener('touchmove', move, {passive: false}); this.canvas.addEventListener('touchend', stop); this.canvas.addEventListener('mousedown', start); this.canvas.addEventListener('mousemove', move); this.canvas.addEventListener('mouseup', stop); this.canvas.addEventListener('mouseout', stop); },
             getX(e) { const rect = this.canvas.getBoundingClientRect(); return (e.touches ? e.touches[0].clientX : e.clientX) - rect.left; }, getY(e) { const rect = this.canvas.getBoundingClientRect(); return (e.touches ? e.touches[0].clientY : e.clientY) - rect.top; }, clear() { this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); }, isEmpty() { const blank = document.createElement('canvas'); blank.width = this.canvas.width; blank.height = this.canvas.height; return this.canvas.toDataURL() === blank.toDataURL(); }, getData() { return this.isEmpty() ? null : this.canvas.toDataURL(); }
         };
 
-        const financeiro = {
+        var financeiro = {
             salvarDespesa() {
                 const desc = document.getElementById('desp-desc').value; const valorStr = document.getElementById('desp-valor').value; const dataVal = document.getElementById('desp-data').value; const cat = document.getElementById('desp-cat').value;
                 if(!desc || !valorStr || !dataVal) return ui.toast("Preencha descrição, valor e data.", true);
@@ -735,7 +759,203 @@
             }
         };
 
-        const db = {
+        var orcamento = {
+            itens: [],
+            modo: 'lista', 
+            abrirNovo() { 
+                this.itens = []; 
+                this.modo = 'lista';
+                document.getElementById('orc-modo').value = 'lista';
+                this.mudarModo('lista');
+                this.renderLista(); 
+                document.getElementById('orc-edit-index').value = '-1';
+                document.getElementById('orc-item-nome').value=''; 
+                document.getElementById('orc-item-preco').value=''; 
+                document.getElementById('orc-item-qtd').value='1'; 
+                document.getElementById('orc-direto-desc').value='';
+                document.getElementById('orc-direto-valor').value='';
+                document.getElementById('orc-esconder-valores').checked = false;
+                ui.changeView('view-orcamento'); 
+                document.getElementById('topbar-title').innerText = "Orçamento Prévio"; 
+            },
+            mudarModo(val) {
+                this.modo = val;
+                if(val === 'lista') {
+                    document.getElementById('orc-bloco-lista').style.display = 'block';
+                    document.getElementById('orc-bloco-direto').style.display = 'none';
+                } else {
+                    document.getElementById('orc-bloco-lista').style.display = 'none';
+                    document.getElementById('orc-bloco-direto').style.display = 'block';
+                }
+            },
+            adicionarItem() {
+                const n = document.getElementById('orc-item-nome').value; 
+                const q = parseInt(document.getElementById('orc-item-qtd').value); 
+                const p = parseFloat(document.getElementById('orc-item-preco').value);
+                const editIdx = parseInt(document.getElementById('orc-edit-index').value);
+
+                if(!n || !q || isNaN(p)) return ui.toast("Preencha item, qtd e preço", true);
+
+                if (editIdx >= 0) {
+                    this.itens[editIdx] = { nome: n, qtd: q, preco: p };
+                    document.getElementById('orc-edit-index').value = '-1';
+                    document.getElementById('orc-label-acao').innerText = "Adicionar Material ou Serviço";
+                    document.getElementById('orc-btn-add').innerText = "+ Inserir na Lista";
+                } else {
+                    this.itens.push({ nome: n, qtd: q, preco: p });
+                }
+
+                document.getElementById('orc-item-nome').value=''; 
+                document.getElementById('orc-item-preco').value=''; 
+                document.getElementById('orc-item-qtd').value='1';
+                this.renderLista();
+            },
+            editarItem(idx) {
+                const item = this.itens[idx];
+                document.getElementById('orc-item-nome').value = item.nome;
+                document.getElementById('orc-item-qtd').value = item.qtd;
+                document.getElementById('orc-item-preco').value = item.preco;
+                document.getElementById('orc-edit-index').value = idx;
+                document.getElementById('orc-label-acao').innerText = "Editando Item (" + item.nome + ")";
+                document.getElementById('orc-btn-add').innerText = "Salvar Alteração";
+                window.scrollTo(0, 0);
+            },
+            removerItem(idx) { 
+                this.itens.splice(idx, 1); 
+                this.renderLista(); 
+            },
+            renderLista() {
+                let total = 0; const cont = document.getElementById('orc-lista-container');
+                if(this.itens.length === 0) { cont.innerHTML = '<div style="color:#94a3b8; font-size:12px; text-align:center;">Nenhum item inserido.</div>'; document.getElementById('orc-total-display').innerText = "R$ 0,00"; return; }
+                cont.innerHTML = this.itens.map((i, idx) => { 
+                    total += (i.qtd * i.preco); 
+                    return `<div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; border-bottom:1px solid #e2e8f0; padding:8px 0;">
+                        <div><b>${i.nome}</b> (${i.qtd}x) - ${BRL.format(i.preco)} un</div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <b style="color:var(--primary)">${BRL.format(i.qtd * i.preco)}</b> 
+                            <button onclick="orcamento.editarItem(${idx})" style="background:none; border:none; color:var(--accent); cursor:pointer;"><i class="fas fa-pen"></i></button>
+                            <button onclick="orcamento.removerItem(${idx})" style="background:none; border:none; color:var(--danger); cursor:pointer;"><i class="fas fa-times"></i></button>
+                        </div>
+                    </div>`; 
+                }).join('');
+                document.getElementById('orc-total-display').innerText = BRL.format(total);
+            },
+            salvarEGerar() {
+                let orc;
+                if(this.modo === 'lista') {
+                    if(this.itens.length === 0) return ui.toast("Adicione itens ao orçamento", true);
+                    const total = this.itens.reduce((sum, i) => sum + (i.qtd * i.preco), 0);
+                    orc = { clienteId: app.currentClientId, data: new Date().toISOString().split('T')[0], tipoModo: 'lista', itens: [...this.itens], total: total };
+                } else {
+                    const desc = document.getElementById('orc-direto-desc').value;
+                    const val = parseFloat(document.getElementById('orc-direto-valor').value);
+                    const esconder = document.getElementById('orc-esconder-valores').checked;
+                    if(!desc || isNaN(val)) return ui.toast("Preencha as especificações e o valor total", true);
+                    orc = { clienteId: app.currentClientId, data: new Date().toISOString().split('T')[0], tipoModo: 'direto', descricao: desc, total: val, esconderValores: esconder };
+                }
+
+                database.transaction("orcamentos", "readwrite").objectStore("orcamentos").add(orc).onsuccess = (e) => { 
+                    ui.toast("Orçamento Salvo! Preparando visualização..."); 
+                    pdf.previewOrcamento(e.target.result); 
+                };
+            },
+            darDesconto(id) {
+                const tx = database.transaction("orcamentos", "readwrite");
+                const store = tx.objectStore("orcamentos");
+                store.get(id).onsuccess = (e) => {
+                    let orc = e.target.result;
+                    
+                    if(orc.descontoAplicado) return ui.toast("Este orçamento já possui desconto!", true);
+
+                    const descStr = prompt(`Orçamento total: ${BRL.format(orc.total)}\nDigite o valor do desconto (R$):`, "0.00");
+                    if (!descStr) return;
+                    const val = parseFloat(descStr.replace(',', '.'));
+                    if (isNaN(val) || val <= 0) return ui.toast("Valor inválido.", true);
+
+                    if(orc.total <= val) return ui.toast("Desconto maior ou igual ao total!", true);
+                    
+                    orc.total -= val;
+                    orc.descontoAplicado = true;
+
+                    if (orc.tipoModo === 'direto') {
+                        orc.descricao += `\n\n[Desconto concedido: R$ ${val.toFixed(2)}]`;
+                    } else {
+                        orc.itens.push({ nome: 'Desconto Aplicado (Negociação)', qtd: 1, preco: -val });
+                    }
+                    
+                    store.put(orc).onsuccess = () => {
+                        ui.toast("Desconto aplicado com sucesso!");
+                        app.openClientProfile(app.currentClientId);
+                    };
+                };
+            }
+        };
+
+        var recibo = {
+            abrirNovo() {
+                document.getElementById('recibo-valor').value = '';
+                document.getElementById('recibo-desc').value = '';
+                document.getElementById('recibo-data').value = new Date().toISOString().split('T')[0];
+                ui.changeView('view-recibo');
+                document.getElementById('topbar-title').innerText = "Emitir Recibo";
+            },
+            gerar() {
+                const val = parseFloat(document.getElementById('recibo-valor').value);
+                const desc = document.getElementById('recibo-desc').value;
+                const dataStr = document.getElementById('recibo-data').value;
+                if(!val || !desc || !dataStr) return ui.toast("Preencha valor, descrição e data.", true);
+
+                pdf.previewRecibo(app.currentClientId, val, desc, dataStr);
+            }
+        };
+
+        var ferramentas = {
+            calcularBTU() {
+                const l = parseFloat(document.getElementById('calc-btu-l').value); const c = parseFloat(document.getElementById('calc-btu-c').value); const p = parseInt(document.getElementById('calc-btu-p').value) || 0; const sol = document.getElementById('calc-btu-sol').value;
+                if(!l || !c) return ui.toast("Preencha Largura e Comprimento.", true);
+                const area = l * c; const cargaBase = sol == "1" ? 800 : 600; let btus = (area * cargaBase) + (p * 600);
+                let rec = 9000; if(btus>9000) rec = 12000; if(btus>12000) rec = 18000; if(btus>18000) rec = 24000; if(btus>24000) rec = 30000; if(btus>30000) rec = 36000; if(btus>36000) rec = 60000;
+                document.getElementById('calc-btu-result').style.display = 'block'; document.getElementById('calc-btu-result').innerHTML = `Carga Estimada: <b>${btus.toFixed(0)} BTUs</b><br>Equipamento Recomendado:<br><span style="font-size:22px; color:var(--accent);">${rec} BTUs</span>`;
+            },
+            converterPotencia() {
+                const val = parseFloat(document.getElementById('conv-valor').value);
+                const tipo = document.getElementById('conv-de').value;
+                if(isNaN(val)) return ui.toast("Digite o valor para converter.", true);
+                
+                let watts = 0;
+                if(tipo === 'cv') watts = val * 735.5;
+                if(tipo === 'hp') watts = val * 745.7;
+                if(tipo === 'btu') watts = val * 0.293071; 
+                
+                document.getElementById('conv-result').style.display = 'block';
+                document.getElementById('conv-result').innerHTML = `${val} ${tipo.toUpperCase()} = <br><span style="font-size: 26px;">${watts.toFixed(1)} W</span>`;
+            },
+            async lerPlaca(input) {
+                if(!input.files.length) return; const file = input.files[0]; document.getElementById('placa-loading').style.display = 'block'; ui.toast("Lendo etiqueta... Mantenha o app aberto.", false, 4000);
+                try {
+                    const result = await Tesseract.recognize(file, 'por'); const texto = result.data.text.toLowerCase(); document.getElementById('placa-loading').style.display = 'none';
+                    const matchWatts = texto.match(/(\d+)\s*(?:w|watts|potência)/); const matchVolts = texto.match(/(\d+)\s*(?:v|volts|tensão)/); const matchBTUs = texto.match(/(\d+)\s*(?:btu|btus)/);
+                    let enc = false;
+                    if (matchWatts) { document.getElementById('calc-w').value = matchWatts[1]; enc = true; } else if (matchBTUs) { ui.toast(`Máquina de ${matchBTUs[1]} BTUs, preencha o consumo (W).`, true); }
+                    if (matchVolts) { let v = parseInt(matchVolts[1]); if (v>=110&&v<=130) document.getElementById('calc-v').value = "127"; else if (v>=200&&v<=240) document.getElementById('calc-v').value = "220"; else if (v>=380) document.getElementById('calc-v').value = "380"; enc = true; }
+                    if (enc) { ui.toast("Valores capturados!"); if(document.getElementById('calc-w').value) this.calcularEletricaCompleta(); } else { ui.toast("Não foi possível ler os valores.", true); }
+                } catch(e) { document.getElementById('placa-loading').style.display = 'none'; ui.toast("Erro ao analisar.", true); } input.value = '';
+            },
+            calcularEletricaCompleta() {
+                const w = parseFloat(document.getElementById('calc-w').value); const v = parseFloat(document.getElementById('calc-v').value); const dist = parseFloat(document.getElementById('calc-dist').value) || 0; const bitola = parseFloat(document.getElementById('calc-cabo').value);
+                if(!w || !v) return ui.toast("Preencha a Potência (W)", true);
+                let amperes = (v == 380) ? (w / (v * 1.732 * 0.85)) : (w / v);
+                let disj = 10; if(amperes>10) disj=16; if(amperes>16) disj=20; if(amperes>20) disj=25; if(amperes>25) disj=32; if(amperes>32) disj=40; if(amperes>40) disj=50; if(amperes>50) disj=63;
+                let quedaStr = "";
+                if(dist > 0) {
+                    let quedaV = (v == 380) ? ((1.732 * 0.0172 * dist * amperes) / bitola) : ((2 * 0.0172 * dist * amperes) / bitola); let quedaPct = (quedaV / v) * 100; let colorQueda = quedaPct > 4 ? "var(--danger)" : "var(--success)";
+                    quedaStr = `<br><br><b>Análise do Cabo (${dist}m):</b><br>Queda de Tensão: <b style="color:${colorQueda}">${quedaPct.toFixed(1)}%</b>`; if(quedaPct > 4) quedaStr += `<br><span style="color:var(--danger); font-size:11px;">⚠️ Risco de aquecimento. Aumente a bitola!</span>`;
+                }
+                const resultBox = document.getElementById('calc-ele-result'); resultBox.style.display = 'block'; resultBox.innerHTML = `<b>Corrente:</b> <span style="color:var(--danger)">${amperes.toFixed(2)} A</span><br><b>Disjuntor Sugerido:</b> <span style="color:var(--success)">${disj} A (Curva C)</span>${quedaStr}`;
+            }
+        };
+
+        var db = {
             init() {
                 const request = indexedDB.open("FieldServiceApp", 6);
                 request.onupgradeneeded = (e) => {
@@ -833,11 +1053,11 @@
                 else { tx.add({ tipo, nome, qtd: parseFloat(qtd), preco: parseFloat(preco) }).onsuccess = () => { ui.toast("Salvo no Catálogo!"); ui.changeTab('view-estoque', document.querySelectorAll('.nav-item')[1], 'Catálogo'); }; }
             },
             deleteMaterial(id) { if(!confirm("Remover item do catálogo?")) return; database.transaction("materiais", "readwrite").objectStore("materiais").delete(id).onsuccess = () => { ui.toast("Excluído."); estoque.renderMateriais(); }; },
-            deleteLaudo(id) { if(!confirm("ATENÇÃO: Excluir este laudo permanentemente? Isso removerá o valor do seu caixa financeiro.")) return; database.transaction("laudos", "readwrite").objectStore("laudos").delete(id).onsuccess = () => { ui.toast("Laudo excluído!"); app.openClientProfile(app.currentClientId); }; },
-            deleteOrcamento(id) { if(!confirm("Excluir este orçamento permanentemente?")) return; database.transaction("orcamentos", "readwrite").objectStore("orcamentos").delete(id).onsuccess = () => { ui.toast("Orçamento excluído!"); app.openClientProfile(app.currentClientId); }; }
+            deleteLaudo(id) { if(!confirm("ATENÇÃO: Excluir este laudo removerá o valor do caixa financeiro. Continuar?")) return; database.transaction("laudos", "readwrite").objectStore("laudos").delete(id).onsuccess = () => { ui.toast("Laudo excluído!"); app.openClientProfile(app.currentClientId, false); }; },
+            deleteOrcamento(id) { if(!confirm("Excluir este orçamento permanentemente?")) return; database.transaction("orcamentos", "readwrite").objectStore("orcamentos").delete(id).onsuccess = () => { ui.toast("Orçamento excluído!"); app.openClientProfile(app.currentClientId, false); }; }
         };
 
-        const estoque = {
+        var estoque = {
             itensLidosOCR: [],
             filtroAtual: 'Todos',
             mudarLabels() {
@@ -952,7 +1172,7 @@
             }
         };
 
-        const ocr = {
+        var ocr = {
             async lerNota(input) {
                 if(!input.files.length) return; const file = input.files[0]; document.getElementById('ocr-loading').style.display='block'; document.getElementById('ocr-resultados').style.display='none'; ui.toast("Lendo nota... Aguarde.", false, 5000);
                 try {
@@ -973,7 +1193,7 @@
             }
         };
 
-        const app = {
+        var app = {
             tempPhotos: [], currentClientId: null,
             maskPhone(val) { return val.replace(/\D/g, '').replace(/^(\d{2})(\d)/g, '($1) $2').replace(/(\d)(\d{4})$/, '$1-$2'); },
             buscarCliente() { const termo = document.getElementById('search-cli').value.toLowerCase(); document.querySelectorAll('#lista-clientes-container .list-row').forEach(card => { card.style.display = card.innerText.toLowerCase().includes(termo) ? 'flex' : 'none'; }); },
@@ -989,8 +1209,11 @@
                 };
             },
             salvarCofre() { const tx = database.transaction("clientes", "readwrite").objectStore("clientes"); tx.get(this.currentClientId).onsuccess = (e) => { let c = e.target.result; c.cofre = document.getElementById('cli-cofre').value; tx.put(c).onsuccess = () => ui.toast("Cofre atualizado!"); }; },
-            openClientProfile(id) {
-                this.currentClientId = id; ui.changeView('view-perfil-cliente'); document.getElementById('topbar-title').innerText = "Ficha Técnica";
+            
+            openClientProfile(id, pushHistory = true) {
+                this.currentClientId = id; 
+                ui.changeView('view-perfil-cliente', pushHistory);
+                document.getElementById('topbar-title').innerText = "Ficha Técnica";
                 database.transaction("clientes", "readonly").objectStore("clientes").get(id).onsuccess = (e) => {
                     const c = e.target.result; let numLimpo = c.tel ? c.tel.replace(/\D/g, '') : '';
                     document.getElementById('btn-whats-container').innerHTML = numLimpo.length >= 10 ? `<a href="https://wa.me/55${numLimpo}" target="_blank" class="btn btn-outline" style="border-color: #16a34a; background: #dcfce7; color: #16a34a; padding: 14px; width: 50px;"><i class="fab fa-whatsapp" style="font-size: 20px;"></i></a>` : '';
@@ -1122,7 +1345,7 @@
             }
         };
 
-        const pdf = {
+        var pdf = {
             currentFileName: '',
             currentClientPhone: '',
             currentClientName: '',
@@ -1233,7 +1456,7 @@
                     let logoHeader = configEmpresa.logo ? `<img src="${configEmpresa.logo}" style="max-height: 60px; max-width: 150px; object-fit: contain;">` : '';
 
                     const html = `
-                        <div style="border: 2px solid var(--primary); padding: 30px; border-radius: 12px; position: relative;">
+                        <div style="border: 2px solid var(--primary); padding: 30px; border-radius: 12px; position: relative; background: white;">
                             <div style="display:flex; justify-content:space-between; border-bottom: 2px solid var(--border); padding-bottom: 20px; margin-bottom: 20px;">
                                 <div style="display:flex; align-items:center; gap:15px;">
                                     ${logoHeader}
@@ -1360,7 +1583,7 @@
             }
         };
 
-        const backup = {
+        var backup = {
             checkWeekly() { const lastBackup = localStorage.getItem('fieldapp_last_backup'); if (!lastBackup || (new Date().getTime() - parseInt(lastBackup)) > 7*24*60*60*1000) setTimeout(() => ui.toast("Aviso: Faça backup na aba Financeiro!", true), 2000); },
             async download() {
                 ui.toast("Gerando arquivo..."); const tx = database.transaction(['clientes', 'agendamentos', 'laudos', 'materiais', 'orcamentos', 'despesas', 'config'], 'readonly');
@@ -1392,9 +1615,36 @@
             }
         };
 
+        // Amarração global anti-falha para o HTML
+        window.auth = auth; window.ui = ui; window.financeiro = financeiro; window.orcamento = orcamento; window.recibo = recibo; window.ferramentas = ferramentas; window.db = db; window.estoque = estoque; window.ocr = ocr; window.app = app; window.pdf = pdf; window.backup = backup; window.dictation = dictation; window.signature = signature;
+
         window.onload = () => {
             db.init(); dictation.init();
             if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js').catch(err => console.log('Erro no PWA:', err)); }
+
+            // Lógica do botão Voltar do Celular (Histórico Virtual)
+            history.replaceState({ view: 'view-clientes' }, '', '#view-clientes');
+            
+            window.addEventListener('popstate', (e) => {
+                if (document.getElementById('view-login') && !document.getElementById('view-login').classList.contains('hidden')) {
+                    history.pushState(null, '', location.href); 
+                    return;
+                }
+                
+                if (e.state && e.state.view) {
+                    ui.changeView(e.state.view, false);
+                    ui.updateNavFromView(e.state.view);
+                    
+                    if(e.state.view === 'view-perfil-cliente' && app.currentClientId) app.openClientProfile(app.currentClientId, false);
+                    else if(e.state.view === 'view-clientes') app.renderClientes();
+                    else if(e.state.view === 'view-agenda') app.renderAgenda();
+                    else if(e.state.view === 'view-estoque') estoque.renderMateriais();
+                    else if(e.state.view === 'view-financeiro') financeiro.renderDash();
+                } else {
+                    ui.changeView('view-clientes', false);
+                    ui.updateNavFromView('view-clientes');
+                }
+            });
         };
     </script>
 </body>
